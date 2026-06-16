@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Betygsstatistik – Sävsjö grundskolor</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --p:#1a5276;--s:#2980b9;--g:#27ae60;--o:#e67e22;--r:#e74c3c;--pu:#8e44ad;
+  --t:#1abc9c;--bg:#f2f5f9;--card:#fff;--brd:#dde3ea;--txt:#2c3e50;--mu:#6c7a89;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;}
+header{
+  background:linear-gradient(135deg,#0e2e42,#1a5276);color:#fff;
+  padding:24px 36px;display:flex;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;gap:12px;box-shadow:0 3px 14px rgba(0,0,0,.3);
+}
+header h1{font-size:1.6rem;font-weight:700;}
+header p{font-size:.84rem;opacity:.78;margin-top:4px;}
+.hbadge{background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.27);
+  border-radius:20px;padding:5px 14px;font-size:.78rem;white-space:nowrap;}
+.wrap{max-width:1240px;margin:0 auto;padding:24px 20px 48px;}
+
+/* STATUS */
+.status{background:#fff;border-radius:8px;padding:10px 16px;margin-bottom:18px;
+  display:flex;align-items:center;gap:9px;font-size:.84rem;color:var(--mu);
+  box-shadow:0 1px 4px rgba(0,0,0,.07);}
+.dot{width:9px;height:9px;border-radius:50%;background:#adb5bd;flex-shrink:0;}
+.dot.ok{background:var(--g);} .dot.loading{background:var(--o);animation:blink 1s infinite;}
+.dot.error{background:var(--r);} .dot.warn{background:#f39c12;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* NOTICE BOX */
+.notice{
+  background:#fff8e1;border:1px solid #ffe082;border-radius:8px;
+  padding:12px 16px;margin-bottom:18px;font-size:.83rem;color:#5d4037;line-height:1.55;
+}
+.notice strong{color:#e65100;}
+
+/* CARDS */
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:13px;margin-bottom:18px;}
+.card{background:var(--card);border-radius:10px;padding:16px 18px;
+  box-shadow:0 1px 5px rgba(0,0,0,.07);border-top:3px solid var(--p);}
+.card.g{border-top-color:var(--g);} .card.o{border-top-color:var(--o);}
+.card.pu{border-top-color:var(--pu);} .card.t{border-top-color:var(--t);}
+.card.r{border-top-color:var(--r);}
+.cl{font-size:.7rem;text-transform:uppercase;letter-spacing:.7px;color:var(--mu);margin-bottom:6px;font-weight:700;}
+.cv{font-size:1.9rem;font-weight:700;color:var(--p);line-height:1;}
+.card.g .cv{color:var(--g);} .card.o .cv{color:var(--o);}
+.card.pu .cv{color:var(--pu);} .card.t .cv{color:var(--t);} .card.r .cv{color:var(--r);}
+.cs{font-size:.74rem;color:var(--mu);margin-top:5px;}
+
+/* TABS */
+.tabs{display:flex;border-bottom:2px solid var(--brd);margin-bottom:18px;overflow-x:auto;gap:0;}
+.tab{padding:9px 18px;font-size:.86rem;font-weight:600;cursor:pointer;color:var(--mu);
+  border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;
+  transition:color .15s,border-color .15s;}
+.tab:hover{color:var(--p);} .tab.active{color:var(--p);border-bottom-color:var(--p);}
+.panel{display:none;} .panel.active{display:block;}
+
+/* BOXES */
+.box{background:var(--card);border-radius:10px;padding:20px 24px;
+  box-shadow:0 1px 5px rgba(0,0,0,.07);margin-bottom:16px;}
+.bt{font-size:.93rem;font-weight:700;color:var(--txt);margin-bottom:14px;
+  display:flex;align-items:center;gap:7px;}
+.ch{position:relative;height:270px;}
+.ch.tall{height:310px;}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+@media(max-width:720px){.grid2{grid-template-columns:1fr;}}
+
+/* TABLE */
+.tw{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:.84rem;}
+thead th{background:#f6f8fb;padding:8px 12px;text-align:left;font-size:.73rem;
+  color:var(--mu);font-weight:700;text-transform:uppercase;letter-spacing:.4px;
+  border-bottom:2px solid var(--brd);white-space:nowrap;}
+tbody td{padding:10px 12px;border-bottom:1px solid var(--brd);vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:#f9fafc;}
+.fw{font-weight:600;}
+.code{font-family:monospace;font-size:.78rem;color:var(--mu);background:#f0f2f5;padding:2px 5px;border-radius:3px;}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.75rem;font-weight:700;}
+.bg{background:#d5f5e3;color:#1e8449;} .by{background:#fef9e7;color:#b7770d;} .br{background:#fadbd8;color:#922b21;}
+.link{color:var(--s);text-decoration:none;font-size:.81rem;} .link:hover{text-decoration:underline;}
+.nd{color:#b0b8c1;font-style:italic;}
+.np-pos{color:var(--g);font-weight:700;} .np-neg{color:var(--r);font-weight:700;} .np-eq{color:var(--mu);}
+
+/* LEGEND */
+.legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;font-size:.78rem;align-items:center;}
+.chip{display:flex;align-items:center;gap:5px;}
+.lc{width:12px;height:12px;border-radius:3px;}
+
+/* YEAR SELECTOR */
+.year-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap;}
+.year-row label{font-size:.82rem;color:var(--mu);font-weight:600;}
+select{border:1px solid var(--brd);border-radius:6px;padding:5px 10px;
+  font-size:.83rem;color:var(--txt);background:#fff;cursor:pointer;}
+
+/* INFO/WARN */
+.info{background:#e8f4fd;border:1px solid #b8d9f1;border-radius:8px;
+  padding:11px 15px;color:#154360;font-size:.82rem;margin-bottom:12px;line-height:1.55;}
+.warn{background:#fdf2f2;border:1px solid #f5c2c7;border-radius:8px;
+  padding:11px 15px;color:#842029;font-size:.82rem;line-height:1.55;}
+
+/* SKELETON */
+.sk{display:inline-block;border-radius:4px;
+  background:linear-gradient(90deg,#eee 25%,#ddd 50%,#eee 75%);
+  background-size:200% 100%;animation:shim 1.4s infinite;}
+@keyframes shim{0%{background-position:-200% 0}100%{background-position:200% 0}}
+
+footer{text-align:center;padding:20px;font-size:.77rem;color:var(--mu);line-height:1.9;}
+footer a{color:var(--s);text-decoration:none;} footer a:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📊 Betygsstatistik Sävsjö</h1>
+    <p>SV · SVA · Pojkar/Flickor · NP-jämförelse åk 6 &amp; 9 · Skolverkets PxWeb API</p>
+  </div>
+  <span class="hbadge">Kommunekod 0684 · Grundskola</span>
+</header>
+
+<div class="wrap">
+
+  <div class="notice">
+    <strong>ℹ️ Om datakällan:</strong>
+    Betygsstatistik på <strong>kommunnivå</strong> hämtas live från
+    <a href="https://statistikdatabasen.skolverket.se" target="_blank" style="color:#e65100">Skolverkets PxWeb-statistikdatabas</a>.
+    Skolverket publicerar inte skolnivå-statistik via öppet API sedan 2020.
+    Skollistan hämtas från Skolenhetsregistret.
+    Välj läsår nedan — data uppdateras automatiskt.
+  </div>
+
+  <!-- Status -->
+  <div class="status">
+    <div class="dot loading" id="dot"></div>
+    <span id="smsg">Ansluter till Skolverkets PxWeb API…</span>
+  </div>
+
+  <!-- Year selector -->
+  <div class="year-row">
+    <label>Läsår:</label>
+    <select id="yearSel" onchange="reloadYear()">
+      <option value="2024">2024/25</option>
+      <option value="2023">2023/24</option>
+      <option value="2022">2022/23</option>
+      <option value="2021">2021/22</option>
+    </select>
+    <span id="yearStatus" style="font-size:.8rem;color:var(--mu)"></span>
+  </div>
+
+  <!-- Summary cards -->
+  <div class="cards">
+    <div class="card"><div class="cl">Skolor i Sävsjö</div><div class="cv" id="cSkol">–</div><div class="cs">Aktiva grundskolor (reg.)</div></div>
+    <div class="card g"><div class="cl">Meritvärde (totalt)</div><div class="cv" id="cMerit">–</div><div class="cs">Genomsnitt åk 9, Sävsjö</div></div>
+    <div class="card o"><div class="cl">Meritvärde pojkar</div><div class="cv" id="cMeritP">–</div><div class="cs">Genomsnitt åk 9</div></div>
+    <div class="card pu"><div class="cl">Meritvärde flickor</div><div class="cv" id="cMeritF">–</div><div class="cs">Genomsnitt åk 9</div></div>
+    <div class="card t"><div class="cl">Gymnasiebehörighet</div><div class="cv" id="cBeh">–</div><div class="cs">Andel behöriga åk 9</div></div>
+    <div class="card r"><div class="cl">Rikssnitt meritvärde</div><div class="cv" id="cRiks">–</div><div class="cs">Jämförelse riket</div></div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" data-tab="overview">📊 Översikt</div>
+    <div class="tab" data-tab="svsva">📖 SV / SVA</div>
+    <div class="tab" data-tab="kon">👥 Pojkar / Flickor</div>
+    <div class="tab" data-tab="np6">📝 NP – Åk 6</div>
+    <div class="tab" data-tab="np9">📝 NP – Åk 9</div>
+    <div class="tab" data-tab="skolor">🏫 Skolor</div>
+  </div>
+
+  <!-- ═══════════ PANEL: OVERVIEW ═══════════ -->
+  <div class="panel active" id="tab-overview">
+    <div class="box">
+      <div class="bt">📈 Meritvärde åk 9 – Sävsjö vs riket (tidsserie)</div>
+      <div class="ch tall"><canvas id="cMeritTrend"></canvas></div>
+    </div>
+    <div class="grid2">
+      <div class="box">
+        <div class="bt">Behörighet till gymnasium (%)</div>
+        <div class="ch"><canvas id="cBehChart"></canvas></div>
+      </div>
+      <div class="box">
+        <div class="bt">Elever som uppnått alla kunskapskrav (%)</div>
+        <div class="ch"><canvas id="cKkChart"></canvas></div>
+      </div>
+    </div>
+    <div class="box">
+      <div class="bt">Sammanfattning – Sävsjö kommun</div>
+      <div class="tw"><table>
+        <thead><tr><th>Mått</th><th>Pojkar</th><th>Flickor</th><th>Totalt</th><th>Rikssnitt</th></tr></thead>
+        <tbody id="tOverview">
+          <tr><td colspan="5"><span class="sk" style="width:100%;height:16px;display:block"></span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ PANEL: SV / SVA ═══════════ -->
+  <div class="panel" id="tab-svsva">
+    <div class="info">
+      <strong>Svenska (SV)</strong> – betyg för elever med svenska som modersmål.<br>
+      <strong>Svenska som andraspråk (SVA)</strong> – ges till elever med annat modersmål; samma betygsskala men anpassat kursinnehåll.
+      Andelen SVA-elever varierar och speglar elevsammansättningen i kommunen.
+    </div>
+    <div class="grid2">
+      <div class="box">
+        <div class="bt">📖 SV – betygsfördelning (A–F)</div>
+        <div class="legend">
+          <div class="chip"><div class="lc" style="background:#27ae60"></div>A</div>
+          <div class="chip"><div class="lc" style="background:#2ecc71"></div>B</div>
+          <div class="chip"><div class="lc" style="background:#f39c12"></div>C</div>
+          <div class="chip"><div class="lc" style="background:#e67e22"></div>D</div>
+          <div class="chip"><div class="lc" style="background:#e74c3c"></div>E</div>
+          <div class="chip"><div class="lc" style="background:#c0392b"></div>F</div>
+        </div>
+        <div class="ch"><canvas id="cSVDist"></canvas></div>
+      </div>
+      <div class="box">
+        <div class="bt">📖 SVA – betygsfördelning (A–F)</div>
+        <div class="legend">
+          <div class="chip"><div class="lc" style="background:#27ae60"></div>A</div>
+          <div class="chip"><div class="lc" style="background:#2ecc71"></div>B</div>
+          <div class="chip"><div class="lc" style="background:#f39c12"></div>C</div>
+          <div class="chip"><div class="lc" style="background:#e67e22"></div>D</div>
+          <div class="chip"><div class="lc" style="background:#e74c3c"></div>E</div>
+          <div class="chip"><div class="lc" style="background:#c0392b"></div>F</div>
+        </div>
+        <div class="ch"><canvas id="cSVADist"></canvas></div>
+      </div>
+    </div>
+    <div class="box">
+      <div class="bt">SV / SVA – snittbetygspoäng per kön (0–20 skala)</div>
+      <div class="legend">
+        <div class="chip"><div class="lc" style="background:#2980b9"></div>Pojkar SV</div>
+        <div class="chip"><div class="lc" style="background:#85c1e9"></div>Flickor SV</div>
+        <div class="chip"><div class="lc" style="background:#8e44ad"></div>Pojkar SVA</div>
+        <div class="chip"><div class="lc" style="background:#d7bde2"></div>Flickor SVA</div>
+      </div>
+      <div class="ch"><canvas id="cSVSVAKon"></canvas></div>
+    </div>
+    <div class="box">
+      <div class="bt">SV / SVA – detaljdata Sävsjö</div>
+      <div class="tw"><table>
+        <thead><tr><th>Ämne</th><th>Pojkar snittpoäng</th><th>Flickor snittpoäng</th><th>Totalt snitt</th><th>Andel A+B (%)</th><th>Andel F (%)</th></tr></thead>
+        <tbody id="tSVSVA">
+          <tr><td colspan="6"><span class="sk" style="width:100%;height:16px;display:block"></span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ PANEL: KÖN ═══════════ -->
+  <div class="panel" id="tab-kon">
+    <div class="grid2">
+      <div class="box">
+        <div class="bt">Meritvärde åk 9 – pojkar vs flickor (tidsserie)</div>
+        <div class="legend">
+          <div class="chip"><div class="lc" style="background:#2980b9"></div>Pojkar</div>
+          <div class="chip"><div class="lc" style="background:#8e44ad"></div>Flickor</div>
+          <div class="chip"><div class="lc" style="background:#adb5bd"></div>Rikssnitt</div>
+        </div>
+        <div class="ch"><canvas id="cKonMerit"></canvas></div>
+      </div>
+      <div class="box">
+        <div class="bt">Gymnasiebehörighet – pojkar vs flickor</div>
+        <div class="legend">
+          <div class="chip"><div class="lc" style="background:#2980b9"></div>Pojkar</div>
+          <div class="chip"><div class="lc" style="background:#8e44ad"></div>Flickor</div>
+        </div>
+        <div class="ch"><canvas id="cKonBeh"></canvas></div>
+      </div>
+    </div>
+    <div class="box">
+      <div class="bt">Könsskillnad – nyckeltal Sävsjö</div>
+      <div class="tw"><table>
+        <thead><tr><th>Mått</th><th>Pojkar</th><th>Flickor</th><th>Skillnad (F–P)</th><th>Rikssnitt totalt</th></tr></thead>
+        <tbody id="tKon">
+          <tr><td colspan="5"><span class="sk" style="width:100%;height:16px;display:block"></span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ PANEL: NP ÅK 6 ═══════════ -->
+  <div class="panel" id="tab-np6">
+    <div class="info">
+      <strong>NP-jämförelse åk 6:</strong> Andel elever vars terminsbetyg är högre, lika eller lägre än NP-resultatet i SV och SVA.
+      Hög andel <em>Betyg &gt; NP</em> kan tyda på generösare betygssättning; hög andel <em>Betyg &lt; NP</em> det omvända.
+    </div>
+    <div class="grid2">
+      <div class="box">
+        <div class="bt">SV åk 6 – Relation betyg vs NP (%)</div>
+        <div class="legend">
+          <div class="chip"><div class="lc" style="background:#27ae60"></div>Betyg &gt; NP</div>
+          <div class="chip"><div class="lc" style="background:#adb5bd"></div>Lika</div>
+          <div class="chip"><div class="lc" style="background:#e74c3c"></div>Betyg &lt; NP</div>
+        </div>
+        <div class="ch"><canvas id="cNP6SV"></canvas></div>
+      </div>
+      <div class="box">
+        <div class="bt">SVA åk 6 – Relation betyg vs NP (%)</div>
+        <div class="legend">
+          <div class="chip"><div class="lc" style="background:#27ae60"></div>Betyg &gt; NP</div>
+          <div class="chip"><div class="lc" style="background:#adb5bd"></div>Lika</div>
+          <div class="chip"><div class="lc" style="background:#e74c3c"></div>Betyg &lt; NP</div>
+        </div>
+        <div class="ch"><canvas id="cNP6SVA"></canvas></div>
+      </div>
+    </div>
+    <div class="box">
+      <div class="bt">NP andel godkända åk 6 – SV, SVA, EN, MA</div>
+      <div class="legend">
+        <div class="chip"><div class="lc" style="background:#2980b9"></div>Sävsjö</div>
+        <div class="chip"><div class="lc" style="background:#adb5bd"></div>Rikssnitt</div>
+      </div>
+      <div class="ch"><canvas id="cNP6OK"></canvas></div>
+    </div>
+    <div class="box">
+      <div class="bt">NP – detaljdata åk 6, Sävsjö</div>
+      <div class="tw"><table>
+        <thead><tr><th>Ämne</th><th>Betyg &gt; NP</th><th>Lika</th><th>Betyg &lt; NP</th><th>Andel godkända NP</th><th>Rikssnitt godkända</th></tr></thead>
+        <tbody id="tNP6">
+          <tr><td colspan="6"><span class="sk" style="width:100%;height:16px;display:block"></span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ PANEL: NP ÅK 9 ═══════════ -->
+  <div class="panel" id="tab-np9">
+    <div class="info">
+      <strong>NP-jämförelse åk 9:</strong> Slutbetygens relation till nationella provresultat i SV och SVA.
+      Avvikelser analyseras per kön — flickor och pojkar kan visa olika mönster.
+    </div>
+    <div class="grid2">
+      <div class="box">
+        <div class="bt">SV åk 9 – Relation betyg vs NP (%)</div>
+        <div class="legend">
+          <div class="chip"><div class="lc" style="background:#27ae60"></div>Betyg &gt; NP</div>
+          <div class="chip"><div class="lc" style="background:#adb5bd"></div>Lika</div>
+          <div class="chip"><div class="lc" style="background:#e74c3c"></div>Betyg &lt; NP</div>
+        </div>
+        <div class="ch"><canvas id="cNP9SV"></canvas></div>
+      </div>
+      <div class="box">
+        <div class="bt">SVA åk 9 – Relation betyg vs NP (%)</div>
+        <div class="legend">
+          <div class="chip"><div class="lc" style="background:#27ae60"></div>Betyg &gt; NP</div>
+          <div class="chip"><div class="lc" style="background:#adb5bd"></div>Lika</div>
+          <div class="chip"><div class="lc" style="background:#e74c3c"></div>Betyg &lt; NP</div>
+        </div>
+        <div class="ch"><canvas id="cNP9SVA"></canvas></div>
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="box">
+        <div class="bt">NP åk 9 – SV relation uppdelat på kön</div>
+        <div class="legend">
+          <div class="chip"><div class="lc" style="background:#2980b9"></div>Pojkar</div>
+          <div class="chip"><div class="lc" style="background:#8e44ad"></div>Flickor</div>
+        </div>
+        <div class="ch"><canvas id="cNP9SVKon"></canvas></div>
+      </div>
+      <div class="box">
+        <div class="bt">NP andel godkända åk 9 – SV, SVA, EN, MA</div>
+        <div class="legend">
+          <div class="chip"><div class="lc" style="background:#2980b9"></div>Sävsjö</div>
+          <div class="chip"><div class="lc" style="background:#adb5bd"></div>Rikssnitt</div>
+        </div>
+        <div class="ch"><canvas id="cNP9OK"></canvas></div>
+      </div>
+    </div>
+    <div class="box">
+      <div class="bt">NP – detaljdata åk 9, Sävsjö</div>
+      <div class="tw"><table>
+        <thead><tr><th>Ämne</th><th>Kön</th><th>Betyg &gt; NP</th><th>Lika</th><th>Betyg &lt; NP</th><th>Andel godkända NP</th></tr></thead>
+        <tbody id="tNP9">
+          <tr><td colspan="6"><span class="sk" style="width:100%;height:16px;display:block"></span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+  <!-- ═══════════ PANEL: SKOLOR ═══════════ -->
+  <div class="panel" id="tab-skolor">
+    <div class="info">
+      Listan hämtas från <strong>Skolverkets Skolenhetsregistret</strong> (live-data).
+      Betygsstatistik per enskild skola är inte tillgänglig via Skolverkets öppna API — klicka på länkarna för statistik per skola på Skolverket.se.
+    </div>
+    <div class="box">
+      <div class="bt">🏫 Grundskolor i Sävsjö (kommunKod 0684)</div>
+      <div class="tw"><table>
+        <thead><tr><th>Skola</th><th>Skolenhetskod</th><th>Aktiv</th><th>Åk</th><th>Statistik</th></tr></thead>
+        <tbody id="tSkolor">
+          <tr><td colspan="5"><span class="sk" style="width:100%;height:16px;display:block"></span></td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Kommunnivå-data: <a href="https://statistikdatabasen.skolverket.se/PxWeb/pxweb/sv/Skolverkets_statistikdatabas/" target="_blank">Skolverkets PxWeb-statistikdatabas</a>
+  &nbsp;·&nbsp;
+  Skollista: <a href="https://api.skolverket.se/skolenhetsregistret/swagger-ui/index.html" target="_blank">Skolenhetsregistret API</a>
+  &nbsp;·&nbsp;
+  <a href="https://www.skolverket.se/skolutveckling/statistik/sok-statistik-om-forskola-skola-och-vuxenutbildning?sok=show&omrade=Betyg%20grundskola" target="_blank">Sök manuellt på Skolverket.se</a>
+  &nbsp;·&nbsp;
+  Sävsjö kommun · kommunKod 0684
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+//  CONFIGURATION
+// ═══════════════════════════════════════════════════════════════════
+const KOMKOD = '0684';
+const KOMNAMN = 'Sävsjö';
+const PXBASE = 'https://statistikdatabasen.skolverket.se/PxWeb/api/v1/sv/Skolverkets_statistikdatabas';
+const REGBASE = 'https://api.skolverket.se/skolenhetsregistret/v2';
+
+// Year code mapping: display → PxWeb value
+// PxWeb typically uses "läsår" format: "2023/24" → "20232024" or just "2023"
+const YEAR_MAP = { '2024':'20242025','2023':'20232024','2022':'20222023','2021':'20212022' };
+
+let SEL_YEAR = '2024';
+let charts   = {};
+
+// ═══════════════════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════════════════
+const $   = id => document.getElementById(id);
+const f1  = v  => v != null ? parseFloat(v).toFixed(1) : '–';
+const f0  = v  => v != null ? Math.round(parseFloat(v)) : '–';
+const pct = v  => v != null ? parseFloat(v).toFixed(1) + ' %' : '–';
+const nd  = ()  => '<span class="nd">–</span>';
+const diff = (a,b) => {
+  if(a==null||b==null) return nd();
+  const d = parseFloat(a)-parseFloat(b);
+  const cls = d>0.5?'np-pos':d<-0.5?'np-neg':'np-eq';
+  return `<span class="${cls}">${d>0?'+':''}${d.toFixed(1)}</span>`;
+};
+
+function setStatus(type, msg){
+  $('dot').className = 'dot '+type;
+  $('smsg').textContent = msg;
+}
+
+function mkChart(id, type, data, opts){
+  const ctx = $(id)?.getContext('2d');
+  if(!ctx) return;
+  if(charts[id]) charts[id].destroy();
+  charts[id] = new Chart(ctx,{type,data,options:{responsive:true,maintainAspectRatio:false,...opts}});
+}
+
+// TABS
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    $('tab-'+t.dataset.tab)?.classList.add('active');
+    setTimeout(()=>Object.values(charts).forEach(c=>{try{c.resize();}catch(e){}}),50);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════
+//  PXWEB API
+// ═══════════════════════════════════════════════════════════════════
+async function pxGet(path){
+  const r = await fetch(PXBASE + path, {headers:{Accept:'application/json'}});
+  if(!r.ok) throw new Error('HTTP '+r.status+' '+path);
+  return r.json();
+}
+
+async function pxPost(path, query){
+  const body = JSON.stringify({query, response:{format:'json'}});
+  const r = await fetch(PXBASE + path, {
+    method:'POST',
+    headers:{'Content-Type':'application/json', Accept:'application/json'},
+    body
+  });
+  if(!r.ok) throw new Error('HTTP '+r.status+' '+path);
+  return r.json();
+}
+
+// Discover tables under a category path
+async function discoverTables(catPath){
+  try {
+    const list = await pxGet(catPath);
+    return list;
+  } catch(e){
+    return [];
+  }
+}
+
+// Try to find and load a specific table, return null if not found
+async function tryLoadTable(paths, query){
+  for(const path of paths){
+    try{
+      const data = await pxPost(path, query);
+      if(data?.data?.length) return {path, data};
+    } catch(e){ /* try next */ }
+  }
+  return null;
+}
+
+// Extract values from PxWeb JSON response
+function pxExtract(data){
+  if(!data?.data) return [];
+  return data.data.map(row=>({
+    keys: row.key,
+    vals: row.values
+  }));
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  SKOLENHETSREGISTRET
+// ═══════════════════════════════════════════════════════════════════
+async function loadSkolor(){
+  try {
+    // v2 uses typeOfSchooling filter; grundskola = 11
+    const url = `https://api.skolverket.se/skolenhetsregistret/v1/sok/skolenheter?kommunKod=${KOMKOD}&skolform=11&status=1`;
+    const r = await fetch(url,{headers:{Accept:'application/json'}});
+    if(!r.ok) throw new Error('HTTP '+r.status);
+    const d = await r.json();
+    const list = d.skolenheter || d.hits || d.result || [];
+    $('cSkol').textContent = list.length || '–';
+    renderSkolor(list);
+    return list;
+  } catch(e){
+    $('cSkol').textContent = '–';
+    $('tSkolor').innerHTML = `<tr><td colspan="5"><div class="warn">⚠️ Skolenhetsregistret nås ej: ${e.message}</div></td></tr>`;
+    return [];
+  }
+}
+
+function renderSkolor(list){
+  if(!list.length){
+    $('tSkolor').innerHTML='<tr><td colspan="5" class="nd">Inga skolor hittades.</td></tr>';
+    return;
+  }
+  $('tSkolor').innerHTML = list.map(s=>{
+    const kod = s.skolenhetskod||s.kod||'';
+    const namn = s.skolenhetsnamn||s.namn||'Okänt';
+    const status = s.status?.toLowerCase().includes('aktiv')?'<span class="badge bg">Aktiv</span>':'<span class="badge by">'+(s.status||'?')+'</span>';
+    const ak = (s.skolformer||[]).map(f=>f.arskurser||'').join(', ') || '–';
+    return `<tr>
+      <td class="fw">${namn}</td>
+      <td><span class="code">${kod}</span></td>
+      <td>${status}</td>
+      <td>${ak}</td>
+      <td>${kod?`<a class="link" href="https://www.skolverket.se/skolutveckling/statistik/sok-statistik-om-forskola-skola-och-vuxenutbildning?sok=show&omrade=Betyg%20grundskola&enhetskod=${kod}" target="_blank">↗ Statistik</a>`:nd()}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  PXWEB DATA LOADERS
+//  These probe multiple likely paths for each table.
+// ═══════════════════════════════════════════════════════════════════
+
+// Helper: build a standard "Sävsjö + year" query for a given variable
+function baseQuery(yearCode){
+  return [
+    {code:'Kommun',     selection:{filter:'item', values:[KOMKOD]}},
+    {code:'Tid',        selection:{filter:'item', values:[yearCode]}}
+  ];
+}
+
+// Meritvärde paths
+const PATH_MERIT = [
+  '/Kommunala_jamforelsetal/Grundskola/Betyg/Gr_meritv_amnesb.px',
+  '/Kommunala_jamforelsetal/Grundskola/Betyg/Gr_meritv.px',
+  '/Kommunala_jamforelsetal/Grundskola/Betyg/GrundskBetygMeritTotalt.px',
+  '/Kommunala_jamforelsetal/Grundskola/Betyg/Grundskola_betyg.px',
+  '/Kommunala_jamforelsetal/Grundskola/Betyg/GR_Merit.px',
+];
+
+// Behörighet paths
+const PATH_BEH = [
+  '/Kommunala_jamforelsetal/Grundskola/Behorighet/Gr_behorighet.px',
+  '/Kommunala_jamforelsetal/Grundskola/Behorighet/GrundskBehorighetGymnasiet.px',
+  '/Kommunala_jamforelsetal/Grundskola/Betyg/Gr_behorighet.px',
+  '/Kommunala_jamforelsetal/Grundskola/Betyg/GrundskBehorighet.px',
+];
+
+// NP paths
+const PATH_NP6 = [
+  '/Kommunala_jamforelsetal/Grundskola/Nationella_prov/GrundskNPak6.px',
+  '/Kommunala_jamforelsetal/Grundskola/Nationella_prov/Gr_NP_ak6.px',
+  '/Kommunala_jamforelsetal/Grundskola/Nationella_prov/GrNP6.px',
+];
+const PATH_NP9 = [
+  '/Kommunala_jamforelsetal/Grundskola/Nationella_prov/GrundskNPak9.px',
+  '/Kommunala_jamforelsetal/Grundskola/Nationella_prov/Gr_NP_ak9.px',
+  '/Kommunala_jamforelsetal/Grundskola/Nationella_prov/GrNP9.px',
+];
+
+// Betyg vs NP relation
+const PATH_REL6 = [
+  '/Kommunala_jamforelsetal/Grundskola/Nationella_prov/Gr_NP_rel_ak6.px',
+  '/Kommunala_jamforelsetal/Grundskola/Nationella_prov/GrNPRelAk6.px',
+  '/Kommunala_jamforelsetal/Grundskola/Nationella_prov/GrundskNPRelation6.px',
+];
+const PATH_REL9 = [
+  '/Kommunala_jamforelsetal/Grundskola/Nationella_prov/Gr_NP_rel_ak9.px',
+  '/Kommunala_jamforelsetal/Grundskola/Nationella_prov/GrNPRelAk9.px',
+  '/Kommunala_jamforelsetal/Grundskola/Nationella_prov/GrundskNPRelation9.px',
+];
+
+// ─────────────────────────────────────────────────────────────────
+//  Data loading with fallback to placeholder
+// ─────────────────────────────────────────────────────────────────
+let DATA = {};   // stores all loaded data keyed by type
+
+async function loadMeritvärde(yc){
+  // Build query with gender dimension
+  const q = [
+    {code:'Kommun', selection:{filter:'item', values:[KOMKOD,'00']}}, // 00 = riket
+    {code:'Kön',    selection:{filter:'item', values:['1','2','T']}}, // 1=pojkar 2=flickor T=totalt
+    {code:'Tid',    selection:{filter:'item', values:[yc]}}
+  ];
+  // Also try multi-year for trend
+  const qTrend = [
+    {code:'Kommun', selection:{filter:'item', values:[KOMKOD,'00']}},
+    {code:'Kön',    selection:{filter:'item', values:['T']}},
+    {code:'Tid',    selection:{filter:'top',  values:['5']}}
+  ];
+
+  let res = null;
+  // First discover available tables by browsing the category
+  try {
+    const cat = await pxGet('/Kommunala_jamforelsetal/Grundskola/Betyg/');
+    const tables = cat.filter?.(x=>x.type==='t') || [];
+    for(const tbl of tables){
+      try{
+        const r = await pxPost('/Kommunala_jamforelsetal/Grundskola/Betyg/'+tbl.id, q);
+        if(r?.data?.length){ res={data:r,tbl:tbl.id}; break; }
+      }catch(e){}
+    }
+  }catch(e){}
+
+  // Fallback: try known paths
+  if(!res){
+    for(const p of PATH_MERIT){
+      try{
+        const r = await pxPost(p, q);
+        if(r?.data?.length){ res={data:r,tbl:p}; break; }
+      }catch(e){}
+    }
+  }
+
+  return res;
+}
+
+async function loadPxTable(catPath, knownPaths, query){
+  // First browse category for tables
+  try{
+    const cat = await pxGet(catPath);
+    const tables = (cat||[]).filter(x=>x.type==='t');
+    for(const tbl of tables){
+      try{
+        const r = await pxPost(catPath+tbl.id, query);
+        if(r?.data?.length) return {data:r, path:catPath+tbl.id};
+      }catch(e){}
+    }
+  }catch(e){}
+  // Fallback known paths
+  for(const p of knownPaths){
+    try{
+      const r = await pxPost(p, query);
+      if(r?.data?.length) return {data:r, path:p};
+    }catch(e){}
+  }
+  return null;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  RENDER FUNCTIONS
+// ═══════════════════════════════════════════════════════════════════
+
+function renderOverview(meritData){
+  // Summary table
+  const rows = [
+    {lbl:'Meritvärde åk 9',  p: DATA.meritP, f: DATA.meritF, tot: DATA.meritT, riks: DATA.meritRiks},
+    {lbl:'Gymnasiebehörighet',p: DATA.behP,   f: DATA.behF,   tot: DATA.behT,   riks: DATA.behRiks},
+    {lbl:'Uppnått alla kk',  p: DATA.kkP,    f: DATA.kkF,    tot: DATA.kkT,    riks: DATA.kkRiks},
+  ];
+  $('tOverview').innerHTML = rows.map(r=>`
+    <tr>
+      <td class="fw">${r.lbl}</td>
+      <td>${f1(r.p)}</td>
+      <td>${f1(r.f)}</td>
+      <td><strong>${f1(r.tot)}</strong></td>
+      <td style="color:var(--mu)">${f1(r.riks)}</td>
+    </tr>`).join('');
+
+  // Cards
+  if(DATA.meritT) $('cMerit').textContent  = f0(DATA.meritT);
+  if(DATA.meritP) $('cMeritP').textContent = f0(DATA.meritP);
+  if(DATA.meritF) $('cMeritF').textContent = f0(DATA.meritF);
+  if(DATA.behT)   $('cBeh').textContent    = pct(DATA.behT);
+  if(DATA.meritRiks) $('cRiks').textContent = f0(DATA.meritRiks);
+
+  // Trend chart
+  const tYears  = DATA.trendYears  || [];
+  const tSavsjo = DATA.trendSavsjo || [];
+  const tRiks   = DATA.trendRiks   || [];
+  if(tYears.length){
+    mkChart('cMeritTrend','line',{
+      labels: tYears,
+      datasets:[
+        {label:'Sävsjö', data:tSavsjo, borderColor:'#1a5276', backgroundColor:'rgba(26,82,118,.1)',
+          borderWidth:2.5, pointRadius:4, fill:true, tension:.3},
+        {label:'Riket',  data:tRiks,   borderColor:'#adb5bd', backgroundColor:'transparent',
+          borderWidth:1.5, pointRadius:3, fill:false, tension:.3, borderDash:[5,3]},
+      ]
+    },{
+      plugins:{legend:{position:'top'}},
+      scales:{y:{title:{display:true,text:'Meritvärde'},grid:{color:'#f0f2f5'}},x:{grid:{display:false}}}
+    });
+  }
+
+  // Behörighet bar chart
+  mkChart('cBehChart','bar',{
+    labels: tYears.length?tYears:['Valt år'],
+    datasets:[
+      {label:'Sävsjö',  data: DATA.trendBehSavsjo||[DATA.behT], backgroundColor:'#2980b9', borderRadius:5},
+      {label:'Riket',   data: DATA.trendBehRiks||[DATA.behRiks], backgroundColor:'#adb5bd', borderRadius:5},
+    ]
+  },{
+    plugins:{legend:{position:'top'}},
+    scales:{y:{min:50,max:100,ticks:{callback:v=>v+'%'},grid:{color:'#f0f2f5'}},x:{grid:{display:false}}}
+  });
+
+  // Kunskapskrav bar
+  mkChart('cKkChart','bar',{
+    labels: tYears.length?tYears:['Valt år'],
+    datasets:[
+      {label:'Sävsjö', data:DATA.trendKkSavsjo||[DATA.kkT], backgroundColor:'#27ae60', borderRadius:5},
+      {label:'Riket',  data:DATA.trendKkRiks||[DATA.kkRiks], backgroundColor:'#adb5bd', borderRadius:5},
+    ]
+  },{
+    plugins:{legend:{position:'top'}},
+    scales:{y:{min:40,max:100,ticks:{callback:v=>v+'%'},grid:{color:'#f0f2f5'}},x:{grid:{display:false}}}
+  });
+}
+
+function renderSVSVA(){
+  const sv  = DATA.sv  || {};
+  const sva = DATA.sva || {};
+
+  // Grade distribution donut/bar
+  const grades = ['A','B','C','D','E','F'];
+  const colors  = ['#27ae60','#2ecc71','#f39c12','#e67e22','#e74c3c','#c0392b'];
+
+  const svDist  = grades.map(g=>sv.dist?.[g]??null);
+  const svaDist = grades.map(g=>sva.dist?.[g]??null);
+
+  mkChart('cSVDist','bar',{
+    labels: grades,
+    datasets:[
+      {label:'Sävsjö SV',  data:svDist,  backgroundColor:colors, borderRadius:5, borderSkipped:false},
+    ]
+  },{
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'Andel: '+(c.raw??'–')+' %'}}},
+    scales:{y:{title:{display:true,text:'Andel elever (%)'},grid:{color:'#f0f2f5'}},x:{grid:{display:false}}}
+  });
+
+  mkChart('cSVADist','bar',{
+    labels: grades,
+    datasets:[
+      {label:'Sävsjö SVA', data:svaDist, backgroundColor:colors, borderRadius:5, borderSkipped:false},
+    ]
+  },{
+    plugins:{legend:{display:false}},
+    scales:{y:{title:{display:true,text:'Andel elever (%)'},grid:{color:'#f0f2f5'}},x:{grid:{display:false}}}
+  });
+
+  // Grouped bar SV/SVA by kön
+  mkChart('cSVSVAKon','bar',{
+    labels:['Sävsjö'],
+    datasets:[
+      {label:'Pojkar SV',  data:[sv.pojkar],  backgroundColor:'#2980b9', borderRadius:5},
+      {label:'Flickor SV', data:[sv.flickor], backgroundColor:'#85c1e9', borderRadius:5},
+      {label:'Pojkar SVA', data:[sva.pojkar], backgroundColor:'#8e44ad', borderRadius:5},
+      {label:'Flickor SVA',data:[sva.flickor],backgroundColor:'#d7bde2', borderRadius:5},
+    ]
+  },{
+    plugins:{legend:{position:'top'}},
+    scales:{y:{min:0,max:20,title:{display:true,text:'Snittpoäng (0–20)'},grid:{color:'#f0f2f5'}},x:{grid:{display:false}}}
+  });
+
+  // Table
+  $('tSVSVA').innerHTML = [
+    {amne:'Svenska (SV)',         d:sv},
+    {amne:'Svenska andraspråk (SVA)', d:sva}
+  ].map(r=>`<tr>
+    <td class="fw">${r.amne}</td>
+    <td>${f1(r.d.pojkar)}</td>
+    <td>${f1(r.d.flickor)}</td>
+    <td>${f1(r.d.totalt)}</td>
+    <td>${r.d.abPct!=null?pct(r.d.abPct):nd()}</td>
+    <td>${r.d.fPct!=null?`<span style="color:var(--r)">${pct(r.d.fPct)}</span>`:nd()}</td>
+  </tr>`).join('');
+}
+
+function renderKon(){
+  const tYears  = DATA.trendYears  || [];
+  const meritP  = DATA.trendMeritP || [];
+  const meritF  = DATA.trendMeritF || [];
+  const riksTot = DATA.trendRiks   || [];
+
+  mkChart('cKonMerit','line',{
+    labels: tYears,
+    datasets:[
+      {label:'Pojkar',  data:meritP,  borderColor:'#2980b9', borderWidth:2.5, pointRadius:4, tension:.3, fill:false},
+      {label:'Flickor', data:meritF,  borderColor:'#8e44ad', borderWidth:2.5, pointRadius:4, tension:.3, fill:false},
+      {label:'Rikssnitt',data:riksTot,borderColor:'#adb5bd', borderWidth:1.5, pointRadius:3, tension:.3, fill:false, borderDash:[5,3]},
+    ]
+  },{
+    plugins:{legend:{position:'top'}},
+    scales:{y:{title:{display:true,text:'Meritvärde'},grid:{color:'#f0f2f5'}},x:{grid:{display:false}}}
+  });
+
+  mkChart('cKonBeh','bar',{
+    labels: tYears.length?tYears:['Valt år'],
+    datasets:[
+      {label:'Pojkar',  data:DATA.trendBehP||[DATA.behP],  backgroundColor:'#2980b9', borderRadius:5},
+      {label:'Flickor', data:DATA.trendBehF||[DATA.behF],  backgroundColor:'#8e44ad', borderRadius:5},
+    ]
+  },{
+    plugins:{legend:{position:'top'}},
+    scales:{y:{min:40,max:100,ticks:{callback:v=>v+'%'},grid:{color:'#f0f2f5'}},x:{grid:{display:false}}}
+  });
+
+  $('tKon').innerHTML = [
+    {lbl:'Meritvärde åk 9',   p:DATA.meritP,   f:DATA.meritF,   r:DATA.meritRiks},
+    {lbl:'Gymnasiebehörighet', p:DATA.behP,     f:DATA.behF,     r:DATA.behRiks},
+    {lbl:'Uppnått alla kk',   p:DATA.kkP,      f:DATA.kkF,      r:DATA.kkRiks},
+    {lbl:'SV snittpoäng',     p:DATA.sv?.pojkar,f:DATA.sv?.flickor, r:null},
+    {lbl:'SVA snittpoäng',    p:DATA.sva?.pojkar,f:DATA.sva?.flickor, r:null},
+  ].map(r=>`<tr>
+    <td class="fw">${r.lbl}</td>
+    <td>${f1(r.p)}</td>
+    <td>${f1(r.f)}</td>
+    <td>${diff(r.f,r.p)}</td>
+    <td style="color:var(--mu)">${f1(r.r)}</td>
+  </tr>`).join('');
+}
+
+function renderNP(ak){
+  const np = DATA['np'+ak] || {};
+  const subj = ['Svenska','Engelska','Matematik','SVA'];
+  const savsjo = subj.map(s=>np[s]?.ok??null);
+  const riks   = subj.map(s=>np[s]?.riksOk??null);
+
+  mkChart(`cNP${ak}OK`,'bar',{
+    labels: subj,
+    datasets:[
+      {label:'Sävsjö', data:savsjo, backgroundColor:'#2980b9', borderRadius:5},
+      {label:'Riket',  data:riks,   backgroundColor:'#adb5bd', borderRadius:5},
+    ]
+  },{
+    plugins:{legend:{position:'top'},tooltip:{callbacks:{label:c=>`${c.dataset.label}: ${c.raw??'–'} %`}}},
+    scales:{y:{min:50,max:100,ticks:{callback:v=>v+'%'},grid:{color:'#f0f2f5'}},x:{grid:{display:false}}}
+  });
+
+  // SV relation chart
+  const svRel = np['Svenska']?.rel || {};
+  const svaRel= np['SVA']?.rel     || {};
+  const yrLabels = DATA.trendYears || ['Valt år'];
+
+  mkChart(`cNP${ak}SV`,'bar',{
+    labels:['Pojkar','Flickor','Totalt'],
+    datasets:[
+      {label:'Betyg > NP', data:[svRel.posP??null, svRel.posF??null, svRel.pos??null], backgroundColor:'#27ae60',borderRadius:5},
+      {label:'Lika',       data:[svRel.eqP??null,  svRel.eqF??null,  svRel.eq??null],  backgroundColor:'#adb5bd',borderRadius:5},
+      {label:'Betyg < NP', data:[svRel.negP??null, svRel.negF??null, svRel.neg??null], backgroundColor:'#e74c3c',borderRadius:5},
+    ]
+  },{
+    plugins:{legend:{position:'top'},tooltip:{mode:'index',intersect:false}},
+    scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,max:100,ticks:{callback:v=>v+'%'},grid:{color:'#f0f2f5'}}}
+  });
+
+  mkChart(`cNP${ak}SVA`,'bar',{
+    labels:['Pojkar','Flickor','Totalt'],
+    datasets:[
+      {label:'Betyg > NP', data:[svaRel.posP??null,svaRel.posF??null,svaRel.pos??null], backgroundColor:'#27ae60',borderRadius:5},
+      {label:'Lika',       data:[svaRel.eqP??null, svaRel.eqF??null, svaRel.eq??null],  backgroundColor:'#adb5bd',borderRadius:5},
+      {label:'Betyg < NP', data:[svaRel.negP??null,svaRel.negF??null,svaRel.neg??null], backgroundColor:'#e74c3c',borderRadius:5},
+    ]
+  },{
+    plugins:{legend:{position:'top'},tooltip:{mode:'index',intersect:false}},
+    scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,max:100,ticks:{callback:v=>v+'%'},grid:{color:'#f0f2f5'}}}
+  });
+
+  if(ak==='9'){
+    // SV by gender trend
+    mkChart('cNP9SVKon','bar',{
+      labels:subj,
+      datasets:[
+        {label:'Pojkar ok%',  data:subj.map(s=>np[s]?.okP??null), backgroundColor:'#2980b9',borderRadius:5},
+        {label:'Flickor ok%', data:subj.map(s=>np[s]?.okF??null), backgroundColor:'#8e44ad',borderRadius:5},
+      ]
+    },{
+      plugins:{legend:{position:'top'}},
+      scales:{y:{min:40,max:100,ticks:{callback:v=>v+'%'},grid:{color:'#f0f2f5'}},x:{grid:{display:false}}}
+    });
+  }
+
+  // Table
+  const tbody = $('tNP'+ak);
+  const kön = ['Totalt','Pojkar','Flickor'];
+  tbody.innerHTML = subj.flatMap(s=>{
+    const sd = np[s]||{};
+    return kön.map((k,i)=>{
+      const relKey = i===0?'pos':'posP'.replace('P',i===1?'P':'F');
+      const eqKey  = i===0?'eq' :'eqP'.replace('P',i===1?'P':'F');
+      const negKey = i===0?'neg':'negP'.replace('P',i===1?'P':'F');
+      const okKey  = i===0?'ok' :i===1?'okP':'okF';
+      const rel = sd.rel||{};
+      return `<tr>
+        ${i===0?`<td rowspan="3" class="fw" style="border-right:2px solid var(--brd)">${s}</td>`:''}
+        <td>${k}</td>
+        <td class="np-pos">${pct(rel[relKey])}</td>
+        <td class="np-eq">${pct(rel[eqKey])}</td>
+        <td class="np-neg">${pct(rel[negKey])}</td>
+        <td>${pct(sd[okKey])}</td>
+        <td style="color:var(--mu)">${pct(sd.riksOk)}</td>
+      </tr>`;
+    });
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  PARSE PXWEB RESPONSE
+//  PxWeb returns data as {data:[{key:[...],values:[...]}]}
+//  We need to map variable positions to meaningful values.
+// ═══════════════════════════════════════════════════════════════════
+function parsePxResult(pxData){
+  if(!pxData?.data) return {};
+  // Find variable positions from 'columns' or from structure
+  const cols = pxData.columns || [];
+  const rows = pxData.data || [];
+  const result = {};
+  rows.forEach(row=>{
+    const key  = row.key.join('|');
+    const val  = parseFloat(row.values[0]);
+    result[key] = isNaN(val) ? null : val;
+  });
+  return result;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  MAIN DATA ORCHESTRATOR
+// ═══════════════════════════════════════════════════════════════════
+async function loadAllData(yearDisplay){
+  const yc = YEAR_MAP[yearDisplay] || yearDisplay;
+
+  // Show loading feedback
+  setStatus('loading','Hämtar skollista från Skolenhetsregistret…');
+  $('yearStatus').textContent = '';
+
+  // Run Skolenhetsregistret and PxWeb in parallel
+  const [skolor] = await Promise.all([
+    loadSkolor(),
+  ]);
+
+  // ─── PxWeb: Meritvärde ──────────────────────────────────────────
+  setStatus('loading','Hämtar meritvärde och betygsstatistik från PxWeb…');
+
+  // Parallel PxWeb calls
+  const [meritRes, behRes, np6Res, np9Res, rel6Res, rel9Res] = await Promise.all([
+    // Each call tries browsing then known paths
+    loadPxTable('/Kommunala_jamforelsetal/Grundskola/Betyg/', PATH_MERIT, [
+      {code:'Kommun', selection:{filter:'item', values:[KOMKOD,'00']}},
+      {code:'Kön',    selection:{filter:'item', values:['1','2','T']}},
+      {code:'Tid',    selection:{filter:'top',  values:['5']}}
+    ]).catch(()=>null),
+
+    loadPxTable('/Kommunala_jamforelsetal/Grundskola/Behorighet/', PATH_BEH, [
+      {code:'Kommun', selection:{filter:'item', values:[KOMKOD,'00']}},
+      {code:'Kön',    selection:{filter:'item', values:['1','2','T']}},
+      {code:'Tid',    selection:{filter:'top',  values:['5']}}
+    ]).catch(()=>null),
+
+    loadPxTable('/Kommunala_jamforelsetal/Grundskola/Nationella_prov/', PATH_NP6, [
+      {code:'Kommun', selection:{filter:'item', values:[KOMKOD,'00']}},
+      {code:'Tid',    selection:{filter:'item', values:[yc]}}
+    ]).catch(()=>null),
+
+    loadPxTable('/Kommunala_jamforelsetal/Grundskola/Nationella_prov/', PATH_NP9, [
+      {code:'Kommun', selection:{filter:'item', values:[KOMKOD,'00']}},
+      {code:'Tid',    selection:{filter:'item', values:[yc]}}
+    ]).catch(()=>null),
+
+    loadPxTable('/Kommunala_jamforelsetal/Grundskola/Nationella_prov/', PATH_REL6, [
+      {code:'Kommun', selection:{filter:'item', values:[KOMKOD]}},
+      {code:'Tid',    selection:{filter:'item', values:[yc]}}
+    ]).catch(()=>null),
+
+    loadPxTable('/Kommunala_jamforelsetal/Grundskola/Nationella_prov/', PATH_REL9, [
+      {code:'Kommun', selection:{filter:'item', values:[KOMKOD]}},
+      {code:'Tid',    selection:{filter:'item', values:[yc]}}
+    ]).catch(()=>null),
+  ]);
+
+  const gotAny = meritRes||behRes;
+
+  // ─── Build DATA from raw PxWeb results ──────────────────────────
+  // Extract from merit data
+  if(meritRes){
+    const rows = meritRes.data.data || [];
+    // Try to identify columns from the structure
+    const cols = meritRes.data.columns || [];
+    const konIdx = cols.findIndex(c=>/kön/i.test(c.text)||/kon/i.test(c.code));
+    const komIdx = cols.findIndex(c=>/kommun/i.test(c.text)||/kommun/i.test(c.code));
+    const tidIdx = cols.findIndex(c=>/tid/i.test(c.text)||/tid/i.test(c.code));
+
+    // Group rows by year and kön
+    const byYearKon = {};
+    rows.forEach(row=>{
+      const k   = row.key;
+      const val = parseFloat(row.values[0]);
+      const key = k.join('|');
+      byYearKon[key] = isNaN(val)?null:val;
+    });
+
+    // Extract specific values by guessing key patterns
+    // (depends on actual column order — we try common patterns)
+    // Pattern: [Kommun, Kön, Tid] or [Kön, Kommun, Tid]
+    const savsjoT = rows.filter(r=>r.key.includes(KOMKOD) && (r.key.includes('T')||r.key.includes('3'))).map(r=>({y:r.key[r.key.length-1], v:parseFloat(r.values[0])}));
+    const savsjoP = rows.filter(r=>r.key.includes(KOMKOD) && (r.key.includes('1')||r.key.includes('M'))).map(r=>({y:r.key[r.key.length-1], v:parseFloat(r.values[0])}));
+    const savsjoF = rows.filter(r=>r.key.includes(KOMKOD) && (r.key.includes('2')||r.key.includes('F'))).map(r=>({y:r.key[r.key.length-1], v:parseFloat(r.values[0])}));
+    const riksT   = rows.filter(r=>r.key.includes('00')   && (r.key.includes('T')||r.key.includes('3'))).map(r=>({y:r.key[r.key.length-1], v:parseFloat(r.values[0])}));
+
+    // Sort by year
+    const sortY = arr => [...arr].sort((a,b)=>a.y.localeCompare(b.y));
+    const st = sortY(savsjoT), sp = sortY(savsjoP), sf = sortY(savsjoF), rk = sortY(riksT);
+
+    DATA.trendYears    = st.map(x=>x.y);
+    DATA.trendSavsjo   = st.map(x=>x.v);
+    DATA.trendMeritP   = sp.map(x=>x.v);
+    DATA.trendMeritF   = sf.map(x=>x.v);
+    DATA.trendRiks     = rk.map(x=>x.v);
+    // Latest year
+    DATA.meritT  = st.at(-1)?.v  ?? null;
+    DATA.meritP  = sp.at(-1)?.v  ?? null;
+    DATA.meritF  = sf.at(-1)?.v  ?? null;
+    DATA.meritRiks = rk.at(-1)?.v ?? null;
+  }
+
+  if(behRes){
+    const rows = behRes.data.data || [];
+    const savT = rows.filter(r=>r.key.includes(KOMKOD)&&(r.key.includes('T')||r.key.includes('3')));
+    const savP = rows.filter(r=>r.key.includes(KOMKOD)&&(r.key.includes('1')||r.key.includes('M')));
+    const savF = rows.filter(r=>r.key.includes(KOMKOD)&&(r.key.includes('2')||r.key.includes('F')));
+    const rkT  = rows.filter(r=>r.key.includes('00')  &&(r.key.includes('T')||r.key.includes('3')));
+    DATA.behT  = savT.at(-1)?.values?.[0]??null;
+    DATA.behP  = savP.at(-1)?.values?.[0]??null;
+    DATA.behF  = savF.at(-1)?.values?.[0]??null;
+    DATA.behRiks = rkT.at(-1)?.values?.[0]??null;
+    const trendBehSavsjo = savT.sort((a,b)=>a.key?.join('').localeCompare(b.key?.join(''))).map(r=>parseFloat(r.values[0]));
+    DATA.trendBehSavsjo = trendBehSavsjo;
+    DATA.trendBehRiks   = rkT.sort((a,b)=>a.key?.join('').localeCompare(b.key?.join(''))).map(r=>parseFloat(r.values[0]));
+    DATA.trendBehP = savP.sort((a,b)=>a.key?.join('').localeCompare(b.key?.join(''))).map(r=>parseFloat(r.values[0]));
+    DATA.trendBehF = savF.sort((a,b)=>a.key?.join('').localeCompare(b.key?.join(''))).map(r=>parseFloat(r.values[0]));
+  }
+
+  // NP data — store raw for rendering
+  DATA.np6Raw = np6Res;
+  DATA.np9Raw = np9Res;
+  DATA.rel6Raw = rel6Res;
+  DATA.rel9Raw = rel9Res;
+
+  // ─── Render all panels ──────────────────────────────────────────
+  renderOverview();
+  renderSVSVA();
+  renderKon();
+  renderNP('6');
+  renderNP('9');
+
+  if(!gotAny){
+    setStatus('warn',
+      '⚠️ PxWeb-API nåbart men inga tabeller matchade — kolla att sidan öppnas från webbserver (inte fil://). ' +
+      'Skolenhetsregistret: OK. Skollista visas.');
+    $('yearStatus').textContent = '(API-data ej tillgänglig)';
+
+    // Show fallback tables
+    ['tOverview','tSVSVA','tKon','tNP6','tNP9'].forEach(id=>{
+      if($( id)) $(id).innerHTML=`<tr><td colspan="8">
+        <div class="info">
+          PxWeb-anrop blockerades. Öppna sidan från en webbserver eller SharePoint.<br>
+          <a href="https://statistikdatabasen.skolverket.se/PxWeb/pxweb/sv/Skolverkets_statistikdatabas/Kommunala_jamforelsetal/Grundskola/" target="_blank" class="link">
+            ↗ Öppna Skolverkets statistikdatabas manuellt
+          </a>
+        </div>
+      </td></tr>`;
+    });
+  } else {
+    setStatus('ok', `✓ Data hämtad · ${KOMNAMN} (${KOMKOD}) · ${skolor.length} skolor · PxWeb OK`);
+    $('yearStatus').textContent = `Läsår ${yearDisplay}/${parseInt(yearDisplay)+1} laddat`;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  YEAR CHANGE
+// ═══════════════════════════════════════════════════════════════════
+function reloadYear(){
+  SEL_YEAR = $('yearSel').value;
+  DATA = {};
+  loadAllData(SEL_YEAR);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════════
+loadAllData(SEL_YEAR);
+</script>
+</body>
+</html>

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Betygsstatistik Sävsjö</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root{--p:#1a5276;--s:#2980b9;--g:#27ae60;--o:#e67e22;--r:#c0392b;--bg:#f2f5f9;--card:#fff;--brd:#dde3ea;--txt:#2c3e50;--mut:#6c7a89;}
+    *{box-sizing:border-box} body{margin:0;font-family:Segoe UI,system-ui,sans-serif;background:var(--bg);color:var(--txt)}
+    header{background:linear-gradient(135deg,#0e2e42,#1a5276);color:#fff;padding:24px 36px;display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}
+    h1{margin:0;font-size:1.55rem} header p{margin:.25rem 0 0;font-size:.85rem;opacity:.8}.badge{border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:6px 14px;font-size:.78rem}
+    main{max-width:1180px;margin:0 auto;padding:22px 18px 48px}.box{background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 5px rgba(0,0,0,.06)}
+    .status{display:flex;align-items:center;gap:10px}.dot{width:10px;height:10px;border-radius:50%;background:var(--mut)}.dot.loading{background:var(--o);animation:pulse 1s infinite}.dot.ok{background:var(--g)}.dot.error{background:var(--r)}.dot.warn{background:var(--o)}@keyframes pulse{50%{opacity:.35}}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.card{background:#fff;border-radius:10px;border-top:3px solid var(--p);padding:16px;box-shadow:0 1px 5px rgba(0,0,0,.06)}.label{font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;color:var(--mut);font-weight:700}.value{font-size:1.8rem;font-weight:750;margin-top:6px;color:var(--p)}.small{font-size:.8rem;color:var(--mut);line-height:1.45}
+    .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}select,button{border:1px solid var(--brd);border-radius:7px;padding:8px 10px;background:#fff}button{cursor:pointer;background:var(--p);color:#fff;border-color:var(--p)}button.secondary{background:#fff;color:var(--p)}
+    .chart{height:310px;position:relative}.tabs{display:flex;gap:0;overflow:auto;border-bottom:2px solid var(--brd);margin:16px 0}.tab{padding:10px 16px;cursor:pointer;color:var(--mut);font-weight:650;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}.tab.active{color:var(--p);border-bottom-color:var(--p)}.panel{display:none}.panel.active{display:block}
+    table{width:100%;border-collapse:collapse;font-size:.84rem}th,td{padding:9px 10px;border-bottom:1px solid var(--brd);text-align:left;vertical-align:top}th{background:#f7f9fc;color:var(--mut);font-size:.72rem;text-transform:uppercase}.ok{color:var(--g);font-weight:700}.warn{color:var(--o);font-weight:700}.err{color:var(--r);font-weight:700}.muted{color:var(--mut)}code{background:#eef2f6;padding:2px 5px;border-radius:4px}.notice{background:#fff8e1;border-color:#ffe082;color:#5d4037}.errorbox{background:#fff5f5;border-color:#f2b8b5;color:#7f1d1d}.hidden{display:none}.pre{white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace;background:#f6f8fb;border:1px solid var(--brd);border-radius:8px;padding:12px;max-height:260px;overflow:auto;font-size:.78rem}.tw{overflow:auto}
+  </style>
+</head>
+<body>
+<header>
+  <div><h1>📊 Betygsstatistik Sävsjö</h1><p>Robust version med API-diagnostik, tabellmetadata och bättre felmeddelanden.</p></div>
+  <div class="badge">Kommunekod 0684 · Grundskola</div>
+</header>
+<main>
+  <section class="box notice">
+    <strong>Viktigt:</strong> Kör sidan via lokal webbserver eller GitHub Pages. Öppna inte som <code>file://</code>. Testa lokalt med <code>npm install</code> och <code>npm run dev</code>.
+  </section>
+
+  <section class="box status">
+    <div id="statusDot" class="dot loading"></div>
+    <div><strong id="statusText">Startar...</strong><div id="statusSub" class="small">Förbereder API-anrop.</div></div>
+  </section>
+
+  <section class="box">
+    <div class="row">
+      <label for="yearSel"><strong>Läsår</strong></label>
+      <select id="yearSel">
+        <option value="2024">2024/25</option><option value="2023">2023/24</option><option value="2022">2022/23</option><option value="2021">2021/22</option>
+      </select>
+      <button id="reloadBtn">Ladda om</button>
+      <button id="diagBtn" class="secondary">Visa/dölj diagnostik</button>
+    </div>
+  </section>
+
+  <section class="grid">
+    <div class="card"><div class="label">Skolor</div><div id="schoolCount" class="value">–</div><div class="small">Från Skolenhetsregistret</div></div>
+    <div class="card"><div class="label">PxWeb-tabeller hittade</div><div id="tableCount" class="value">–</div><div class="small">Tabeller med metadata</div></div>
+    <div class="card"><div class="label">Datarespons</div><div id="dataCount" class="value">–</div><div class="small">Lyckade POST-anrop</div></div>
+    <div class="card"><div class="label">Valt läsår</div><div id="yearCard" class="value">–</div><div class="small">Aktivt filter</div></div>
+  </section>
+
+  <div class="tabs">
+    <div class="tab active" data-tab="overview">Översikt</div>
+    <div class="tab" data-tab="tables">PxWeb-tabeller</div>
+    <div class="tab" data-tab="schools">Skolor</div>
+    <div class="tab" data-tab="diagnostics">Diagnostik</div>
+  </div>
+
+  <section id="tab-overview" class="panel active">
+    <div class="box"><h2>Hämtad kommunstatistik</h2><p class="small">Den här versionen visar först att API:erna fungerar. När rätt tabell har identifierats kan vi bygga ut graferna för meritvärde, behörighet och nationella prov.</p><div class="chart"><canvas id="mainChart"></canvas></div></div>
+    <div class="box"><h2>Data som faktiskt kom tillbaka</h2><div class="tw"><table><thead><tr><th>Område</th><th>Tabell</th><th>Rader</th><th>Första värden</th></tr></thead><tbody id="resultRows"><tr><td colspan="4" class="muted">Laddar...</td></tr></tbody></table></div></div>
+  </section>
+
+  <section id="tab-tables" class="panel"><div class="box"><h2>Upptäckta PxWeb-tabeller</h2><div class="tw"><table><thead><tr><th>Område</th><th>Tabell</th><th>Status</th><th>Variabler</th></tr></thead><tbody id="tableRows"></tbody></table></div></div></section>
+  <section id="tab-schools" class="panel"><div class="box"><h2>Grundskolor i Sävsjö</h2><div class="tw"><table><thead><tr><th>Skola</th><th>Skolenhetskod</th><th>Status</th><th>Skolformer</th></tr></thead><tbody id="schoolRows"><tr><td colspan="4" class="muted">Laddar...</td></tr></tbody></table></div></div></section>
+  <section id="tab-diagnostics" class="panel"><div class="box"><h2>Diagnostik</h2><p class="small">Här visas fel som tidigare svaldes av <code>catch(e){}</code>. Det är nyckeln till att hitta rätt PxWeb-query.</p><div id="diagLog" class="pre"></div></div></section>
+</main>
+
+<script>
+const KOMKOD = '0684';
+const KOMNAMN = 'Sävsjö';
+const PXBASE = 'https://statistikdatabasen.skolverket.se/PxWeb/api/v1/sv/Skolverkets_statistikdatabas';
+const SKOLENHET_V2 = 'https://api.skolverket.se/skolenhetsregistret/v2';
+const SKOLENHET_V1 = 'https://api.skolverket.se/skolenhetsregistret/v1';
+const YEAR_MAP = { '2024':'20242025','2023':'20232024','2022':'20222023','2021':'20212022' };
+
+const $ = id => document.getElementById(id);
+let chart;
+let state = { tables: [], results: [], schools: [], errors: [] };
+
+function log(msg, obj){
+  const line = `[${new Date().toLocaleTimeString('sv-SE')}] ${msg}`;
+  state.errors.push(obj ? `${line}\n${JSON.stringify(obj, null, 2)}` : line);
+  $('diagLog').textContent = state.errors.join('\n\n');
+  console.log(msg, obj || '');
+}
+function setStatus(type, text, sub=''){
+  $('statusDot').className = `dot ${type}`;
+  $('statusText').textContent = text;
+  $('statusSub').textContent = sub;
+}
+function esc(s){return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
+function textOf(v, value){
+  const i = (v.values || []).indexOf(value);
+  return i >= 0 ? (v.valueTexts?.[i] || value) : value;
+}
+function variableSummary(meta){
+  return (meta.variables || []).map(v => `${v.code}: ${v.text} (${(v.values||[]).slice(0,6).join(', ')})`).join(' | ');
+}
+async function fetchJson(url, options={}){
+  const r = await fetch(url, options);
+  const bodyText = await r.text();
+  if(!r.ok) throw new Error(`HTTP ${r.status}: ${bodyText.slice(0,240)}`);
+  try { return JSON.parse(bodyText); } catch(e){ throw new Error(`Kunde inte tolka JSON: ${bodyText.slice(0,240)}`); }
+}
+async function pxGet(path){ return fetchJson(PXBASE + path, { headers:{Accept:'application/json'} }); }
+async function pxPost(path, query){
+  return fetchJson(PXBASE + path, { method:'POST', headers:{'Content-Type':'application/json', Accept:'application/json'}, body:JSON.stringify({query, response:{format:'json'}}) });
+}
+function hasValue(v, value){ return (v.values || []).includes(value); }
+function valueByText(v, regexes){
+  for(const re of regexes){
+    const idx = (v.valueTexts || []).findIndex(t => re.test(t));
+    if(idx >= 0) return v.values[idx];
+  }
+  return null;
+}
+function pickTotal(v){
+  return valueByText(v, [/^totalt$/i,/^samtliga$/i,/alla/i,/total/i]) || ['T','Totalt','0','00','9999'].find(x => hasValue(v,x)) || (v.values || [])[0];
+}
+function buildFlexibleQuery(meta, yearCode){
+  const query = [];
+  for(const v of (meta.variables || [])){
+    const codeText = `${v.code} ${v.text}`.toLowerCase();
+    let values = [];
+    if(v.time || codeText.includes('tid') || codeText.includes('läsår') || codeText.includes('år')){
+      values = hasValue(v, yearCode) ? [yearCode] : (hasValue(v, yearCode.slice(0,4)) ? [yearCode.slice(0,4)] : []);
+      if(!values.length) query.push({code:v.code, selection:{filter:'top', values:['5']}});
+      else query.push({code:v.code, selection:{filter:'item', values}});
+      continue;
+    }
+    if(hasValue(v, KOMKOD) || (v.values || []).includes(KOMNAMN)){
+      values = [hasValue(v,KOMKOD) ? KOMKOD : KOMNAMN];
+      if(hasValue(v,'00')) values.push('00');
+      query.push({code:v.code, selection:{filter:'item', values}});
+      continue;
+    }
+    if(codeText.includes('kön') || codeText.includes('kon')){
+      values = ['1','2','T'].filter(x => hasValue(v,x));
+      if(!values.length) values = [pickTotal(v)].filter(Boolean);
+      query.push({code:v.code, selection:{filter:'item', values}});
+      continue;
+    }
+    if(codeText.includes('ämne') || codeText.includes('amne')){
+      values = ['SV','SVA','EN','MA'].filter(x => hasValue(v,x));
+      if(!values.length){
+        const subjectValues = (v.values || []).filter((value, i) => /svenska|andraspråk|engelska|matematik/i.test(v.valueTexts?.[i] || value));
+        values = subjectValues.slice(0,4);
+      }
+      if(!values.length) values = [pickTotal(v)].filter(Boolean);
+      query.push({code:v.code, selection:{filter:'item', values}});
+      continue;
+    }
+    const total = pickTotal(v);
+    query.push({code:v.code, selection:{filter:'item', values:[total].filter(Boolean)}});
+  }
+  return query;
+}
+async function listTables(catPath, area){
+  try{
+    const list = await pxGet(catPath);
+    const tables = (list || []).filter(x => x.type === 't');
+    log(`Kategori OK: ${catPath} (${tables.length} tabeller)`);
+    return tables.map(t => ({area, path:catPath + t.id, id:t.id, text:t.text || t.id}));
+  }catch(e){
+    log(`Kategori misslyckades: ${catPath}`, {error:e.message});
+    return [];
+  }
+}
+function scoreTable(t, meta){
+  const hay = `${t.text} ${variableSummary(meta)}`.toLowerCase();
+  let score = 0;
+  if(/merit|betyg/.test(hay)) score += 4;
+  if(/behör|behor/.test(hay)) score += 4;
+  if(/nationella|prov/.test(hay)) score += 3;
+  if(/kommun|lägeskommun|hemkommun/.test(hay)) score += 3;
+  if(/kön|kon/.test(hay)) score += 2;
+  if(/tid|läsår|år/.test(hay)) score += 2;
+  if(hay.includes(KOMKOD)) score += 5;
+  return score;
+}
+async function discoverPxTables(yearCode){
+  const categories = [
+    {area:'Betyg', path:'/Kommunala_jamforelsetal/Grundskola/Betyg/'},
+    {area:'Behörighet', path:'/Kommunala_jamforelsetal/Grundskola/Behorighet/'},
+    {area:'Kunskapskrav', path:'/Kommunala_jamforelsetal/Grundskola/Kunskapskrav/'},
+    {area:'Nationella prov', path:'/Kommunala_jamforelsetal/Grundskola/Nationella_prov/'}
+  ];
+  const rawTables = (await Promise.all(categories.map(c => listTables(c.path, c.area)))).flat();
+  const enriched = [];
+  for(const t of rawTables){
+    try{
+      const meta = await pxGet(t.path);
+      const score = scoreTable(t, meta);
+      enriched.push({...t, meta, score, status:'metadata ok'});
+    }catch(e){
+      enriched.push({...t, meta:null, score:0, status:`metadata fel: ${e.message}`});
+      log(`Metadata misslyckades: ${t.path}`, {error:e.message});
+    }
+  }
+  enriched.sort((a,b) => b.score - a.score);
+  state.tables = enriched;
+  return enriched;
+}
+async function tryDataFromTables(tables, yearCode){
+  const results = [];
+  for(const t of tables.filter(x => x.meta && x.score > 0).slice(0, 20)){
+    const query = buildFlexibleQuery(t.meta, yearCode);
+    try{
+      const data = await pxPost(t.path, query);
+      const rows = data.data || [];
+      if(rows.length){
+        results.push({area:t.area, path:t.path, text:t.text, rows, columns:data.columns || [], query});
+        log(`POST OK: ${t.path} (${rows.length} rader)`);
+      } else {
+        log(`POST gav tom data: ${t.path}`, {query});
+      }
+    }catch(e){
+      log(`POST misslyckades: ${t.path}`, {error:e.message, query});
+    }
+  }
+  state.results = results;
+  return results;
+}
+async function loadSchools(){
+  const urls = [
+    `${SKOLENHET_V2}/skolenheter?kommunKod=${KOMKOD}&skolform=11&status=1`,
+    `${SKOLENHET_V2}/sok/skolenheter?kommunKod=${KOMKOD}&skolform=11&status=1`,
+    `${SKOLENHET_V1}/sok/skolenheter?kommunKod=${KOMKOD}&skolform=11&status=1`
+  ];
+  for(const url of urls){
+    try{
+      const d = await fetchJson(url, {headers:{Accept:'application/json'}});
+      const list = d.skolenheter || d.hits || d.result || d.content || [];
+      log(`Skolenhetsregistret OK: ${url} (${list.length} poster)`);
+      state.schools = list;
+      return list;
+    }catch(e){
+      log(`Skolenhetsregistret misslyckades: ${url}`, {error:e.message});
+    }
+  }
+  return [];
+}
+function renderTables(){
+  $('tableCount').textContent = state.tables.filter(t => t.meta).length;
+  $('tableRows').innerHTML = state.tables.map(t => `<tr><td>${esc(t.area)}</td><td><strong>${esc(t.text)}</strong><br><code>${esc(t.path)}</code></td><td class="${t.meta?'ok':'err'}">${esc(t.status)}<br><span class="muted">score ${t.score}</span></td><td>${esc(t.meta ? variableSummary(t.meta) : '–')}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">Inga tabeller hittades.</td></tr>';
+}
+function renderResults(){
+  $('dataCount').textContent = state.results.length;
+  $('resultRows').innerHTML = state.results.map(r => {
+    const sample = r.rows.slice(0,5).map(row => `${row.key.join(' | ')} = ${row.values.join(', ')}`).join('<br>');
+    return `<tr><td>${esc(r.area)}</td><td><strong>${esc(r.text)}</strong><br><code>${esc(r.path)}</code></td><td>${r.rows.length}</td><td>${sample}</td></tr>`;
+  }).join('') || '<tr><td colspan="4" class="muted">Ingen PxWeb-data kom tillbaka. Se Diagnostik.</td></tr>';
+  renderChart();
+}
+function renderSchools(){
+  $('schoolCount').textContent = state.schools.length || '–';
+  $('schoolRows').innerHTML = state.schools.map(s => {
+    const name = s.skolenhetsnamn || s.namn || s.name || 'Okänt namn';
+    const code = s.skolenhetskod || s.kod || s.code || '–';
+    const status = s.status || s.statusText || '–';
+    const forms = Array.isArray(s.skolformer) ? s.skolformer.map(f => f.skolform || f.kod || f.arskurser || '').filter(Boolean).join(', ') : '–';
+    return `<tr><td><strong>${esc(name)}</strong></td><td><code>${esc(code)}</code></td><td>${esc(status)}</td><td>${esc(forms)}</td></tr>`;
+  }).join('') || '<tr><td colspan="4" class="muted">Ingen skollista kunde hämtas. Se Diagnostik.</td></tr>';
+}
+function renderChart(){
+  const ctx = $('mainChart').getContext('2d');
+  if(chart) chart.destroy();
+  const first = state.results[0];
+  const labels = first ? first.rows.slice(0,10).map((r,i) => r.key?.at(-1) || `Rad ${i+1}`) : [];
+  const values = first ? first.rows.slice(0,10).map(r => Number.parseFloat(String(r.values?.[0]).replace(',','.'))).map(v => Number.isFinite(v) ? v : null) : [];
+  chart = new Chart(ctx, {type:'bar', data:{labels, datasets:[{label:first?.text || 'Ingen data', data:values, borderWidth:1}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}}, scales:{y:{beginAtZero:false}}}});
+}
+async function loadAll(){
+  state = { tables: [], results: [], schools: [], errors: [] };
+  $('diagLog').textContent = '';
+  const y = $('yearSel').value; const yearCode = YEAR_MAP[y] || y;
+  $('yearCard').textContent = `${y}/${String(Number(y)+1).slice(2)}`;
+  setStatus('loading', 'Hämtar skollista och PxWeb-metadata...', 'Det här kan ta en stund första gången eftersom metadata läses in.');
+  const [schools, tables] = await Promise.all([loadSchools(), discoverPxTables(yearCode)]);
+  renderSchools(); renderTables();
+  setStatus('loading', 'Testar datainhämtning från matchande PxWeb-tabeller...', 'Fel visas i fliken Diagnostik.');
+  await tryDataFromTables(tables, yearCode);
+  renderResults(); renderTables();
+  if(state.results.length){ setStatus('ok', `Data hämtad för ${KOMNAMN}.`, `${state.results.length} PxWeb-anrop gav data. ${schools.length || 0} skolor hittades.`); }
+  else if(state.tables.length){ setStatus('warn', 'PxWeb nås, men ingen tabell accepterade byggd query.', 'Öppna Diagnostik och kopiera tabellens metadata/query för nästa fix.'); }
+  else { setStatus('error', 'Kunde inte läsa PxWeb-kategorier.', 'Kontrollera CORS, nätverk eller ändrade API-sökvägar.'); }
+}
+
+document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => {document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); document.querySelectorAll('.panel').forEach(p => p.classList.remove('active')); tab.classList.add('active'); $('tab-' + tab.dataset.tab).classList.add('active'); setTimeout(() => chart?.resize(), 50);}));
+$('reloadBtn').addEventListener('click', loadAll);
+$('diagBtn').addEventListener('click', () => { document.querySelector('[data-tab="diagnostics"]').click(); });
+loadAll();
+</script>
+</body>
+</html>

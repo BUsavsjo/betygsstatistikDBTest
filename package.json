@@ -1,0 +1,21 @@
+{
+  "name": "betygsstatistik-savsjo",
+  "version": "1.0.0",
+  "description": "Betygsstatistik för Sävsjö kommuns grundskolor – hämtar live-data från Skolverkets PxWeb API",
+  "private": true,
+  "scripts": {
+    "start": "npx serve . --listen 3000 --no-clipboard",
+    "dev": "npx serve . --listen 3000",
+    "deploy": "npx gh-pages -d ."
+  },
+  "keywords": ["skolverket", "betyg", "statistik", "savsjo", "grundskola"],
+  "author": "Sävsjö kommun – Barn och utbildningsförvaltningen",
+  "license": "MIT",
+  "devDependencies": {
+    "gh-pages": "^6.1.1",
+    "serve": "^14.2.3"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
