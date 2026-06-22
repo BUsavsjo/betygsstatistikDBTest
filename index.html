@@ -6,26 +6,28 @@
   <title>Betygsstatistik Sävsjö</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
-    :root{--p:#1a5276;--s:#2980b9;--g:#27ae60;--o:#e67e22;--r:#c0392b;--bg:#f2f5f9;--card:#fff;--brd:#dde3ea;--txt:#2c3e50;--mut:#6c7a89;}
-    *{box-sizing:border-box} body{margin:0;font-family:Segoe UI,system-ui,sans-serif;background:var(--bg);color:var(--txt)}
-    header{background:linear-gradient(135deg,#0e2e42,#1a5276);color:#fff;padding:24px 36px;display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}
-    h1{margin:0;font-size:1.55rem} header p{margin:.25rem 0 0;font-size:.85rem;opacity:.8}.badge{border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:6px 14px;font-size:.78rem}
-    main{max-width:1180px;margin:0 auto;padding:22px 18px 48px}.box{background:var(--card);border:1px solid var(--brd);border-radius:10px;padding:18px 20px;margin-bottom:16px;box-shadow:0 1px 5px rgba(0,0,0,.06)}
-    .status{display:flex;align-items:center;gap:10px}.dot{width:10px;height:10px;border-radius:50%;background:var(--mut)}.dot.loading{background:var(--o);animation:pulse 1s infinite}.dot.ok{background:var(--g)}.dot.error{background:var(--r)}.dot.warn{background:var(--o)}@keyframes pulse{50%{opacity:.35}}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.card{background:#fff;border-radius:10px;border-top:3px solid var(--p);padding:16px;box-shadow:0 1px 5px rgba(0,0,0,.06)}.label{font-size:.72rem;text-transform:uppercase;letter-spacing:.5px;color:var(--mut);font-weight:700}.value{font-size:1.8rem;font-weight:750;margin-top:6px;color:var(--p)}.small{font-size:.8rem;color:var(--mut);line-height:1.45}
-    .row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}select,button{border:1px solid var(--brd);border-radius:7px;padding:8px 10px;background:#fff}button{cursor:pointer;background:var(--p);color:#fff;border-color:var(--p)}button.secondary{background:#fff;color:var(--p)}
-    .chart{height:310px;position:relative}.tabs{display:flex;gap:0;overflow:auto;border-bottom:2px solid var(--brd);margin:16px 0}.tab{padding:10px 16px;cursor:pointer;color:var(--mut);font-weight:650;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}.tab.active{color:var(--p);border-bottom-color:var(--p)}.panel{display:none}.panel.active{display:block}
-    table{width:100%;border-collapse:collapse;font-size:.84rem}th,td{padding:9px 10px;border-bottom:1px solid var(--brd);text-align:left;vertical-align:top}th{background:#f7f9fc;color:var(--mut);font-size:.72rem;text-transform:uppercase}.ok{color:var(--g);font-weight:700}.warn{color:var(--o);font-weight:700}.err{color:var(--r);font-weight:700}.muted{color:var(--mut)}code{background:#eef2f6;padding:2px 5px;border-radius:4px}.notice{background:#fff8e1;border-color:#ffe082;color:#5d4037}.errorbox{background:#fff5f5;border-color:#f2b8b5;color:#7f1d1d}.hidden{display:none}.pre{white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace;background:#f6f8fb;border:1px solid var(--brd);border-radius:8px;padding:12px;max-height:260px;overflow:auto;font-size:.78rem}.tw{overflow:auto}
+    :root{--p:#1f5f7a;--p2:#347f6a;--g:#258a5b;--o:#b86b1d;--r:#b73535;--bg:#f4f6f8;--card:#fff;--brd:#d9e0e6;--txt:#1f2d35;--mut:#667682}
+    *{box-sizing:border-box}body{margin:0;font-family:Segoe UI,system-ui,sans-serif;background:var(--bg);color:var(--txt)}
+    header{background:#183747;color:#fff;padding:22px 32px;display:flex;justify-content:space-between;gap:18px;align-items:center;flex-wrap:wrap}
+    h1{margin:0;font-size:1.45rem}header p{margin:.35rem 0 0;color:#d8e5eb;font-size:.86rem}.badge{border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:6px 13px;font-size:.78rem}
+    main{max-width:1240px;margin:0 auto;padding:22px 18px 44px}.box{background:var(--card);border:1px solid var(--brd);border-radius:8px;padding:17px 19px;margin-bottom:15px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+    .notice{background:#fff8e6;border-color:#edd39a;color:#493813}.status{display:flex;align-items:center;gap:10px}.dot{width:10px;height:10px;border-radius:50%;background:var(--mut)}.dot.loading{background:var(--o);animation:pulse 1s infinite}.dot.ok{background:var(--g)}.dot.warn{background:var(--o)}.dot.error{background:var(--r)}@keyframes pulse{50%{opacity:.35}}
+    .toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap}select,button{border:1px solid var(--brd);border-radius:7px;padding:8px 10px;background:#fff;color:var(--txt)}select[multiple]{min-width:210px;min-height:92px;padding:6px}button{cursor:pointer;background:var(--p);border-color:var(--p);color:#fff}.secondary{background:#fff;color:var(--p)}
+    .filters{display:none;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;align-items:end}.filters.active{display:grid}.filter label{display:block;font-size:.75rem;text-transform:uppercase;color:var(--mut);font-weight:750;margin-bottom:6px}.filter select{width:100%}.filter-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.card{background:#fff;border:1px solid var(--brd);border-top:3px solid var(--p);border-radius:8px;padding:14px 15px}.label{font-size:.72rem;text-transform:uppercase;color:var(--mut);font-weight:750}.value{font-size:1.8rem;font-weight:760;color:var(--p);margin-top:6px}.small{font-size:.8rem;color:var(--mut);line-height:1.45}.tabs{display:flex;gap:0;overflow:auto;border-bottom:2px solid var(--brd);margin:16px 0}
+    .tab{padding:10px 15px;cursor:pointer;color:var(--mut);font-weight:650;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}.tab.active{color:var(--p);border-bottom-color:var(--p)}.panel{display:none}.panel.active{display:block}
+    .chart{height:300px;position:relative}.tw{overflow:auto}table{width:100%;border-collapse:collapse;font-size:.84rem}th,td{padding:9px 10px;border-bottom:1px solid var(--brd);text-align:left;vertical-align:top}th{background:#f7f9fb;color:var(--mut);font-size:.72rem;text-transform:uppercase}.ok{color:var(--g);font-weight:700}.warn{color:var(--o);font-weight:700}.err{color:var(--r);font-weight:700}.muted{color:var(--mut)}code{background:#eef2f5;padding:2px 5px;border-radius:4px}.pre{white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace;background:#f6f8fa;border:1px solid var(--brd);border-radius:8px;padding:12px;max-height:330px;overflow:auto;font-size:.78rem}
   </style>
 </head>
 <body>
 <header>
-  <div><h1>📊 Betygsstatistik Sävsjö</h1><p>Robust version med API-diagnostik, tabellmetadata och bättre felmeddelanden.</p></div>
+  <div><h1>Betygsstatistik Sävsjö</h1><p>Livekontroll av Skolverkets öppna PxWeb-data för betyg, kön, SVA, ämnen och behörighet.</p></div>
   <div class="badge">Kommunekod 0684 · Grundskola</div>
 </header>
+
 <main>
   <section class="box notice">
-    <strong>Viktigt:</strong> Kör sidan via lokal webbserver eller GitHub Pages. Öppna inte som <code>file://</code>. Testa lokalt med <code>npm install</code> och <code>npm run dev</code>.
+    <strong>Datagräns:</strong> Appen visar bara mått som finns i Skolverkets öppna PxWeb API. Om skolenhetsnivå eller betygsfördelning inte publiceras öppet visas det tydligt i tabellen och i diagnostiken.
   </section>
 
   <section class="box status">
@@ -33,265 +35,862 @@
     <div><strong id="statusText">Startar...</strong><div id="statusSub" class="small">Förbereder API-anrop.</div></div>
   </section>
 
-  <section class="box">
-    <div class="row">
-      <label for="yearSel"><strong>Läsår</strong></label>
-      <select id="yearSel">
-        <option value="2024">2024/25</option><option value="2023">2023/24</option><option value="2022">2022/23</option><option value="2021">2021/22</option>
-      </select>
-      <button id="reloadBtn">Ladda om</button>
-      <button id="diagBtn" class="secondary">Visa/dölj diagnostik</button>
+  <section class="box toolbar">
+    <label for="yearSel"><strong>Läsår</strong></label>
+    <select id="yearSel">
+      <option value="2025/26" data-local="2025-2026" data-jmf="2026" data-underlag="2025">2025/26</option>
+      <option value="2024/25" data-local="2024-2025" data-jmf="2025" data-underlag="2024">2024/25</option>
+      <option value="2023/24" data-local="2023-2024" data-jmf="2024" data-underlag="2023">2023/24</option>
+      <option value="2022/23" data-local="2022-2023" data-jmf="2023" data-underlag="2022">2022/23</option>
+      <option value="2021/22" data-local="2021-2022" data-jmf="2022" data-underlag="2021">2021/22</option>
+    </select>
+    <button id="reloadBtn">Ladda om</button>
+    <button id="diagBtn" class="secondary">Visa diagnostik</button>
+  </section>
+
+  <section id="localFilters" class="box filters">
+    <div class="filter">
+      <label for="gradeFilter">Årskurs</label>
+      <select id="gradeFilter" multiple></select>
+    </div>
+    <div class="filter">
+      <label for="schoolFilter">Skolenheter</label>
+      <select id="schoolFilter" multiple></select>
+    </div>
+    <div class="filter">
+      <label for="genderFilter">Kön</label>
+      <select id="genderFilter"><option value="Alla">Alla</option></select>
+    </div>
+    <div class="filter">
+      <label for="groupFilter">Elevgrupp</label>
+      <select id="groupFilter"><option value="Alla">Alla</option></select>
+    </div>
+    <div class="filter-actions">
+      <button id="selectAllSchoolsBtn" type="button" class="secondary">Alla skolor</button>
+      <button id="clearFiltersBtn" type="button" class="secondary">Nollställ urval</button>
     </div>
   </section>
 
   <section class="grid">
-    <div class="card"><div class="label">Skolor</div><div id="schoolCount" class="value">–</div><div class="small">Från Skolenhetsregistret</div></div>
-    <div class="card"><div class="label">PxWeb-tabeller hittade</div><div id="tableCount" class="value">–</div><div class="small">Tabeller med metadata</div></div>
-    <div class="card"><div class="label">Datarespons</div><div id="dataCount" class="value">–</div><div class="small">Lyckade POST-anrop</div></div>
-    <div class="card"><div class="label">Valt läsår</div><div id="yearCard" class="value">–</div><div class="small">Aktivt filter</div></div>
+    <div class="card"><div class="label">PxWeb-tabeller</div><div id="tableCount" class="value">-</div><div class="small">Tabeller med metadata</div></div>
+    <div class="card"><div class="label">Lyckade mått</div><div id="metricCount" class="value">-</div><div class="small">Mått som gav data</div></div>
+    <div class="card"><div class="label">Meritvärde totalt</div><div id="meritCard" class="value">-</div><div class="small">Sävsjö, valt läsår</div></div>
+    <div class="card"><div class="label">Yrkesbehörighet</div><div id="vocCard" class="value">-</div><div class="small">Sävsjö, valt läsår</div></div>
   </section>
 
   <div class="tabs">
     <div class="tab active" data-tab="overview">Översikt</div>
+    <div class="tab" data-tab="gender">Pojkar/Flickor</div>
+    <div class="tab" data-tab="subjects">Ämnen</div>
+    <div class="tab" data-tab="grades">Betygsfördelning</div>
+    <div class="tab" data-tab="outcomes">Resultat</div>
+    <div class="tab" data-tab="np">NP GAP</div>
+    <div class="tab" data-tab="availability">Datatäckning</div>
     <div class="tab" data-tab="tables">PxWeb-tabeller</div>
-    <div class="tab" data-tab="schools">Skolor</div>
     <div class="tab" data-tab="diagnostics">Diagnostik</div>
   </div>
 
   <section id="tab-overview" class="panel active">
-    <div class="box"><h2>Hämtad kommunstatistik</h2><p class="small">Den här versionen visar först att API:erna fungerar. När rätt tabell har identifierats kan vi bygga ut graferna för meritvärde, behörighet och nationella prov.</p><div class="chart"><canvas id="mainChart"></canvas></div></div>
-    <div class="box"><h2>Data som faktiskt kom tillbaka</h2><div class="tw"><table><thead><tr><th>Område</th><th>Tabell</th><th>Rader</th><th>Första värden</th></tr></thead><tbody id="resultRows"><tr><td colspan="4" class="muted">Laddar...</td></tr></tbody></table></div></div>
+    <div class="box"><h2>Meritvärde och yrkesbehörighet</h2><div class="chart"><canvas id="overviewChart"></canvas></div></div>
+    <div class="box"><h2>Meritvärde per skolenhet och årskurs</h2><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th>Merit 16</th><th>Merit 17</th><th>Uppnått alla ämnen</th><th>Yrkesbehörighet</th></tr></thead><tbody id="localMeritRows"></tbody></table></div></div>
+    <div class="box"><h2>Efterfrågade mått</h2><div class="tw"><table><thead><tr><th>Mått</th><th>Status</th><th>Tabell / kommentar</th></tr></thead><tbody id="metricRows"></tbody></table></div></div>
   </section>
 
-  <section id="tab-tables" class="panel"><div class="box"><h2>Upptäckta PxWeb-tabeller</h2><div class="tw"><table><thead><tr><th>Område</th><th>Tabell</th><th>Status</th><th>Variabler</th></tr></thead><tbody id="tableRows"></tbody></table></div></div></section>
-  <section id="tab-schools" class="panel"><div class="box"><h2>Grundskolor i Sävsjö</h2><div class="tw"><table><thead><tr><th>Skola</th><th>Skolenhetskod</th><th>Status</th><th>Skolformer</th></tr></thead><tbody id="schoolRows"><tr><td colspan="4" class="muted">Laddar...</td></tr></tbody></table></div></div></section>
-  <section id="tab-diagnostics" class="panel"><div class="box"><h2>Diagnostik</h2><p class="small">Här visas fel som tidigare svaldes av <code>catch(e){}</code>. Det är nyckeln till att hitta rätt PxWeb-query.</p><div id="diagLog" class="pre"></div></div></section>
+  <section id="tab-gender" class="panel">
+    <div class="box"><h2>Könsjämförelse meritvärde</h2><p class="small">Den här tabellen visar pojkar och flickor bredvid varandra även när övriga vyer filtreras på ett kön.</p><div class="chart"><canvas id="genderChart"></canvas></div></div>
+    <div class="box"><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Elevgrupp</th><th>Pojkar</th><th>Flickor</th><th>Totalt</th><th>Skillnad F-P</th></tr></thead><tbody id="genderRows"></tbody></table></div></div>
+    <div class="box"><h2>SV/SVA</h2><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Elevgrupp</th><th>Antal elever</th><th>Merit 17</th><th>Godkänd Sv/SVA</th><th>Uppnått alla ämnen</th></tr></thead><tbody id="svaRows"></tbody></table></div></div>
+  </section>
+
+  <section id="tab-subjects" class="panel">
+    <div class="box"><h2>Betygspoäng per ämne</h2><div class="chart"><canvas id="subjectChart"></canvas></div></div>
+    <div class="box"><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Ämne</th><th>Betygspoäng</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>A-E</th><th>Antal</th></tr></thead><tbody id="subjectRows"></tbody></table></div></div>
+  </section>
+
+  <section id="tab-grades" class="panel">
+    <div class="box"><h2>Betygsfördelning A-F</h2><div class="chart"><canvas id="gradeDistChart"></canvas></div></div>
+    <div class="box"><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Ämne</th><th>A %</th><th>B %</th><th>C %</th><th>D %</th><th>E %</th><th>F %</th><th>Antal</th></tr></thead><tbody id="gradeDistRows"></tbody></table></div></div>
+  </section>
+
+  <section id="tab-outcomes" class="panel">
+    <div class="box"><h2>Uppnått alla ämnen</h2><div class="chart"><canvas id="knowledgeChart"></canvas></div></div>
+    <div class="box"><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th>Uppnått alla ämnen</th></tr></thead><tbody id="knowledgeRows"></tbody></table></div></div>
+    <div class="box"><h2>Yrkesbehörighet åk 9</h2><div class="chart"><canvas id="vocationalChart"></canvas></div></div>
+    <div class="box"><div class="tw"><table><thead><tr><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th>Yrkesbehörighet</th></tr></thead><tbody id="vocationalRows"></tbody></table></div></div>
+  </section>
+
+  <section id="tab-np" class="panel">
+    <div class="box"><h2>NP andel godkanda</h2><div class="chart"><canvas id="npPassChart"></canvas></div><div class="tw"><table><thead><tr><th>Niva</th><th>Arskurs</th><th>Kon</th><th>Amne</th><th>Antal NP</th><th>Andel godkanda</th><th>Betygsmatch</th></tr></thead><tbody id="npLocalRows"></tbody></table></div></div>
+    <div class="box"><h2>Relation betyg och nationella prov</h2><p class="small">Visas for arskurser och amnen dar bade betyg och NP-provresultat finns i lokal import.</p><div class="chart"><canvas id="npRelationChart"></canvas></div><div class="tw"><table><thead><tr><th>Niva</th><th>Arskurs</th><th>Kon</th><th>Amne</th><th>Jamforda</th><th>Betyg &gt; NP</th><th>Betyg = NP</th><th>Betyg &lt; NP</th></tr></thead><tbody id="npRelationRows"></tbody></table></div></div>
+    <div class="box"><h2>NP GAP och närliggande betygsmått</h2><p class="small">Den öppna PxWeb-strukturen innehåller inte komplett NP åk 6/9 för SV, EN och matematik. Här visas de NP-/betygsnära mått som går att hämta för Sävsjö huvudman och riket.</p><div class="tw"><table><thead><tr><th>Mått</th><th>Sävsjö huvudman</th><th>Riket</th><th>GAP</th></tr></thead><tbody id="npRows"></tbody></table></div></div>
+  </section>
+
+  <section id="tab-availability" class="panel">
+    <div class="box"><h2>Datatäckning för önskade vyer</h2><div class="tw"><table><thead><tr><th>Önskad vy</th><th>API-status</th><th>Kommentar</th></tr></thead><tbody id="availabilityRows"></tbody></table></div></div>
+  </section>
+
+  <section id="tab-tables" class="panel">
+    <div class="box"><h2>Upptäckta PxWeb-tabeller</h2><div class="tw"><table><thead><tr><th>Tabell</th><th>Status</th><th>Variabler</th></tr></thead><tbody id="tableRows"></tbody></table></div></div>
+  </section>
+
+  <section id="tab-diagnostics" class="panel">
+    <div class="box"><h2>Diagnostik</h2><p class="small">Här visas metadata, matchade mått, POST-querys och API-fel.</p><div id="diagLog" class="pre"></div></div>
+  </section>
 </main>
 
 <script>
 const KOMKOD = '0684';
-const KOMNAMN = 'Sävsjö';
+const HUVUDMAN_KOD = '2120000563';
 const PXBASE = 'https://statistikdatabasen.skolverket.se/PxWeb/api/v1/sv/Skolverkets_statistikdatabas';
-const SKOLENHET_V2 = 'https://api.skolverket.se/skolenhetsregistret/v2';
-const SKOLENHET_V1 = 'https://api.skolverket.se/skolenhetsregistret/v1';
-const YEAR_MAP = { '2024':'20242025','2023':'20232024','2022':'20222023','2021':'20212022' };
-
+const ROOTS = [
+  '/Kommunala_jamforelsetal/Grundskola/',
+  '/Underlag_for_analys_inom_det_nationella_kvalitetssystemet/Grundskola/'
+];
 const $ = id => document.getElementById(id);
-let chart;
-let state = { tables: [], results: [], schools: [], errors: [] };
+let state = { tables: [], metrics: [], diagnostics: [], local: null, filters: { grades: [], schools: [], gender: 'Alla', group: 'Alla' } };
+let charts = {};
 
-function log(msg, obj){
-  const line = `[${new Date().toLocaleTimeString('sv-SE')}] ${msg}`;
-  state.errors.push(obj ? `${line}\n${JSON.stringify(obj, null, 2)}` : line);
-  $('diagLog').textContent = state.errors.join('\n\n');
-  console.log(msg, obj || '');
-}
+const wantedViews = [
+  ['Pojkar/Flickor', 'Söker mått med könsuppdelning. PxWeb-tabeller utan könsdimension kan bara visas totalt.'],
+  ['Meritvärde', 'Söker mått vars text innehåller meritvärde.'],
+  ['Meritvärde elever som läser SVA', 'Söker specifikt meritvärde kopplat till svenska som andraspråk. Publiceras inte alltid öppet.'],
+  ['Betygspoäng per ämne', 'Söker genomsnittlig betygspoäng per ämne.'],
+  ['NP GAP åk 6/9', 'Söker NP-resultat och jämför med motsvarande betygsmått för SV/SVA, engelska och matematik.'],
+  ['Relation betyg och nationella prov', 'Söker färdig relation mellan betyg och provbetyg.'],
+  ['Uppnått kunskapskrav i alla ämnen', 'Söker andel elever med lägst E i samtliga ämnen.'],
+  ['Yrkesbehörighet till gymnasiet', 'Söker behörighetsmått för yrkesprogram.'],
+  ['Betygsfördelning per skolenhet och kommun', 'Söker betygsfördelning och skolenhetsdimension. Skolverket kan begränsa skolnivå i öppet API.']
+];
+
 function setStatus(type, text, sub=''){
   $('statusDot').className = `dot ${type}`;
   $('statusText').textContent = text;
   $('statusSub').textContent = sub;
 }
 function esc(s){return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
-function textOf(v, value){
-  const i = (v.values || []).indexOf(value);
-  return i >= 0 ? (v.valueTexts?.[i] || value) : value;
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+function log(msg, obj){
+  const line = `[${new Date().toLocaleTimeString('sv-SE')}] ${msg}`;
+  state.diagnostics.push(obj ? `${line}\n${JSON.stringify(obj, null, 2)}` : line);
+  $('diagLog').textContent = state.diagnostics.join('\n\n');
 }
-function variableSummary(meta){
-  return (meta.variables || []).map(v => `${v.code}: ${v.text} (${(v.values||[]).slice(0,6).join(', ')})`).join(' | ');
+function fmt(v, suffix=''){
+  const n = Number.parseFloat(String(v ?? '').replace(',','.'));
+  return Number.isFinite(n) ? `${n.toLocaleString('sv-SE', {maximumFractionDigits:1})}${suffix}` : '-';
+}
+async function tryLoadLocalYear(localYear){
+  if(!localYear) return null;
+  const base = `/data/output/${localYear}/json`;
+  try{
+    const [manifest, overview, svSva, distribution] = await Promise.all([
+      fetchJson(`${base}/manifest.json`),
+      fetchJson(`${base}/betygsstatistik_oversikt.json`),
+      fetchJson(`${base}/betygsstatistik_sv_sva.json`),
+      fetchJson(`${base}/betygsstatistik_betygsfordelning_amne.json`)
+    ]);
+    const [npPass, npRelation] = await Promise.all([
+      fetchJsonOptional(`${base}/np_andel_godkanda.json`, []),
+      fetchJsonOptional(`${base}/np_betyg_relation.json`, [])
+    ]);
+    const hasGrades = manifest.arskurser?.some(a => Number(a.rows) > 0);
+    const hasNp = manifest.np_arskurser?.some(a => Number(a.rows) > 0) || npPass.length || npRelation.length;
+    if(!hasGrades && !hasNp) return null;
+    return {base, manifest, overview, svSva, distribution, npPass, npRelation};
+  }catch{
+    return null;
+  }
+}
+async function fetchJsonOptional(url, fallback){
+  try{ return await fetchJson(url); }catch{ return fallback; }
+}
+function localRows(data, arskurs, niva='alla_skolenheter'){
+  return (data || []).filter(r => Number(r.arskurs) === Number(arskurs) && r.niva === niva);
+}
+function uniqueSorted(values){
+  return [...new Set(values.filter(v => v !== null && v !== undefined && String(v).trim() !== '').map(String))]
+    .sort((a,b) => a.localeCompare(b, 'sv', {numeric:true}));
+}
+function selectedValues(id){
+  return [...$(id).selectedOptions].map(o => o.value);
+}
+function schoolLabel(row){
+  if(row.niva === 'alla_skolenheter' || row.niva === 'kommun') return 'Alla skolenheter';
+  return row.skolenhetsnamn || row.skolenhetskod || 'Okänd skolenhet';
+}
+function schoolKey(row){
+  return row.niva === 'alla_skolenheter' || row.niva === 'kommun' ? '__all__' : String(row.skolenhetskod || '');
+}
+function updateFilterState(){
+  state.filters = {
+    grades: selectedValues('gradeFilter'),
+    schools: selectedValues('schoolFilter'),
+    gender: $('genderFilter').value || 'Alla',
+    group: $('groupFilter').value || 'Alla'
+  };
+}
+function populateSelect(id, options, selectedValues){
+  const selected = new Set(selectedValues || []);
+  $(id).innerHTML = options.map(o => `<option value="${esc(o.value)}"${selected.has(String(o.value)) ? ' selected' : ''}>${esc(o.label)}</option>`).join('');
+}
+function populateLocalFilters(local){
+  const overview = local.overview || [];
+  const grades = uniqueSorted(overview.map(r => r.arskurs));
+  const schoolRows = overview.filter(r => r.niva === 'skolenhet');
+  const schools = uniqueSorted(schoolRows.map(r => schoolKey(r))).map(code => {
+    const row = schoolRows.find(r => schoolKey(r) === code);
+    return {value: code, label: schoolLabel(row)};
+  });
+  const filterRows = [
+    ...(local.overview || []),
+    ...(local.svSva || []),
+    ...(local.distribution || [])
+  ];
+  const genders = uniqueSorted(filterRows.map(r => r.kon).filter(v => v && v !== 'Alla'));
+  const groups = uniqueSorted(filterRows.map(r => r.elevgrupp).filter(v => v && v !== 'Alla'));
+
+  state.filters.grades = grades;
+  state.filters.schools = schools.map(s => s.value);
+  state.filters.gender = 'Alla';
+  state.filters.group = 'Alla';
+
+  populateSelect('gradeFilter', grades.map(g => ({value:g, label:`Åk ${g}`})), state.filters.grades);
+  populateSelect('schoolFilter', schools, state.filters.schools);
+  $('genderFilter').innerHTML = '<option value="Alla">Alla</option>' + genders.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join('');
+  $('groupFilter').innerHTML = '<option value="Alla">Alla</option>' + groups.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join('');
+  $('localFilters').classList.add('active');
+}
+function localFilterRows(rows, {allowAllLevel=false, forceGrade=null}={}){
+  const f = state.filters;
+  return (rows || []).filter(r => {
+    const grade = String(r.arskurs ?? '');
+    if(forceGrade && Number(r.arskurs) !== Number(forceGrade)) return false;
+    if(f.grades.length && !f.grades.includes(grade)) return false;
+    if(f.gender !== 'Alla' && r.kon !== f.gender) return false;
+    if(f.group !== 'Alla' && r.elevgrupp !== f.group) return false;
+    if(allowAllLevel && (r.niva === 'alla_skolenheter' || r.niva === 'kommun')) return true;
+    return r.niva === 'skolenhet' && (!f.schools.length || f.schools.includes(schoolKey(r)));
+  });
+}
+function localBaseFilter(rows, {forceGrade=null}={}){
+  const f = state.filters;
+  return (rows || []).filter(r => {
+    if(forceGrade && Number(r.arskurs) !== Number(forceGrade)) return false;
+    if(f.grades.length && !f.grades.includes(String(r.arskurs ?? ''))) return false;
+    if(f.group !== 'Alla' && r.elevgrupp !== f.group) return false;
+    return r.niva === 'skolenhet' && (!f.schools.length || f.schools.includes(schoolKey(r)));
+  });
+}
+function gradePointAverage(row){
+  const total = Number(row.antal_betyg || 0);
+  if(!total) return null;
+  const sum =
+    Number(row.antal_A || 0) * 20 +
+    Number(row.antal_B || 0) * 17.5 +
+    Number(row.antal_C || 0) * 15 +
+    Number(row.antal_D || 0) * 12.5 +
+    Number(row.antal_E || 0) * 10;
+  return Math.round((sum / total) * 10) / 10;
+}
+function subjectDistributionRows(local){
+  return localFilterRows(local.distribution || [])
+    .filter(r => r.elevgrupp === (state.filters.group === 'Alla' ? 'Alla' : state.filters.group))
+    .filter(r => state.filters.gender === 'Alla' ? r.kon === 'Alla' : true)
+    .filter(r => Number(r.antal_betyg) > 0)
+    .map(r => ({...r, betygspoang: gradePointAverage(r)}))
+    .sort((a,b) => `${a.arskurs}${schoolLabel(a)}${a.kon}${a.elevgrupp}${a.amne}`.localeCompare(`${b.arskurs}${schoolLabel(b)}${b.kon}${b.elevgrupp}${b.amne}`, 'sv', {numeric:true}));
+}
+function renderLocalOutcomes(local, meritRows){
+  const outcomeRows = meritRows
+    .filter(r => r.andel_uppnatt_alla_amnen != null)
+    .sort((a,b) => `${a.arskurs}${schoolLabel(a)}${a.kon}${a.elevgrupp}`.localeCompare(`${b.arskurs}${schoolLabel(b)}${b.kon}${b.elevgrupp}`, 'sv', {numeric:true}));
+  $('knowledgeRows').innerHTML = outcomeRows.map(r => `<tr><td>${esc(r.arskurs)}</td><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.elevgrupp || 'Alla')}</td><td>${esc(r.antal_elever ?? '-')}</td><td>${fmt(r.andel_uppnatt_alla_amnen, ' %')}</td></tr>`).join('') || '<tr><td colspan="6" class="muted">Ingen data för uppnått alla ämnen matchar urvalet.</td></tr>';
+  const knowledgeChartRows = outcomeRows.filter(r => r.kon === 'Alla' && r.elevgrupp === 'Alla').slice(0, 18);
+  makeChart('knowledgeChart','bar',{
+    labels: knowledgeChartRows.map(r => `Åk ${r.arskurs} ${schoolLabel(r)}`),
+    datasets:[{label:'Uppnått alla ämnen %', data:knowledgeChartRows.map(r => r.andel_uppnatt_alla_amnen), backgroundColor:'#347f6a'}]
+  },{scales:{y:{beginAtZero:true,max:100}}});
+
+  const vocationalRows = localFilterRows(local.overview || [], {forceGrade:9})
+    .filter(r => r.andel_behoriga_yrkesprogram != null)
+    .sort((a,b) => `${schoolLabel(a)}${a.kon}${a.elevgrupp}`.localeCompare(`${schoolLabel(b)}${b.kon}${b.elevgrupp}`, 'sv', {numeric:true}));
+  $('vocationalRows').innerHTML = vocationalRows.map(r => `<tr><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.elevgrupp || 'Alla')}</td><td>${esc(r.antal_elever ?? '-')}</td><td>${fmt(r.andel_behoriga_yrkesprogram, ' %')}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Ingen yrkesbehörighetsdata för åk 9 matchar urvalet.</td></tr>';
+  const vocationalChartRows = vocationalRows.filter(r => r.kon === 'Alla' && r.elevgrupp === 'Alla').slice(0, 12);
+  makeChart('vocationalChart','bar',{
+    labels: vocationalChartRows.map(r => schoolLabel(r)),
+    datasets:[{label:'Yrkesbehörighet åk 9 %', data:vocationalChartRows.map(r => r.andel_behoriga_yrkesprogram), backgroundColor:'#2f6f9f'}]
+  },{scales:{y:{beginAtZero:true,max:100}}});
+}
+function renderFilteredLocal(){
+  const local = state.local;
+  if(!local) return;
+
+  const meritRows = localFilterRows(local.overview || []);
+  const cardBase = localFilterRows(local.overview || [], {allowAllLevel:true}).find(r => r.niva === 'alla_skolenheter' && Number(r.arskurs) === 9 && r.kon === 'Alla' && r.elevgrupp === 'Alla')
+    || localFilterRows(local.overview || [], {allowAllLevel:true}).find(r => r.niva === 'alla_skolenheter' && r.kon === 'Alla' && r.elevgrupp === 'Alla')
+    || meritRows[0] || {};
+  $('meritCard').textContent = fmt(cardBase.genomsnittligt_meritvarde_17 || cardBase.genomsnittligt_meritvarde_16);
+  $('vocCard').textContent = cardBase.andel_behoriga_yrkesprogram == null ? '-' : fmt(cardBase.andel_behoriga_yrkesprogram, ' %');
+
+  $('localMeritRows').innerHTML = meritRows
+    .sort((a,b) => `${a.arskurs}${schoolLabel(a)}${a.kon}${a.elevgrupp}`.localeCompare(`${b.arskurs}${schoolLabel(b)}${b.kon}${b.elevgrupp}`, 'sv', {numeric:true}))
+    .map(r => `<tr><td>${esc(r.arskurs)}</td><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.elevgrupp || 'Alla')}</td><td>${esc(r.antal_elever ?? '-')}</td><td>${fmt(r.genomsnittligt_meritvarde_16)}</td><td>${fmt(r.genomsnittligt_meritvarde_17)}</td><td>${fmt(r.andel_uppnatt_alla_amnen, ' %')}</td><td>${r.andel_behoriga_yrkesprogram == null ? '-' : fmt(r.andel_behoriga_yrkesprogram, ' %')}</td></tr>`)
+    .join('') || '<tr><td colspan="9" class="muted">Inga rader matchar urvalet.</td></tr>';
+
+  const chartRows = meritRows.filter(r => r.kon === 'Alla' && r.elevgrupp === 'Alla');
+  makeChart('overviewChart','bar',{
+    labels: chartRows.map(r => `Åk ${r.arskurs} ${schoolLabel(r)}`),
+    datasets:[
+      {label:'Meritvärde 17', data:chartRows.map(r => r.genomsnittligt_meritvarde_17), backgroundColor:'#2f6f9f'},
+      {label:'Yrkesbehörighet %', data:chartRows.map(r => r.andel_behoriga_yrkesprogram), backgroundColor:'#347f6a'}
+    ]
+  },{scales:{y:{beginAtZero:false}}});
+
+  const genderSource = localBaseFilter(local.overview || []).filter(r => r.elevgrupp === (state.filters.group === 'Alla' ? 'Alla' : state.filters.group));
+  const genderGroups = {};
+  for(const row of genderSource){
+    const key = `${row.arskurs}|${schoolKey(row)}|${row.elevgrupp || 'Alla'}`;
+    genderGroups[key] ||= {arskurs:row.arskurs, school:schoolLabel(row), elevgrupp:row.elevgrupp || 'Alla'};
+    genderGroups[key][row.kon || 'Alla'] = row;
+  }
+  const genderRows = Object.values(genderGroups).sort((a,b) => `${a.arskurs}${a.school}${a.elevgrupp}`.localeCompare(`${b.arskurs}${b.school}${b.elevgrupp}`, 'sv', {numeric:true}));
+  $('genderRows').innerHTML = genderRows.map(g => {
+    const boys = g.Pojkar?.genomsnittligt_meritvarde_17;
+    const girls = g.Flickor?.genomsnittligt_meritvarde_17;
+    const diff = Number(girls) - Number(boys);
+    return `<tr><td>${esc(g.arskurs)}</td><td><strong>${esc(g.school)}</strong></td><td>${esc(g.elevgrupp)}</td><td>${fmt(boys)}</td><td>${fmt(girls)}</td><td>${fmt(g.Alla?.genomsnittligt_meritvarde_17)}</td><td>${Number.isFinite(diff) ? fmt(diff) : '-'}</td></tr>`;
+  }).join('') || '<tr><td colspan="7" class="muted">Ingen könsuppdelad meritdata matchar urvalet.</td></tr>';
+  const genderChartRows = genderRows.slice(0, 12);
+  makeChart('genderChart','bar',{
+    labels: genderChartRows.map(r => `Åk ${r.arskurs} ${r.school}`),
+    datasets:[
+      {label:'Pojkar merit 17', data:genderChartRows.map(r => r.Pojkar?.genomsnittligt_meritvarde_17), backgroundColor:'#2f6f9f'},
+      {label:'Flickor merit 17', data:genderChartRows.map(r => r.Flickor?.genomsnittligt_meritvarde_17), backgroundColor:'#8a5a96'}
+    ]
+  },{scales:{y:{beginAtZero:false}}});
+
+  const svSvaRows = localFilterRows(local.svSva || []).filter(r => ['SV','SVA'].includes(r.elevgrupp));
+  $('svaRows').innerHTML = svSvaRows.map(r => `<tr><td>${esc(r.arskurs)}</td><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.elevgrupp)}</td><td>${esc(r.antal_elever ?? '-')}</td><td>${fmt(r.genomsnittligt_meritvarde_17)}</td><td>${fmt(r.andel_godkand_sv_sva, ' %')}</td><td>${fmt(r.andel_uppnatt_alla_amnen, ' %')}</td></tr>`).join('') || '<tr><td colspan="7" class="muted">Ingen SV/SVA-data hittades för urvalet.</td></tr>';
+
+  const subjectRows = subjectDistributionRows(local);
+  $('subjectRows').innerHTML = subjectRows.slice(0, 180).map(r => `<tr><td>${esc(r.arskurs)}</td><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.elevgrupp || 'Alla')}</td><td>${esc(r.amne)}</td><td>${fmt(r.betygspoang)}</td><td>${esc(r.antal_A ?? 0)}</td><td>${esc(r.antal_B ?? 0)}</td><td>${esc(r.antal_C ?? 0)}</td><td>${esc(r.antal_D ?? 0)}</td><td>${esc(r.antal_E ?? 0)}</td><td>${esc(r.antal_F ?? 0)}</td><td>${fmt(r.andel_A_E, ' %')}</td><td>${esc(r.antal_betyg)}</td></tr>`).join('') || '<tr><td colspan="14" class="muted">Ingen ämnesdata matchar urvalet.</td></tr>';
+  const topSubjects = subjectRows.slice(0, 24);
+  makeChart('subjectChart','bar',{
+    labels: topSubjects.map(r => `Åk ${r.arskurs} ${schoolLabel(r)} ${r.amne}`),
+    datasets:[
+      {label:'Betygspoäng', data:topSubjects.map(r => r.betygspoang), backgroundColor:'#2f6f9f', yAxisID:'y'},
+      {label:'Andel F %', data:topSubjects.map(r => r.andel_F), backgroundColor:'#b73535', yAxisID:'y1'}
+    ]
+  },{scales:{y:{beginAtZero:true,max:20},y1:{beginAtZero:true,max:100,position:'right',grid:{drawOnChartArea:false}}}});
+
+  $('gradeDistRows').innerHTML = subjectRows.slice(0, 180).map(r => `<tr><td>${esc(r.arskurs)}</td><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.elevgrupp || 'Alla')}</td><td>${esc(r.amne)}</td><td>${fmt(r.andel_A, ' %')}</td><td>${fmt(r.andel_B, ' %')}</td><td>${fmt(r.andel_C, ' %')}</td><td>${fmt(r.andel_D, ' %')}</td><td>${fmt(r.andel_E, ' %')}</td><td>${fmt(r.andel_F, ' %')}</td><td>${esc(r.antal_betyg)}</td></tr>`).join('') || '<tr><td colspan="12" class="muted">Ingen betygsfördelning matchar urvalet.</td></tr>';
+  const gradeChartRows = subjectRows.slice(0, 18);
+  makeChart('gradeDistChart','bar',{
+    labels: gradeChartRows.map(r => `Åk ${r.arskurs} ${schoolLabel(r)} ${r.amne}`),
+    datasets:[
+      {label:'A %', data:gradeChartRows.map(r => r.andel_A), backgroundColor:'#1f5f7a'},
+      {label:'B %', data:gradeChartRows.map(r => r.andel_B), backgroundColor:'#2f6f9f'},
+      {label:'C %', data:gradeChartRows.map(r => r.andel_C), backgroundColor:'#347f6a'},
+      {label:'D %', data:gradeChartRows.map(r => r.andel_D), backgroundColor:'#8a7a35'},
+      {label:'E %', data:gradeChartRows.map(r => r.andel_E), backgroundColor:'#b86b1d'},
+      {label:'F %', data:gradeChartRows.map(r => r.andel_F), backgroundColor:'#b73535'}
+    ]
+  },{scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true,max:100}}});
+
+  renderLocalOutcomes(local, meritRows);
+  renderLocalNp(local);
+}
+function renderLocalNp(local){
+  const f = state.filters;
+  const npFilter = r => {
+    if(f.grades.length && !f.grades.includes(String(r.arskurs ?? ''))) return false;
+    if(f.gender !== 'Alla' && r.kon !== f.gender) return false;
+    if(f.gender === 'Alla' && r.kon && r.kon !== 'Alla') return false;
+    if(r.niva === 'kommun') return true;
+    return r.niva === 'skolenhet' && (!f.schools.length || f.schools.includes(schoolKey(r)));
+  };
+  const npPass = (local.npPass || []).filter(npFilter);
+  const npRelation = (local.npRelation || []).filter(npFilter);
+  const passRows = npPass.sort((a,b) => `${a.niva}${a.skolenhetsnamn}${a.arskurs}${a.amne}`.localeCompare(`${b.niva}${b.skolenhetsnamn}${b.arskurs}${b.amne}`, 'sv'));
+  const relationRows = npRelation.sort((a,b) => `${a.niva}${a.skolenhetsnamn}${a.arskurs}${a.amne}`.localeCompare(`${b.niva}${b.skolenhetsnamn}${b.arskurs}${b.amne}`, 'sv'));
+
+  $('npLocalRows').innerHTML = passRows.map(r => `<tr><td><strong>${esc(r.skolenhetsnamn || r.skolenhetskod || r.niva)}</strong></td><td>${esc(r.arskurs)}</td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.amne)}</td><td>${esc(r.antal_np)}</td><td>${fmt(r.andel_godkanda_np, ' %')}</td><td>${esc(r.antal_med_betygsmatch ?? '-')}</td></tr>`).join('') || '<tr><td colspan="7" class="muted">Ingen lokal NP-data hittades.</td></tr>';
+  $('npRelationRows').innerHTML = relationRows.map(r => `<tr><td><strong>${esc(r.skolenhetsnamn || r.skolenhetskod || r.niva)}</strong></td><td>${esc(r.arskurs)}</td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.amne)}</td><td>${esc(r.antal_jamforda)}</td><td>${fmt(r.andel_betyg_hogre_an_np, ' %')}</td><td>${fmt(r.andel_betyg_lika_np, ' %')}</td><td>${fmt(r.andel_betyg_lagre_an_np, ' %')}</td></tr>`).join('') || '<tr><td colspan="8" class="muted">Ingen betyg-NP-relation kunde beraknas.</td></tr>';
+
+  const topPass = passRows.filter(r => r.niva === 'kommun').slice(0, 12);
+  makeChart('npPassChart','bar',{
+    labels: topPass.map(r => `Ak ${r.arskurs} ${r.kon || 'Alla'} ${r.amne}`),
+    datasets:[{label:'Andel godkanda NP %', data:topPass.map(r => r.andel_godkanda_np), backgroundColor:'#347f6a'}]
+  },{scales:{y:{beginAtZero:true,max:100}}});
+
+  const topRelation = relationRows.filter(r => r.niva === 'kommun').slice(0, 12);
+  makeChart('npRelationChart','bar',{
+    labels: topRelation.map(r => `Ak ${r.arskurs} ${r.kon || 'Alla'} ${r.amne}`),
+    datasets:[
+      {label:'Betyg > NP %', data:topRelation.map(r => r.andel_betyg_hogre_an_np), backgroundColor:'#b86b1d'},
+      {label:'Betyg = NP %', data:topRelation.map(r => r.andel_betyg_lika_np), backgroundColor:'#347f6a'},
+      {label:'Betyg < NP %', data:topRelation.map(r => r.andel_betyg_lagre_an_np), backgroundColor:'#2f6f9f'}
+    ]
+  },{scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true,max:100}}});
+}
+function renderLocalData(local){
+  state.local = local;
+  state.tables = [];
+  state.metrics = [
+    {key:'localScb', label:'Lokal SCB-import', status:'ok', reason:`${local.manifest.arskurser?.map(a => `åk ${a.arskurs}: ${a.rows}`).join(', ') || 'data finns'}`}
+  ];
+  $('tableCount').textContent = local.manifest.files?.length || 0;
+  $('metricCount').textContent = 'lokal';
+  renderMetricRows();
+  populateLocalFilters(local);
+  renderFilteredLocal();
+  $('npRows').innerHTML = '<tr><td colspan="4" class="muted">PxWeb-fallback anvands inte nar lokal SCB-import ar laddad.</td></tr>';
+  const hasSvSvaRows = (local.svSva || []).some(r => ['SV','SVA'].includes(r.elevgrupp));
+  $('availabilityRows').innerHTML = [
+    ['Årets SCB-betyg', 'OK', `Läst från ${local.base}`],
+    ['SV/SVA-jämförelse', hasSvSvaRows ? 'OK' : 'Ej hittad', 'Beräknas från Sv/Sva-kolumnerna.'],
+    ['NP andel godkända', (local.npPass || []).length ? 'OK' : 'Ej hittad', 'Beräknas från lokal NP-import per kommun och skolenhet.'],
+    ['Relation betyg och NP', (local.npRelation || []).length ? 'OK' : 'Ej hittad', 'Kräver både betygsfil och NP-fil med matchande elev/skolenhet.'],
+    ['PxWeb/Kolada fallback', 'Ej använd', 'Lokal SCB-import hittades och används som primär källa.']
+  ].map(r => `<tr><td><strong>${esc(r[0])}</strong></td><td class="${r[1] === 'OK' ? 'ok' : 'warn'}">${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('');
+  $('tableRows').innerHTML = (local.manifest.files || []).map(f => `<tr><td><strong>${esc(f.file)}</strong></td><td class="ok">läst</td><td>${esc(f.rows)} rader</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Manifestet innehåller inga filrader.</td></tr>';
+  log('Lokal SCB-import används', local.manifest);
+  setStatus('ok', 'Lokal SCB-import laddad.', `Visar anonymiserad statistik från ${local.base}.`);
+}
+function norm(s){
+  return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
 }
 async function fetchJson(url, options={}){
   const r = await fetch(url, options);
-  const bodyText = await r.text();
-  if(!r.ok) throw new Error(`HTTP ${r.status}: ${bodyText.slice(0,240)}`);
-  try { return JSON.parse(bodyText); } catch(e){ throw new Error(`Kunde inte tolka JSON: ${bodyText.slice(0,240)}`); }
+  const body = await r.text();
+  if(!r.ok) throw new Error(`HTTP ${r.status}: ${body.slice(0,220)}`);
+  try { return JSON.parse(body); } catch { throw new Error(`JSON kunde inte tolkas: ${body.slice(0,220)}`); }
 }
-async function pxGet(path){ return fetchJson(PXBASE + path, { headers:{Accept:'application/json'} }); }
+function pxUrl(path){ return location.origin + '/api/pxweb?path=' + encodeURIComponent(path); }
+async function pxGet(path){ return fetchJson(pxUrl(path), {headers:{Accept:'application/json'}}); }
 async function pxPost(path, query){
-  return fetchJson(PXBASE + path, { method:'POST', headers:{'Content-Type':'application/json', Accept:'application/json'}, body:JSON.stringify({query, response:{format:'json'}}) });
+  return fetchJson(pxUrl(path), {
+    method:'POST',
+    headers:{'Content-Type':'application/json', Accept:'application/json'},
+    body:JSON.stringify({query, response:{format:'json'}})
+  });
 }
-function hasValue(v, value){ return (v.values || []).includes(value); }
-function valueByText(v, regexes){
+function pxItems(response){
+  if(Array.isArray(response)) return response;
+  if(Array.isArray(response?.value)) return response.value;
+  return [];
+}
+async function discoverTables(path, depth=0){
+  if(depth > 4) return [];
+  await sleep(180);
+  const list = pxItems(await pxGet(path));
+  const tables = [];
+  for(const item of list){
+    const itemPath = `${path}${item.id}`;
+    if(item.type === 't') tables.push({path:itemPath, text:item.text || item.id, id:item.id});
+    if(item.type === 'l') tables.push(...await discoverTables(`${itemPath}/`, depth + 1));
+  }
+  return tables;
+}
+function variableSummary(meta){
+  return (meta.variables || []).map(v => `${v.code}: ${v.text} (${(v.values || []).length})`).join(' | ');
+}
+function valueText(variable, value){
+  const i = (variable.values || []).indexOf(value);
+  return i >= 0 ? (variable.valueTexts?.[i] || value) : value;
+}
+function findVar(meta, tests){
+  return (meta.variables || []).find(v => tests.some(t => t(norm(`${v.code} ${v.text}`), v)));
+}
+function findMeasureVar(meta){
+  return findVar(meta, [
+    text => /\bmatt\b|\bmat\b|measure|variable/.test(text),
+    (_, v) => v.code === 'variable'
+  ]);
+}
+function findTimeVar(meta){ return findVar(meta, [text => /\btid\b|lasar|\bar\b|\btime\b/.test(text), (_, v) => v.time]); }
+function findLevelVar(meta){ return findVar(meta, [text => /kommun|huvudman|skolenhet|level|indelning/.test(text)]); }
+function findGenderVar(meta){ return findVar(meta, [text => /kon|kön|sex/.test(text)]); }
+function pickTimeValue(variable, schoolYear, tablePath='', yearCodes={}){
+  const values = (variable?.values || []).map(String);
+  const preferred = tablePath.includes('Underlag_for_analys') ? yearCodes.underlag : yearCodes.jmf;
+  if(preferred) return preferred;
+  const texts = variable?.valueTexts || [];
+  const byText = texts.findIndex(t => t === schoolYear);
+  if(byText >= 0) return variable.values[byText];
+  return values.includes(schoolYear) ? schoolYear : values[0];
+}
+function pickValueByText(variable, regexes){
+  const texts = variable?.valueTexts || [];
   for(const re of regexes){
-    const idx = (v.valueTexts || []).findIndex(t => re.test(t));
-    if(idx >= 0) return v.values[idx];
+    const i = texts.findIndex(t => re.test(norm(t)));
+    if(i >= 0) return variable.values[i];
   }
   return null;
 }
-function pickTotal(v){
-  return valueByText(v, [/^totalt$/i,/^samtliga$/i,/alla/i,/total/i]) || ['T','Totalt','0','00','9999'].find(x => hasValue(v,x)) || (v.values || [])[0];
+function pickTotal(variable){
+  return pickValueByText(variable, [/^totalt$/, /^samtliga/, /riket totalt/]) ||
+    ['T','Totalt','0','00','samtl_kom'].find(v => (variable?.values || []).includes(v)) ||
+    (variable?.values || [])[0];
 }
-function buildFlexibleQuery(meta, yearCode){
+function valuesForGender(variable){
+  if(!variable) return { total:null, boys:null, girls:null };
+  return {
+    boys: pickValueByText(variable, [/pojkar/, /^man$/, /^male$/]) || ['1','M'].find(v => variable.values.includes(v)),
+    girls: pickValueByText(variable, [/flickor/, /^kvinna$/, /^female$/]) || ['2','F'].find(v => variable.values.includes(v)),
+    total: pickTotal(variable)
+  };
+}
+function buildQuery(meta, measureValues, year, options={}){
   const query = [];
-  for(const v of (meta.variables || [])){
-    const codeText = `${v.code} ${v.text}`.toLowerCase();
-    let values = [];
-    if(v.time || codeText.includes('tid') || codeText.includes('läsår') || codeText.includes('år')){
-      values = hasValue(v, yearCode) ? [yearCode] : (hasValue(v, yearCode.slice(0,4)) ? [yearCode.slice(0,4)] : []);
-      if(!values.length) query.push({code:v.code, selection:{filter:'top', values:['5']}});
-      else query.push({code:v.code, selection:{filter:'item', values}});
-      continue;
-    }
-    if(hasValue(v, KOMKOD) || (v.values || []).includes(KOMNAMN)){
-      values = [hasValue(v,KOMKOD) ? KOMKOD : KOMNAMN];
-      if(hasValue(v,'00')) values.push('00');
-      query.push({code:v.code, selection:{filter:'item', values}});
-      continue;
-    }
-    if(codeText.includes('kön') || codeText.includes('kon')){
-      values = ['1','2','T'].filter(x => hasValue(v,x));
-      if(!values.length) values = [pickTotal(v)].filter(Boolean);
-      query.push({code:v.code, selection:{filter:'item', values}});
-      continue;
-    }
-    if(codeText.includes('ämne') || codeText.includes('amne')){
-      values = ['SV','SVA','EN','MA'].filter(x => hasValue(v,x));
-      if(!values.length){
-        const subjectValues = (v.values || []).filter((value, i) => /svenska|andraspråk|engelska|matematik/i.test(v.valueTexts?.[i] || value));
-        values = subjectValues.slice(0,4);
+  const measureVar = findMeasureVar(meta);
+  const timeVar = findTimeVar(meta);
+  const levelVar = findLevelVar(meta);
+  const genderVar = findGenderVar(meta);
+  for(const v of meta.variables || []){
+    if(v === measureVar){
+      query.push({code:v.code, selection:{filter:'item', values:measureValues}});
+    } else if(v === timeVar){
+      const timeValue = pickTimeValue(v, year, options.path || '', options.yearCodes || {});
+      query.push({code:v.code, selection:{filter:'item', values:[timeValue]}});
+    } else if(v === levelVar){
+      const values = [];
+      if(!(v.values || []).length){
+        // Vissa Skolverket-tabeller döljer värdelistan för huvudman/skolenhet i metadata.
+        // Då använder vi känd huvudmannakod för Sävsjö och riket i stället för ett stort all-anrop.
+        query.push({code:v.code, selection:{filter:'item', values:[HUVUDMAN_KOD, '00']}});
+      } else {
+        if((v.values || []).includes(KOMKOD)) values.push(KOMKOD);
+        if((v.values || []).includes('00')) values.push('00');
+        if(!values.length) values.push(pickTotal(v));
+        query.push({code:v.code, selection:{filter:'item', values:[...new Set(values)].filter(Boolean)}});
       }
-      if(!values.length) values = [pickTotal(v)].filter(Boolean);
-      query.push({code:v.code, selection:{filter:'item', values}});
-      continue;
+    } else if(v === genderVar){
+      const g = valuesForGender(v);
+      const values = [g.boys, g.girls, g.total].filter(Boolean);
+      query.push({code:v.code, selection:{filter:'item', values:[...new Set(values)]}});
+    } else {
+      query.push({code:v.code, selection:{filter:'item', values:[pickTotal(v)].filter(Boolean)}});
     }
-    const total = pickTotal(v);
-    query.push({code:v.code, selection:{filter:'item', values:[total].filter(Boolean)}});
   }
   return query;
 }
-async function listTables(catPath, area){
+function rowObject(result, row){
+  const obj = { value: Number.parseFloat(String(row.values?.[0] ?? '').replace(',','.')), raw: row };
+  (result.columns || []).forEach((c, i) => obj[c.code] = row.key?.[i]);
+  return obj;
+}
+function extractLevel(rows, columns, levelCode, genderCode){
+  const levelCol = columns.find(c => /level|kommun|huvudman|skolenhet/i.test(c.code + c.text));
+  const genderCol = columns.find(c => /kön|kon|sex/i.test(c.code + c.text));
+  const levelIdx = columns.indexOf(levelCol);
+  const genderIdx = columns.indexOf(genderCol);
+  const out = {};
+  for(const r of rows || []){
+    if(levelIdx >= 0 && r.key[levelIdx] !== levelCode && !String(r.key[levelIdx]).includes(levelCode)) continue;
+    const gender = genderIdx >= 0 ? r.key[genderIdx] : 'total';
+    out[gender || 'total'] = r.values?.[0];
+  }
+  if(genderIdx < 0 && rows?.[0]) out.total = rows[0].values?.[0];
+  return out;
+}
+function measureMatches(meta, regexes){
+  const measureVar = findMeasureVar(meta);
+  if(!measureVar) return [];
+  return (measureVar.values || []).filter((value, i) => regexes.some(re => re.test(norm(measureVar.valueTexts?.[i] || value))));
+}
+function subjectName(text){
+  return String(text || '').replace(/^.*i /i,'').replace(/^.*for /i,'');
+}
+async function loadMetric(key, label, regexes, year, postLimit=10){
+  let matched = false;
+  let lastError = null;
+  for(const table of state.tables){
+    const values = measureMatches(table.meta, regexes);
+    if(!values.length) continue;
+    matched = true;
+    const selected = values.slice(0, postLimit);
+    const query = buildQuery(table.meta, selected, year.label, {path: table.path, yearCodes: year});
+    const timeSelection = query.find(q => q.code === findTimeVar(table.meta)?.code);
+    if(timeSelection && table.path.includes('Underlag_for_analys')) timeSelection.selection.values = [year.underlag];
+    if(timeSelection && !table.path.includes('Underlag_for_analys')) timeSelection.selection.values = [year.jmf];
+    try{
+      await sleep(900);
+      const data = await pxPost(table.path, query);
+      const metric = {key, label, status:'ok', table, measureValues:selected, query, data};
+      state.metrics.push(metric);
+      log(`POST OK: ${label}`, {path:table.path, rows:data.data?.length || 0, year, query, measures:selected.map(v => valueText(findMeasureVar(table.meta), v))});
+      return metric;
+    }catch(e){
+      lastError = {path:table.path, error:e.message, query};
+      log(`POST misslyckades: ${label}`, {path:table.path, error:e.message, query});
+    }
+  }
+  if(matched){
+    const failed = {key, label, status:'error', reason:'Måttet finns i metadata, men POST-anropet misslyckades i webbläsaren.', error:lastError};
+    state.metrics.push(failed);
+    log(`Mått hittades men kunde inte hämtas: ${label}`, lastError);
+    return failed;
+  }
+  const missing = {key, label, status:'missing', reason:'Inget matchande mått hittades i öppna PxWeb-tabeller.'};
+  state.metrics.push(missing);
+  log(`Mått saknas: ${label}`);
+  return missing;
+}
+function cloneMetricData(data, measureValues){
+  const wanted = new Set(measureValues);
+  const measureCode = data.columns?.[0]?.code || 'variable';
+  const measureIdx = (data.columns || []).findIndex(c => c.code === measureCode);
+  return {...data, data:(data.data || []).filter(row => wanted.has(row.key?.[measureIdx]))};
+}
+async function loadUnderlagBundle(year){
+  const table = state.tables.find(t => t.path.includes('Underlag_for_analys') && t.path.includes('/Grundskola/Grundskola.px'));
+  if(!table){
+    ['vocational','knowledgeAll','npGap'].forEach(key => state.metrics.push({key, label:key, status:'missing', reason:'Underlagstabellen hittades inte.'}));
+    return;
+  }
+  const values = ['24','25','26','43','44','45','46','47','48'];
+  const query = buildQuery(table.meta, values, year.label, {path:table.path, yearCodes:year});
+  const timeSelection = query.find(q => q.code === findTimeVar(table.meta)?.code);
+  if(timeSelection) timeSelection.selection.values = [year.underlag];
   try{
-    const list = await pxGet(catPath);
-    const tables = (list || []).filter(x => x.type === 't');
-    log(`Kategori OK: ${catPath} (${tables.length} tabeller)`);
-    return tables.map(t => ({area, path:catPath + t.id, id:t.id, text:t.text || t.id}));
+    await sleep(900);
+    const data = await pxPost(table.path, query);
+    const measureVar = findMeasureVar(table.meta);
+    const make = (key, label, selected) => {
+      state.metrics.push({key, label, status:'ok', table, measureValues:selected, query, data:cloneMetricData(data, selected)});
+    };
+    make('vocational', 'Yrkesbehörighet till gymnasiet', ['26']);
+    make('knowledgeAll', 'Uppnått kunskapskrav i alla ämnen', ['24','25']);
+    make('npGap', 'NP GAP och betygsnära mått', ['43','44','45','46','47','48']);
+    log('POST OK: Underlagspaket behörighet, kunskapskrav och NP', {path:table.path, rows:data.data?.length || 0, year, query, measures:values.map(v => valueText(measureVar, v))});
   }catch(e){
-    log(`Kategori misslyckades: ${catPath}`, {error:e.message});
-    return [];
+    log('POST misslyckades: Underlagspaket behörighet, kunskapskrav och NP', {path:table.path, error:e.message, query});
+    [
+      ['vocational','Yrkesbehörighet till gymnasiet'],
+      ['knowledgeAll','Uppnått kunskapskrav i alla ämnen'],
+      ['npGap','NP GAP och betygsnära mått']
+    ].forEach(([key,label]) => state.metrics.push({key, label, status:'error', reason:'Underlagspaketet kunde inte hämtas.', error:e.message}));
   }
 }
-function scoreTable(t, meta){
-  const hay = `${t.text} ${variableSummary(meta)}`.toLowerCase();
-  let score = 0;
-  if(/merit|betyg/.test(hay)) score += 4;
-  if(/behör|behor/.test(hay)) score += 4;
-  if(/nationella|prov/.test(hay)) score += 3;
-  if(/kommun|lägeskommun|hemkommun/.test(hay)) score += 3;
-  if(/kön|kon/.test(hay)) score += 2;
-  if(/tid|läsår|år/.test(hay)) score += 2;
-  if(hay.includes(KOMKOD)) score += 5;
-  return score;
-}
-async function discoverPxTables(yearCode){
-  const categories = [
-    {area:'Betyg', path:'/Kommunala_jamforelsetal/Grundskola/Betyg/'},
-    {area:'Behörighet', path:'/Kommunala_jamforelsetal/Grundskola/Behorighet/'},
-    {area:'Kunskapskrav', path:'/Kommunala_jamforelsetal/Grundskola/Kunskapskrav/'},
-    {area:'Nationella prov', path:'/Kommunala_jamforelsetal/Grundskola/Nationella_prov/'}
-  ];
-  const rawTables = (await Promise.all(categories.map(c => listTables(c.path, c.area)))).flat();
-  const enriched = [];
-  for(const t of rawTables){
-    try{
-      const meta = await pxGet(t.path);
-      const score = scoreTable(t, meta);
-      enriched.push({...t, meta, score, status:'metadata ok'});
-    }catch(e){
-      enriched.push({...t, meta:null, score:0, status:`metadata fel: ${e.message}`});
-      log(`Metadata misslyckades: ${t.path}`, {error:e.message});
-    }
-  }
-  enriched.sort((a,b) => b.score - a.score);
-  state.tables = enriched;
-  return enriched;
-}
-async function tryDataFromTables(tables, yearCode){
-  const results = [];
-  for(const t of tables.filter(x => x.meta && x.score > 0).slice(0, 20)){
-    const query = buildFlexibleQuery(t.meta, yearCode);
-    try{
-      const data = await pxPost(t.path, query);
-      const rows = data.data || [];
-      if(rows.length){
-        results.push({area:t.area, path:t.path, text:t.text, rows, columns:data.columns || [], query});
-        log(`POST OK: ${t.path} (${rows.length} rader)`);
-      } else {
-        log(`POST gav tom data: ${t.path}`, {query});
-      }
-    }catch(e){
-      log(`POST misslyckades: ${t.path}`, {error:e.message, query});
-    }
-  }
-  state.results = results;
-  return results;
-}
-async function loadSchools(){
-  const urls = [
-    `${SKOLENHET_V2}/skolenheter?kommunKod=${KOMKOD}&skolform=11&status=1`,
-    `${SKOLENHET_V2}/sok/skolenheter?kommunKod=${KOMKOD}&skolform=11&status=1`,
-    `${SKOLENHET_V1}/sok/skolenheter?kommunKod=${KOMKOD}&skolform=11&status=1`
-  ];
-  for(const url of urls){
-    try{
-      const d = await fetchJson(url, {headers:{Accept:'application/json'}});
-      const list = d.skolenheter || d.hits || d.result || d.content || [];
-      log(`Skolenhetsregistret OK: ${url} (${list.length} poster)`);
-      state.schools = list;
-      return list;
-    }catch(e){
-      log(`Skolenhetsregistret misslyckades: ${url}`, {error:e.message});
-    }
-  }
-  return [];
+function renderMetricRows(){
+  $('metricCount').textContent = state.metrics.filter(m => m.status === 'ok').length;
+  $('metricRows').innerHTML = state.metrics.map(m => `<tr><td><strong>${esc(m.label)}</strong></td><td class="${m.status === 'ok' ? 'ok' : m.status === 'error' ? 'err' : 'warn'}">${m.status === 'ok' ? 'Data hämtad' : m.status === 'error' ? 'POST-fel' : 'Ej hittad'}</td><td>${m.table ? `${esc(m.table.text)}<br><code>${esc(m.table.path)}</code>` : esc(m.reason)}</td></tr>`).join('');
 }
 function renderTables(){
-  $('tableCount').textContent = state.tables.filter(t => t.meta).length;
-  $('tableRows').innerHTML = state.tables.map(t => `<tr><td>${esc(t.area)}</td><td><strong>${esc(t.text)}</strong><br><code>${esc(t.path)}</code></td><td class="${t.meta?'ok':'err'}">${esc(t.status)}<br><span class="muted">score ${t.score}</span></td><td>${esc(t.meta ? variableSummary(t.meta) : '–')}</td></tr>`).join('') || '<tr><td colspan="4" class="muted">Inga tabeller hittades.</td></tr>';
+  $('tableCount').textContent = state.tables.length;
+  $('tableRows').innerHTML = state.tables.map(t => `<tr><td><strong>${esc(t.text)}</strong><br><code>${esc(t.path)}</code></td><td class="ok">metadata ok</td><td>${esc(variableSummary(t.meta))}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Inga tabeller hittades.</td></tr>';
 }
-function renderResults(){
-  $('dataCount').textContent = state.results.length;
-  $('resultRows').innerHTML = state.results.map(r => {
-    const sample = r.rows.slice(0,5).map(row => `${row.key.join(' | ')} = ${row.values.join(', ')}`).join('<br>');
-    return `<tr><td>${esc(r.area)}</td><td><strong>${esc(r.text)}</strong><br><code>${esc(r.path)}</code></td><td>${r.rows.length}</td><td>${sample}</td></tr>`;
-  }).join('') || '<tr><td colspan="4" class="muted">Ingen PxWeb-data kom tillbaka. Se Diagnostik.</td></tr>';
-  renderChart();
+function renderAvailability(){
+  const byKey = Object.fromEntries(state.metrics.map(m => [m.key, m]));
+  const rows = [
+    ['Pojkar/Flickor', byKey.merit?.status === 'ok' ? 'Delvis/OK' : 'Ej bekräftad', 'Visas om tabellen har könsdimension.'],
+    ['Meritvärde', byKey.merit?.status === 'ok' ? 'OK' : 'Ej hittad', byKey.merit?.table?.text || byKey.merit?.reason],
+    ['Meritvärde elever som läser SVA', byKey.svaMerit?.status === 'ok' ? 'OK' : 'Ej hittad', byKey.svaMerit?.table?.text || byKey.svaMerit?.reason],
+    ['Betygspoäng per ämne', byKey.subjectPoints?.status === 'ok' ? 'OK' : 'Ej hittad', byKey.subjectPoints?.table?.text || byKey.subjectPoints?.reason],
+    ['NP GAP åk 6/9', byKey.npGap?.status === 'ok' ? 'Delvis' : 'Ej komplett', byKey.npGap?.status === 'ok' ? 'Öppna mått finns för NP åk 3 samt betyg minst E i SV/SVA och matematik åk 6/9. Kompletta NP-resultat åk 6/9 för SV, EN och matematik hittades inte i PxWeb.' : byKey.npGap?.reason],
+    ['Relation betyg och nationella prov', byKey.npRelation?.status === 'ok' ? 'OK' : 'Ej hittad', byKey.npRelation?.table?.text || byKey.npRelation?.reason],
+    ['Uppnått kunskapskrav i alla ämnen', byKey.knowledgeAll?.status === 'ok' ? 'OK' : 'Ej hittad', byKey.knowledgeAll?.table?.text || byKey.knowledgeAll?.reason],
+    ['Yrkesbehörighet till gymnasiet', byKey.vocational?.status === 'ok' ? 'OK' : byKey.vocational?.status === 'error' ? 'POST-fel' : 'Ej hittad', byKey.vocational?.table?.text || byKey.vocational?.reason],
+    ['Betygsfördelning per skolenhet och kommun', byKey.gradeDistribution?.status === 'ok' ? 'OK' : byKey.gradeDistribution?.status === 'error' ? 'POST-fel' : 'Ej hittad', byKey.gradeDistribution?.reason || 'Skolenhetsnivå kräver att tabellen innehåller skolenhetsdimension.']
+  ];
+  $('availabilityRows').innerHTML = rows.map(r => `<tr><td><strong>${esc(r[0])}</strong></td><td class="${r[1].includes('OK') ? 'ok' : 'warn'}">${esc(r[1])}</td><td>${esc(r[2] || '')}</td></tr>`).join('');
 }
-function renderSchools(){
-  $('schoolCount').textContent = state.schools.length || '–';
-  $('schoolRows').innerHTML = state.schools.map(s => {
-    const name = s.skolenhetsnamn || s.namn || s.name || 'Okänt namn';
-    const code = s.skolenhetskod || s.kod || s.code || '–';
-    const status = s.status || s.statusText || '–';
-    const forms = Array.isArray(s.skolformer) ? s.skolformer.map(f => f.skolform || f.kod || f.arskurser || '').filter(Boolean).join(', ') : '–';
-    return `<tr><td><strong>${esc(name)}</strong></td><td><code>${esc(code)}</code></td><td>${esc(status)}</td><td>${esc(forms)}</td></tr>`;
-  }).join('') || '<tr><td colspan="4" class="muted">Ingen skollista kunde hämtas. Se Diagnostik.</td></tr>';
+function destroyChart(id){ if(charts[id]) charts[id].destroy(); }
+function makeChart(id, type, data, options={}){
+  destroyChart(id);
+  charts[id] = new Chart($(id), {type, data, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}}, ...options}});
 }
-function renderChart(){
-  const ctx = $('mainChart').getContext('2d');
-  if(chart) chart.destroy();
-  const first = state.results[0];
-  const labels = first ? first.rows.slice(0,10).map((r,i) => r.key?.at(-1) || `Rad ${i+1}`) : [];
-  const values = first ? first.rows.slice(0,10).map(r => Number.parseFloat(String(r.values?.[0]).replace(',','.'))).map(v => Number.isFinite(v) ? v : null) : [];
-  chart = new Chart(ctx, {type:'bar', data:{labels, datasets:[{label:first?.text || 'Ingen data', data:values, borderWidth:1}]}, options:{responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'top'}}, scales:{y:{beginAtZero:false}}}});
+function renderGender(){
+  const metric = state.metrics.find(m => m.key === 'merit' && m.status === 'ok');
+  $('svaRows').innerHTML = '<tr><td colspan="7" class="muted">SV/SVA per skolenhet visas när lokal SCB-import finns.</td></tr>';
+  if(!metric){
+    $('genderRows').innerHTML = '<tr><td colspan="7" class="muted">Ingen könsuppdelad data hittades.</td></tr>';
+    makeChart('genderChart','bar',{labels:['Ingen data'],datasets:[{label:'Värde',data:[0]}]});
+    return;
+  }
+  const cols = metric.data.columns || [];
+  const measureVar = findMeasureVar(metric.table.meta);
+  const genderVar = findGenderVar(metric.table.meta);
+  const g = valuesForGender(genderVar);
+  const rowsByMeasure = {};
+  for(const row of metric.data.data || []){
+    const measureIdx = cols.findIndex(c => c.code === measureVar?.code);
+    const levelIdx = cols.findIndex(c => /level|kommun/i.test(c.code + c.text));
+    const genderIdx = cols.findIndex(c => /kön|kon|sex/i.test(c.code + c.text));
+    if(levelIdx >= 0 && row.key[levelIdx] !== KOMKOD) continue;
+    const measure = measureIdx >= 0 ? row.key[measureIdx] : metric.measureValues?.[0];
+    rowsByMeasure[measure] ||= {};
+    const gender = genderIdx >= 0 ? row.key[genderIdx] : g.total || 'total';
+    rowsByMeasure[measure][gender] = row.values?.[0];
+  }
+  const firstMeasure = Object.keys(rowsByMeasure)[0];
+  const first = rowsByMeasure[firstMeasure] || {};
+  $('meritCard').textContent = fmt(first[g.total] ?? first.total);
+  $('genderRows').innerHTML = Object.entries(rowsByMeasure).map(([measure, vals]) => `<tr><td>-</td><td><strong>Sävsjö kommun</strong></td><td>${esc(valueText(measureVar, measure))}</td><td>${fmt(vals[g.boys])}</td><td>${fmt(vals[g.girls])}</td><td>${fmt(vals[g.total] ?? vals.total)}</td><td>-</td></tr>`).join('') || '<tr><td colspan="7" class="muted">Tabellen saknar könsdimension.</td></tr>';
+  makeChart('genderChart','bar',{
+    labels:['Pojkar','Flickor','Totalt'],
+    datasets:[{label:valueText(measureVar, firstMeasure), data:[first[g.boys], first[g.girls], first[g.total] ?? first.total].map(v => Number.parseFloat(String(v).replace(',','.'))), backgroundColor:['#2f6f9f','#8a5a96','#5b6b73']}]
+  },{scales:{y:{beginAtZero:false}}});
+}
+function renderSubjects(){
+  const metric = state.metrics.find(m => m.key === 'subjectPoints' && m.status === 'ok');
+  $('gradeDistRows').innerHTML = '<tr><td colspan="12" class="muted">Full A-F-fördelning visas när lokal SCB-import finns.</td></tr>';
+  makeChart('gradeDistChart','bar',{labels:['Ingen lokal A-F-data'],datasets:[{label:'Värde',data:[0]}]});
+  if(!metric){
+    $('subjectRows').innerHTML = '<tr><td colspan="14" class="muted">Ingen ämnesdata hittades.</td></tr>';
+    makeChart('subjectChart','bar',{labels:['Ingen data'],datasets:[{label:'Värde',data:[0]}]});
+    return;
+  }
+  const cols = metric.data.columns || [];
+  const measureVar = findMeasureVar(metric.table.meta);
+  const measureIdx = cols.findIndex(c => c.code === measureVar?.code);
+  const levelIdx = cols.findIndex(c => /level|kommun/i.test(c.code + c.text));
+  const bySubject = {};
+  for(const row of metric.data.data || []){
+    if(measureIdx < 0) continue;
+    const name = subjectName(valueText(measureVar, row.key[measureIdx]));
+    bySubject[name] ||= {};
+    const level = levelIdx >= 0 ? row.key[levelIdx] : KOMKOD;
+    bySubject[name][level] = row.values?.[0];
+  }
+  const subjects = Object.entries(bySubject).sort((a,b) => a[0].localeCompare(b[0], 'sv'));
+  $('subjectRows').innerHTML = subjects.map(([name, vals]) => `<tr><td>-</td><td><strong>Sävsjö kommun</strong></td><td>Alla</td><td>Alla</td><td>${esc(name)}</td><td>${fmt(vals[KOMKOD])}</td><td colspan="6" class="muted">A-F saknas i PxWeb-fallback</td><td>${fmt(vals['00'])} riket</td><td>-</td></tr>`).join('');
+  makeChart('subjectChart','bar',{
+    labels: subjects.map(x => x[0]),
+    datasets:[
+      {label:'Sävsjö', data:subjects.map(([,v]) => Number.parseFloat(String(v[KOMKOD]).replace(',','.'))), backgroundColor:'#2f6f9f'},
+      {label:'Riket', data:subjects.map(([,v]) => Number.parseFloat(String(v['00']).replace(',','.'))), backgroundColor:'#9aa6ad'}
+    ]
+  },{scales:{y:{beginAtZero:false}}});
+}
+function renderNp(){
+  const metric = state.metrics.find(m => m.key === 'npGap' && m.status === 'ok');
+  if(!metric){
+    $('npRows').innerHTML = '<tr><td colspan="4" class="muted">Inga NP-/betygsnära mått kunde hämtas.</td></tr>';
+    return;
+  }
+  const cols = metric.data.columns || [];
+  const measureVar = findMeasureVar(metric.table.meta);
+  const measureIdx = cols.findIndex(c => c.code === measureVar?.code);
+  const levelIdx = cols.findIndex(c => /level|kommun|huvudman|skolenhet/i.test(c.code + c.text));
+  const byMeasure = {};
+  for(const row of metric.data.data || []){
+    const measure = measureIdx >= 0 ? row.key[measureIdx] : '';
+    const level = levelIdx >= 0 ? row.key[levelIdx] : '';
+    byMeasure[measure] ||= {};
+    byMeasure[measure][level] = row.values?.[0];
+  }
+  $('npRows').innerHTML = Object.entries(byMeasure).map(([measure, vals]) => {
+    const local = vals[HUVUDMAN_KOD];
+    const national = vals['00'];
+    const gap = Number.parseFloat(String(local).replace(',','.')) - Number.parseFloat(String(national).replace(',','.'));
+    return `<tr><td><strong>${esc(valueText(measureVar, measure))}</strong></td><td>${fmt(local, ' %')}</td><td>${fmt(national, ' %')}</td><td>${Number.isFinite(gap) ? fmt(gap, ' p.e.') : '-'}</td></tr>`;
+  }).join('');
+}
+function renderOverview(){
+  const merit = state.metrics.find(m => m.key === 'merit' && m.status === 'ok');
+  const vocational = state.metrics.find(m => m.key === 'vocational' && m.status === 'ok');
+  $('knowledgeRows').innerHTML = '<tr><td colspan="6" class="muted">Uppnått alla ämnen per skolenhet visas när lokal SCB-import finns.</td></tr>';
+  $('vocationalRows').innerHTML = '<tr><td colspan="5" class="muted">Yrkesbehörighet per skolenhet visas när lokal SCB-import finns.</td></tr>';
+  makeChart('knowledgeChart','bar',{labels:['Ingen lokal data'],datasets:[{label:'Uppnått alla ämnen %',data:[0]}]});
+  makeChart('vocationalChart','bar',{labels:['Ingen lokal data'],datasets:[{label:'Yrkesbehörighet %',data:[0]}]});
+  const getTotal = metric => {
+    if(!metric) return null;
+    const levelCode = metric.table?.path?.includes('Underlag_for_analys') ? HUVUDMAN_KOD : KOMKOD;
+    const vals = extractLevel(metric.data.data, metric.data.columns || [], levelCode);
+    return vals.T ?? vals.total ?? Object.values(vals)[0];
+  };
+  const meritVal = getTotal(merit);
+  const vocVal = getTotal(vocational);
+  $('meritCard').textContent = fmt(meritVal);
+  $('vocCard').textContent = fmt(vocVal, vocational ? ' %' : '');
+  makeChart('overviewChart','bar',{
+    labels:['Meritvärde','Yrkesbehörighet'],
+    datasets:[{label:'Sävsjö', data:[Number.parseFloat(meritVal), Number.parseFloat(vocVal)], backgroundColor:['#2f6f9f','#347f6a']}]
+  },{scales:{y:{beginAtZero:false}}});
 }
 async function loadAll(){
-  state = { tables: [], results: [], schools: [], errors: [] };
+  state = {tables:[], metrics:[], diagnostics:[], local:null, filters:{grades:[], schools:[], gender:'Alla', group:'Alla'}};
   $('diagLog').textContent = '';
-  const y = $('yearSel').value; const yearCode = YEAR_MAP[y] || y;
-  $('yearCard').textContent = `${y}/${String(Number(y)+1).slice(2)}`;
-  setStatus('loading', 'Hämtar skollista och PxWeb-metadata...', 'Det här kan ta en stund första gången eftersom metadata läses in.');
-  const [schools, tables] = await Promise.all([loadSchools(), discoverPxTables(yearCode)]);
-  renderSchools(); renderTables();
-  setStatus('loading', 'Testar datainhämtning från matchande PxWeb-tabeller...', 'Fel visas i fliken Diagnostik.');
-  await tryDataFromTables(tables, yearCode);
-  renderResults(); renderTables();
-  if(state.results.length){ setStatus('ok', `Data hämtad för ${KOMNAMN}.`, `${state.results.length} PxWeb-anrop gav data. ${schools.length || 0} skolor hittades.`); }
-  else if(state.tables.length){ setStatus('warn', 'PxWeb nås, men ingen tabell accepterade byggd query.', 'Öppna Diagnostik och kopiera tabellens metadata/query för nästa fix.'); }
-  else { setStatus('error', 'Kunde inte läsa PxWeb-kategorier.', 'Kontrollera CORS, nätverk eller ändrade API-sökvägar.'); }
+  $('localFilters').classList.remove('active');
+  $('localMeritRows').innerHTML = '';
+  setStatus('loading', 'Hämtar PxWeb-kategorier...', 'Läser tabellistan från Skolverket.');
+  const selectedYear = $('yearSel').selectedOptions[0];
+  const year = {
+    label: selectedYear.value,
+    local: selectedYear.dataset.local,
+    jmf: selectedYear.dataset.jmf,
+    underlag: selectedYear.dataset.underlag
+  };
+  try{
+    setStatus('loading', 'Söker lokal SCB-import...', `Letar efter data/output/${year.local}/json.`);
+    const local = await tryLoadLocalYear(year.local);
+    if(local){
+      renderLocalData(local);
+      return;
+    }
+    const discovered = [];
+    for(const root of ROOTS){
+      try { discovered.push(...await discoverTables(root)); }
+      catch(e){ log(`Kategoriläsning misslyckades: ${root}`, {error:e.message}); }
+    }
+    setStatus('loading', 'Läser tabellmetadata...', 'Väntar kort mellan anrop för att undvika rate limit.');
+    for(const table of discovered){
+      try{
+        await sleep(320);
+        table.meta = await pxGet(table.path);
+        state.tables.push(table);
+        log(`Metadata OK: ${table.path}`, {title:table.meta.title, variables:variableSummary(table.meta)});
+      }catch(e){
+        log(`Metadata misslyckades: ${table.path}`, {error:e.message});
+      }
+    }
+    renderTables();
+    setStatus('loading', 'Hämtar önskade mått...', 'Matchar måttnamn mot metadata och testar POST-anrop.');
+    await loadMetric('merit', 'Meritvärde', [/meritvarde/], year, 8);
+    await loadMetric('svaMerit', 'Meritvärde elever som läser SVA', [/meritvarde.*svenska som andrasprak/, /svenska som andrasprak.*meritvarde/, /\bsva\b.*meritvarde/], year, 6);
+    await loadMetric('subjectPoints', 'Betygspoäng per ämne', [/genomsnittlig betygspoang/, /betygspoang.*i /], year, 24);
+    await loadUnderlagBundle(year);
+    await loadMetric('npRelation', 'Relation betyg och nationella prov', [/relation.*nationella prov/, /betyg.*provbetyg/, /hogre.*provbetyg/, /lagre.*provbetyg/], year, 12);
+    await loadMetric('gradeDistribution', 'Betygsfördelning per skolenhet och kommun', [/betygsfordelning/, /betyg.*a.*b.*c.*d.*e.*f/, /andel.*betyg [abcde]/], year, 12);
+    renderMetricRows();
+    renderAvailability();
+    renderOverview();
+    renderGender();
+    renderSubjects();
+    renderNp();
+    const ok = state.metrics.filter(m => m.status === 'ok').length;
+    setStatus(ok ? 'ok' : 'warn', ok ? `Data hämtad: ${ok} mått fungerar.` : 'API:t svarade, men inga önskade mått hittades.', 'Se Datatäckning och Diagnostik för detaljer.');
+  }catch(e){
+    setStatus('error', 'Kunde inte hämta API-data.', e.message);
+    log('Oväntat fel i laddning', {error:e.message});
+  }
 }
-
-document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => {document.querySelectorAll('.tab').forEach(t => t.classList.remove('active')); document.querySelectorAll('.panel').forEach(p => p.classList.remove('active')); tab.classList.add('active'); $('tab-' + tab.dataset.tab).classList.add('active'); setTimeout(() => chart?.resize(), 50);}));
+document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  tab.classList.add('active');
+  $('tab-' + tab.dataset.tab).classList.add('active');
+  setTimeout(() => Object.values(charts).forEach(c => c.resize()), 50);
+}));
 $('reloadBtn').addEventListener('click', loadAll);
-$('diagBtn').addEventListener('click', () => { document.querySelector('[data-tab="diagnostics"]').click(); });
+$('diagBtn').addEventListener('click', () => document.querySelector('[data-tab="diagnostics"]').click());
+['gradeFilter','schoolFilter','genderFilter','groupFilter'].forEach(id => {
+  $(id).addEventListener('change', () => {
+    updateFilterState();
+    renderFilteredLocal();
+  });
+});
+$('selectAllSchoolsBtn').addEventListener('click', () => {
+  [...$('schoolFilter').options].forEach(o => o.selected = true);
+  updateFilterState();
+  renderFilteredLocal();
+});
+$('clearFiltersBtn').addEventListener('click', () => {
+  if(!state.local) return;
+  populateLocalFilters(state.local);
+  renderFilteredLocal();
+});
 loadAll();
 </script>
 </body>
