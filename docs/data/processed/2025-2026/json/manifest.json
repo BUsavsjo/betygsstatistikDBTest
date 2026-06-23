@@ -1,0 +1,59 @@
+{
+  "lasar": "2025-2026",
+  "source": "local_scb",
+  "arskurser": [
+    {
+      "arskurs": 6,
+      "rows": 141
+    },
+    {
+      "arskurs": 9,
+      "rows": 121
+    }
+  ],
+  "np_arskurser": [],
+  "files": [
+    {
+      "level": "info",
+      "message": "file_read",
+      "file": "BetygAk6hagne.txt",
+      "rows": 35
+    },
+    {
+      "level": "info",
+      "message": "file_read",
+      "file": "BetygAk6stockaryd.txt",
+      "rows": 16
+    },
+    {
+      "level": "info",
+      "message": "file_read",
+      "file": "BetygAk6vallsjo.txt",
+      "rows": 48
+    },
+    {
+      "level": "info",
+      "message": "file_read",
+      "file": "BetygAk6vrigstad.txt",
+      "rows": 23
+    },
+    {
+      "level": "info",
+      "message": "file_read",
+      "file": "betygrorvikak6.txt",
+      "rows": 19
+    },
+    {
+      "level": "info",
+      "message": "file_read",
+      "file": "BetygAk9hofgård.txt",
+      "rows": 89
+    },
+    {
+      "level": "info",
+      "message": "file_read",
+      "file": "BetygAk9rörvik.txt",
+      "rows": 32
+    }
+  ]
+}
