@@ -11,6 +11,7 @@ PUBLIC_JSON_FILES = [
     "betygsstatistik_oversikt.json",
     "betygsstatistik_sv_sva.json",
     "betygsstatistik_betygsfordelning_amne.json",
+    "betygsstatistik_kontroll_betyg.json",
     "np_andel_godkanda.json",
     "np_betyg_relation.json",
     "skolenheter_lookup.json",

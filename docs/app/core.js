@@ -1,4 +1,4 @@
-﻿const KOMKOD = '0684';
+const KOMKOD = '0684';
 const HUVUDMAN_KOD = '2120000563';
 const PXBASE = 'https://statistikdatabasen.skolverket.se/PxWeb/api/v1/sv/Skolverkets_statistikdatabas';
 const ROOTS = [
@@ -12,15 +12,16 @@ const STATIC_PAGES_BUILD = true;
 const IS_GITHUB_PAGES = location.hostname.endsWith('github.io');
 
 const wantedViews = [
-  ['Pojkar/Flickor', 'SÃ¶ker mÃ¥tt med kÃ¶nsuppdelning. PxWeb-tabeller utan kÃ¶nsdimension kan bara visas totalt.'],
-  ['MeritvÃ¤rde', 'SÃ¶ker mÃ¥tt vars text innehÃ¥ller meritvÃ¤rde.'],
-  ['MeritvÃ¤rde elever som lÃ¤ser SVA', 'SÃ¶ker specifikt meritvÃ¤rde kopplat till svenska som andrasprÃ¥k. Publiceras inte alltid Ã¶ppet.'],
-  ['BetygspoÃ¤ng per Ã¤mne', 'SÃ¶ker genomsnittlig betygspoÃ¤ng per Ã¤mne.'],
-  ['NP GAP Ã¥k 6/9', 'SÃ¶ker NP-resultat och jÃ¤mfÃ¶r med motsvarande betygsmÃ¥tt fÃ¶r SV/SVA, engelska och matematik.'],
-  ['Relation betyg och nationella prov', 'SÃ¶ker fÃ¤rdig relation mellan betyg och provbetyg.'],
-  ['UppnÃ¥tt kunskapskrav i alla Ã¤mnen', 'SÃ¶ker andel elever med lÃ¤gst E i samtliga Ã¤mnen.'],
-  ['YrkesbehÃ¶righet till gymnasiet', 'SÃ¶ker behÃ¶righetsmÃ¥tt fÃ¶r yrkesprogram.'],
-  ['BetygsfÃ¶rdelning per skolenhet och kommun', 'SÃ¶ker betygsfÃ¶rdelning och skolenhetsdimension. Skolverket kan begrÃ¤nsa skolnivÃ¥ i Ã¶ppet API.']
+  ['Pojkar/Flickor', 'Söker mått med könsuppdelning. PxWeb-tabeller utan könsdimension kan bara visas totalt.'],
+  ['Meritvärde', 'Söker mått vars text innehåller meritvärde.'],
+  ['Meritvärde elever som läser SVA', 'Söker specifikt meritvärde kopplat till svenska som andraspråk. Publiceras inte alltid öppet.'],
+  ['Betygspoäng per ämne', 'Söker genomsnittlig betygspoäng per ämne.'],
+  ['Kontroll antal betyg och specialkoder', 'Visas från lokal SCB-import för att kontrollera giltiga betyg, tomma värden och specialkoder per ämne.'],
+  ['NP GAP åk 6/9', 'Söker NP-resultat och jämför med motsvarande betygsmått för SV/SVA, engelska och matematik.'],
+  ['Relation betyg och nationella prov', 'Söker färdig relation mellan betyg och provbetyg.'],
+  ['Uppnått kunskapskrav i alla ämnen', 'Söker andel elever med lägst E i samtliga ämnen.'],
+  ['Yrkesbehörighet till gymnasiet', 'Söker behörighetsmått för yrkesprogram.'],
+  ['Betygsfördelning per skolenhet och kommun', 'Söker betygsfördelning och skolenhetsdimension. Skolverket kan begränsa skolnivå i öppet API.']
 ];
 
 function setStatus(type, text, sub=''){

@@ -1,4 +1,3 @@
-
 # Agentinstruktioner
 
 ## Arbetssätt
@@ -13,6 +12,12 @@
 - Använd tydliga namn.
 - Kommentera varför något görs, särskilt kring API-fallbacks.
 - Undvik onödiga beroenden.
+
+## Tecken och språk
+
+- Använd UTF-8 i textfiler som innehåller svenska tecken.
+- UI-text ska visas med korrekta svenska tecken som `å`, `ä` och `ö`.
+- Om en fil redan innehåller felkodade svenska tecken ska de rättas när filen ändå ändras.
 
 ## Säkerhet
 

@@ -51,7 +51,7 @@ function findMeasureVar(meta){
 }
 function findTimeVar(meta){ return findVar(meta, [text => /\btid\b|lasar|\bar\b|\btime\b/.test(text), (_, v) => v.time]); }
 function findLevelVar(meta){ return findVar(meta, [text => /kommun|huvudman|skolenhet|level|indelning/.test(text)]); }
-function findGenderVar(meta){ return findVar(meta, [text => /kon|kÃ¶n|sex/.test(text)]); }
+function findGenderVar(meta){ return findVar(meta, [text => /kon|kön|sex/.test(text)]); }
 function pickTimeValue(variable, schoolYear, tablePath='', yearCodes={}){
   const values = (variable?.values || []).map(String);
   const preferred = tablePath.includes('Underlag_for_analys') ? yearCodes.underlag : yearCodes.jmf;
@@ -97,8 +97,8 @@ function buildQuery(meta, measureValues, year, options={}){
     } else if(v === levelVar){
       const values = [];
       if(!(v.values || []).length){
-        // Vissa Skolverket-tabeller dÃ¶ljer vÃ¤rdelistan fÃ¶r huvudman/skolenhet i metadata.
-        // DÃ¥ anvÃ¤nder vi kÃ¤nd huvudmannakod fÃ¶r SÃ¤vsjÃ¶ och riket i stÃ¤llet fÃ¶r ett stort all-anrop.
+        // Vissa Skolverket-tabeller döljer värdelistan för huvudman/skolenhet i metadata.
+        // Då använder vi känd huvudmannakod för Sävsjö och riket i stället för ett stort all-anrop.
         query.push({code:v.code, selection:{filter:'item', values:[HUVUDMAN_KOD, '00']}});
       } else {
         if((v.values || []).includes(KOMKOD)) values.push(KOMKOD);
@@ -123,7 +123,7 @@ function rowObject(result, row){
 }
 function extractLevel(rows, columns, levelCode, genderCode){
   const levelCol = columns.find(c => /level|kommun|huvudman|skolenhet/i.test(c.code + c.text));
-  const genderCol = columns.find(c => /kÃ¶n|kon|sex/i.test(c.code + c.text));
+  const genderCol = columns.find(c => /kön|kon|sex/i.test(c.code + c.text));
   const levelIdx = columns.indexOf(levelCol);
   const genderIdx = columns.indexOf(genderCol);
   const out = {};
@@ -168,14 +168,14 @@ async function loadMetric(key, label, regexes, year, postLimit=10){
     }
   }
   if(matched){
-    const failed = {key, label, status:'error', reason:'MÃ¥ttet finns i metadata, men POST-anropet misslyckades i webblÃ¤saren.', error:lastError};
+    const failed = {key, label, status:'error', reason:'Måttet finns i metadata, men POST-anropet misslyckades i webbläsaren.', error:lastError};
     state.metrics.push(failed);
-    log(`MÃ¥tt hittades men kunde inte hÃ¤mtas: ${label}`, lastError);
+    log(`Mått hittades men kunde inte hämtas: ${label}`, lastError);
     return failed;
   }
-  const missing = {key, label, status:'missing', reason:'Inget matchande mÃ¥tt hittades i Ã¶ppna PxWeb-tabeller.'};
+  const missing = {key, label, status:'missing', reason:'Inget matchande mått hittades i öppna PxWeb-tabeller.'};
   state.metrics.push(missing);
-  log(`MÃ¥tt saknas: ${label}`);
+  log(`Mått saknas: ${label}`);
   return missing;
 }
 function cloneMetricData(data, measureValues){
@@ -201,16 +201,17 @@ async function loadUnderlagBundle(year){
     const make = (key, label, selected) => {
       state.metrics.push({key, label, status:'ok', table, measureValues:selected, query, data:cloneMetricData(data, selected)});
     };
-    make('vocational', 'YrkesbehÃ¶righet till gymnasiet', ['26']);
-    make('knowledgeAll', 'UppnÃ¥tt kunskapskrav i alla Ã¤mnen', ['24','25']);
-    make('npGap', 'NP GAP och betygsnÃ¤ra mÃ¥tt', ['43','44','45','46','47','48']);
-    log('POST OK: Underlagspaket behÃ¶righet, kunskapskrav och NP', {path:table.path, rows:data.data?.length || 0, year, query, measures:values.map(v => valueText(measureVar, v))});
+    make('vocational', 'Yrkesbehörighet till gymnasiet', ['26']);
+    make('knowledgeAll', 'Uppnått kunskapskrav i alla ämnen', ['24','25']);
+    make('npGap', 'NP GAP och betygsnära mått', ['43','44','45','46','47','48']);
+    log('POST OK: Underlagspaket behörighet, kunskapskrav och NP', {path:table.path, rows:data.data?.length || 0, year, query, measures:values.map(v => valueText(measureVar, v))});
   }catch(e){
-    log('POST misslyckades: Underlagspaket behÃ¶righet, kunskapskrav och NP', {path:table.path, error:e.message, query});
+    log('POST misslyckades: Underlagspaket behörighet, kunskapskrav och NP', {path:table.path, error:e.message, query});
     [
-      ['vocational','YrkesbehÃ¶righet till gymnasiet'],
-      ['knowledgeAll','UppnÃ¥tt kunskapskrav i alla Ã¤mnen'],
-      ['npGap','NP GAP och betygsnÃ¤ra mÃ¥tt']
-    ].forEach(([key,label]) => state.metrics.push({key, label, status:'error', reason:'Underlagspaketet kunde inte hÃ¤mtas.', error:e.message}));
+      ['vocational','Yrkesbehörighet till gymnasiet'],
+      ['knowledgeAll','Uppnått kunskapskrav i alla ämnen'],
+      ['npGap','NP GAP och betygsnära mått']
+    ].forEach(([key,label]) => state.metrics.push({key, label, status:'error', reason:'Underlagspaketet kunde inte hämtas.', error:e.message}));
   }
 }
+

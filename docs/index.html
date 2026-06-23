@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="sv">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Betygsstatistik SÃ¤vsjÃ¶</title>
+  <title>Betygsstatistik Sävsjö</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     :root{--p:#1f5f7a;--p2:#347f6a;--g:#258a5b;--o:#b86b1d;--r:#b73535;--bg:#f4f6f8;--card:#fff;--brd:#d9e0e6;--txt:#1f2d35;--mut:#667682}
@@ -21,26 +21,26 @@
 </head>
 <body>
 <header>
-  <div><h1>Betygsstatistik SÃ¤vsjÃ¶</h1><p>Livekontroll av Skolverkets Ã¶ppna PxWeb-data fÃ¶r betyg, kÃ¶n, SVA, Ã¤mnen och behÃ¶righet.</p></div>
-  <div class="badge">Kommunekod 0684 Â· Grundskola</div>
+  <div><h1>Betygsstatistik Sävsjö</h1><p>Livekontroll av Skolverkets öppna PxWeb-data för betyg, kön, SVA, ämnen och behörighet.</p></div>
+  <div class="badge">Kommunekod 0684 · Grundskola</div>
 </header>
 
 <main>
   <section class="box notice">
-    <strong>DatagrÃ¤ns:</strong> Appen visar bara mÃ¥tt som finns i Skolverkets Ã¶ppna PxWeb API. Om skolenhetsnivÃ¥ eller betygsfÃ¶rdelning inte publiceras Ã¶ppet visas det tydligt i tabellen och i diagnostiken.
+    <strong>Datagräns:</strong> Appen visar bara mått som finns i Skolverkets öppna PxWeb API. Om skolenhetsnivå eller betygsfördelning inte publiceras öppet visas det tydligt i tabellen och i diagnostiken.
   </section>
 
   <section id="demoNotice" class="box notice" style="display:none">
-    <strong>Demodata:</strong> Sidan visar anonym testdata. KÃ¶r en riktig SCB-import fÃ¶r att ersÃ¤tta den med skarp lokal statistik.
+    <strong>Demodata:</strong> Sidan visar anonym testdata. Kör en riktig SCB-import för att ersätta den med skarp lokal statistik.
   </section>
 
   <section class="box status">
     <div id="statusDot" class="dot loading"></div>
-    <div><strong id="statusText">Startar...</strong><div id="statusSub" class="small">FÃ¶rbereder API-anrop.</div></div>
+    <div><strong id="statusText">Startar...</strong><div id="statusSub" class="small">Förbereder API-anrop.</div></div>
   </section>
 
   <section class="box toolbar">
-    <label for="yearSel"><strong>LÃ¤sÃ¥r</strong></label>
+    <label for="yearSel"><strong>Läsår</strong></label>
     <select id="yearSel">
       <option value="2025/26" data-local="2025-2026" data-jmf="2026" data-underlag="2025">2025/26</option>
       <option value="2024/25" data-local="2024-2025" data-jmf="2025" data-underlag="2024">2024/25</option>
@@ -54,7 +54,7 @@
 
   <section id="localFilters" class="box filters">
     <div class="filter">
-      <label for="gradeFilter">Ã…rskurs</label>
+      <label for="gradeFilter">Årskurs</label>
       <select id="gradeFilter" multiple></select>
     </div>
     <div class="filter">
@@ -62,7 +62,7 @@
       <select id="schoolFilter" multiple></select>
     </div>
     <div class="filter">
-      <label for="genderFilter">KÃ¶n</label>
+      <label for="genderFilter">Kön</label>
       <select id="genderFilter"><option value="Alla">Alla</option></select>
     </div>
     <div class="filter">
@@ -71,74 +71,80 @@
     </div>
     <div class="filter-actions">
       <button id="selectAllSchoolsBtn" type="button" class="secondary">Alla skolor</button>
-      <button id="clearFiltersBtn" type="button" class="secondary">NollstÃ¤ll urval</button>
+      <button id="clearFiltersBtn" type="button" class="secondary">Nollställ urval</button>
     </div>
   </section>
 
   <section class="grid">
     <div class="card"><div class="label">PxWeb-tabeller</div><div id="tableCount" class="value">-</div><div class="small">Tabeller med metadata</div></div>
-    <div class="card"><div class="label">Lyckade mÃ¥tt</div><div id="metricCount" class="value">-</div><div class="small">MÃ¥tt som gav data</div></div>
-    <div class="card"><div class="label">MeritvÃ¤rde totalt</div><div id="meritCard" class="value">-</div><div class="small">SÃ¤vsjÃ¶, valt lÃ¤sÃ¥r</div></div>
-    <div class="card"><div class="label">YrkesbehÃ¶righet</div><div id="vocCard" class="value">-</div><div class="small">SÃ¤vsjÃ¶, valt lÃ¤sÃ¥r</div></div>
+    <div class="card"><div class="label">Lyckade mått</div><div id="metricCount" class="value">-</div><div class="small">Mått som gav data</div></div>
+    <div class="card"><div class="label">Meritvärde totalt</div><div id="meritCard" class="value">-</div><div class="small">Sävsjö, valt läsår</div></div>
+    <div class="card"><div class="label">Yrkesbehörighet</div><div id="vocCard" class="value">-</div><div class="small">Sävsjö, valt läsår</div></div>
   </section>
 
   <div class="tabs">
-    <div class="tab active" data-tab="overview">Ã–versikt</div>
+    <div class="tab active" data-tab="overview">Översikt</div>
     <div class="tab" data-tab="gender">Pojkar/Flickor</div>
-    <div class="tab" data-tab="subjects">Ã„mnen</div>
-    <div class="tab" data-tab="grades">BetygsfÃ¶rdelning</div>
+    <div class="tab" data-tab="subjects">Ämnen</div>
+    <div class="tab" data-tab="grades">Betygsfördelning</div>
+    <div class="tab" data-tab="control">Kontroll</div>
     <div class="tab" data-tab="outcomes">Resultat</div>
     <div class="tab" data-tab="np">NP GAP</div>
-    <div class="tab" data-tab="availability">DatatÃ¤ckning</div>
+    <div class="tab" data-tab="availability">Datatäckning</div>
     <div class="tab" data-tab="tables">PxWeb-tabeller</div>
     <div class="tab" data-tab="diagnostics">Diagnostik</div>
   </div>
 
   <section id="tab-overview" class="panel active">
-    <div class="box"><h2>MeritvÃ¤rde och yrkesbehÃ¶righet</h2><div class="chart"><canvas id="overviewChart"></canvas></div></div>
-    <div class="box"><h2>MeritvÃ¤rde per skolenhet och Ã¥rskurs</h2><div class="tw"><table><thead><tr><th>Ã…rskurs</th><th>Skolenhet</th><th>KÃ¶n</th><th>Elevgrupp</th><th>Antal elever</th><th>Merit 16</th><th>Merit 17</th><th>UppnÃ¥tt alla Ã¤mnen</th><th>YrkesbehÃ¶righet</th></tr></thead><tbody id="localMeritRows"></tbody></table></div></div>
-    <div class="box"><h2>EfterfrÃ¥gade mÃ¥tt</h2><div class="tw"><table><thead><tr><th>MÃ¥tt</th><th>Status</th><th>Tabell / kommentar</th></tr></thead><tbody id="metricRows"></tbody></table></div></div>
+    <div class="box"><h2>Meritvärde och yrkesbehörighet</h2><div class="chart"><canvas id="overviewChart"></canvas></div></div>
+    <div class="box"><h2>Meritvärde per skolenhet och årskurs</h2><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th>Merit 16</th><th>Merit 17</th><th>Uppnått alla ämnen</th><th>Yrkesbehörighet</th></tr></thead><tbody id="localMeritRows"></tbody></table></div></div>
+    <div class="box"><h2>Efterfrågade mått</h2><div class="tw"><table><thead><tr><th>Mått</th><th>Status</th><th>Tabell / kommentar</th></tr></thead><tbody id="metricRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-gender" class="panel">
-    <div class="box"><h2>KÃ¶nsjÃ¤mfÃ¶relse meritvÃ¤rde</h2><p class="small">Den hÃ¤r tabellen visar pojkar och flickor bredvid varandra Ã¤ven nÃ¤r Ã¶vriga vyer filtreras pÃ¥ ett kÃ¶n.</p><div class="chart"><canvas id="genderChart"></canvas></div></div>
-    <div class="box"><div class="tw"><table><thead><tr><th>Ã…rskurs</th><th>Skolenhet</th><th>Elevgrupp</th><th>Pojkar</th><th>Flickor</th><th>Totalt</th><th>Skillnad F-P</th></tr></thead><tbody id="genderRows"></tbody></table></div></div>
-    <div class="box"><h2>SV/SVA</h2><div class="tw"><table><thead><tr><th>Ã…rskurs</th><th>Skolenhet</th><th>Elevgrupp</th><th>Antal elever</th><th>Merit 17</th><th>GodkÃ¤nd Sv/SVA</th><th>UppnÃ¥tt alla Ã¤mnen</th></tr></thead><tbody id="svaRows"></tbody></table></div></div>
+    <div class="box"><h2>Könsjämförelse meritvärde</h2><p class="small">Den här tabellen visar pojkar och flickor bredvid varandra även när övriga vyer filtreras på ett kön.</p><div class="chart"><canvas id="genderChart"></canvas></div></div>
+    <div class="box"><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Elevgrupp</th><th>Pojkar</th><th>Flickor</th><th>Totalt</th><th>Skillnad F-P</th></tr></thead><tbody id="genderRows"></tbody></table></div></div>
+    <div class="box"><h2>SV/SVA</h2><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Elevgrupp</th><th>Antal elever</th><th>Merit 17</th><th>Godkänd Sv/SVA</th><th>Uppnått alla ämnen</th></tr></thead><tbody id="svaRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-subjects" class="panel">
-    <div class="box"><h2>BetygspoÃ¤ng per Ã¤mne</h2><div class="chart"><canvas id="subjectChart"></canvas></div></div>
-    <div class="box"><div class="tw"><table><thead><tr><th>Ã…rskurs</th><th>Skolenhet</th><th>KÃ¶n</th><th>Elevgrupp</th><th>Ã„mne</th><th>BetygspoÃ¤ng</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>A-E</th><th>Antal</th></tr></thead><tbody id="subjectRows"></tbody></table></div></div>
+    <div class="box"><h2>Betygspoäng per ämne</h2><div class="chart"><canvas id="subjectChart"></canvas></div></div>
+    <div class="box"><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Ämne</th><th>Betygspoäng</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>A-E</th><th>Antal</th></tr></thead><tbody id="subjectRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-grades" class="panel">
-    <div class="box"><h2>BetygsfÃ¶rdelning A-F</h2><div class="chart"><canvas id="gradeDistChart"></canvas></div></div>
-    <div class="box"><div class="tw"><table><thead><tr><th>Ã…rskurs</th><th>Skolenhet</th><th>KÃ¶n</th><th>Elevgrupp</th><th>Ã„mne</th><th>A %</th><th>B %</th><th>C %</th><th>D %</th><th>E %</th><th>F %</th><th>Antal</th></tr></thead><tbody id="gradeDistRows"></tbody></table></div></div>
+    <div class="box"><h2>Betygsfördelning A-F</h2><div class="chart"><canvas id="gradeDistChart"></canvas></div></div>
+    <div class="box"><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Ämne</th><th>A %</th><th>B %</th><th>C %</th><th>D %</th><th>E %</th><th>F %</th><th>Antal</th></tr></thead><tbody id="gradeDistRows"></tbody></table></div></div>
+  </section>
+
+  <section id="tab-control" class="panel">
+    <div class="box"><h2>Kontroll antal betyg och specialkoder</h2><p class="small">Visar antal giltiga betyg, tomma värden, specialkoder och ogiltiga koder per ämne för lokal SCB-import.</p><div class="chart"><canvas id="controlChart"></canvas></div></div>
+    <div class="box"><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Elevgrupp</th><th>Ämne</th><th>Elever</th><th>Giltiga</th><th>A-E</th><th>F</th><th>Tomma</th><th>Special</th><th>Ogiltiga</th><th>2</th><th>3</th><th>9</th><th>Y</th><th>Z</th></tr></thead><tbody id="controlRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-outcomes" class="panel">
-    <div class="box"><h2>UppnÃ¥tt alla Ã¤mnen</h2><div class="chart"><canvas id="knowledgeChart"></canvas></div></div>
-    <div class="box"><div class="tw"><table><thead><tr><th>Ã…rskurs</th><th>Skolenhet</th><th>KÃ¶n</th><th>Elevgrupp</th><th>Antal elever</th><th>UppnÃ¥tt alla Ã¤mnen</th></tr></thead><tbody id="knowledgeRows"></tbody></table></div></div>
-    <div class="box"><h2>YrkesbehÃ¶righet Ã¥k 9</h2><div class="chart"><canvas id="vocationalChart"></canvas></div></div>
-    <div class="box"><div class="tw"><table><thead><tr><th>Skolenhet</th><th>KÃ¶n</th><th>Elevgrupp</th><th>Antal elever</th><th>YrkesbehÃ¶righet</th></tr></thead><tbody id="vocationalRows"></tbody></table></div></div>
+    <div class="box"><h2>Uppnått alla ämnen</h2><div class="chart"><canvas id="knowledgeChart"></canvas></div></div>
+    <div class="box"><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th>Uppnått alla ämnen</th></tr></thead><tbody id="knowledgeRows"></tbody></table></div></div>
+    <div class="box"><h2>Yrkesbehörighet åk 9</h2><div class="chart"><canvas id="vocationalChart"></canvas></div></div>
+    <div class="box"><div class="tw"><table><thead><tr><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th>Yrkesbehörighet</th></tr></thead><tbody id="vocationalRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-np" class="panel">
-    <div class="box"><h2>NP andel godkanda</h2><div class="chart"><canvas id="npPassChart"></canvas></div><div class="tw"><table><thead><tr><th>Niva</th><th>Arskurs</th><th>Kon</th><th>Amne</th><th>Antal NP</th><th>Andel godkanda</th><th>Betygsmatch</th></tr></thead><tbody id="npLocalRows"></tbody></table></div></div>
-    <div class="box"><h2>Relation betyg och nationella prov</h2><p class="small">Visas for arskurser och amnen dar bade betyg och NP-provresultat finns i lokal import.</p><div class="chart"><canvas id="npRelationChart"></canvas></div><div class="tw"><table><thead><tr><th>Niva</th><th>Arskurs</th><th>Kon</th><th>Amne</th><th>Jamforda</th><th>Betyg &gt; NP</th><th>Betyg = NP</th><th>Betyg &lt; NP</th></tr></thead><tbody id="npRelationRows"></tbody></table></div></div>
-    <div class="box"><h2>NP GAP och nÃ¤rliggande betygsmÃ¥tt</h2><p class="small">Den Ã¶ppna PxWeb-strukturen innehÃ¥ller inte komplett NP Ã¥k 6/9 fÃ¶r SV, EN och matematik. HÃ¤r visas de NP-/betygsnÃ¤ra mÃ¥tt som gÃ¥r att hÃ¤mta fÃ¶r SÃ¤vsjÃ¶ huvudman och riket.</p><div class="tw"><table><thead><tr><th>MÃ¥tt</th><th>SÃ¤vsjÃ¶ huvudman</th><th>Riket</th><th>GAP</th></tr></thead><tbody id="npRows"></tbody></table></div></div>
+    <div class="box"><h2>NP andel godkända</h2><div class="chart"><canvas id="npPassChart"></canvas></div><div class="tw"><table><thead><tr><th>Nivå</th><th>Årskurs</th><th>Kön</th><th>Ämne</th><th>Antal NP</th><th>Andel godkända</th><th>Betygsmatch</th></tr></thead><tbody id="npLocalRows"></tbody></table></div></div>
+    <div class="box"><h2>Relation betyg och nationella prov</h2><p class="small">Visas för årskurser och ämnen där både betyg och NP-provresultat finns i lokal import.</p><div class="chart"><canvas id="npRelationChart"></canvas></div><div class="tw"><table><thead><tr><th>Nivå</th><th>Årskurs</th><th>Kön</th><th>Ämne</th><th>Jämförda</th><th>Betyg &gt; NP</th><th>Betyg = NP</th><th>Betyg &lt; NP</th></tr></thead><tbody id="npRelationRows"></tbody></table></div></div>
+    <div class="box"><h2>NP GAP och närliggande betygsmått</h2><p class="small">Den öppna PxWeb-strukturen innehåller inte komplett NP åk 6/9 för SV, EN och matematik. Här visas de NP-/betygsnära mått som går att hämta för Sävsjö huvudman och riket.</p><div class="tw"><table><thead><tr><th>Mått</th><th>Sävsjö huvudman</th><th>Riket</th><th>GAP</th></tr></thead><tbody id="npRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-availability" class="panel">
-    <div class="box"><h2>DatatÃ¤ckning fÃ¶r Ã¶nskade vyer</h2><div class="tw"><table><thead><tr><th>Ã–nskad vy</th><th>API-status</th><th>Kommentar</th></tr></thead><tbody id="availabilityRows"></tbody></table></div></div>
+    <div class="box"><h2>Datatäckning för önskade vyer</h2><div class="tw"><table><thead><tr><th>Önskad vy</th><th>API-status</th><th>Kommentar</th></tr></thead><tbody id="availabilityRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-tables" class="panel">
-    <div class="box"><h2>UpptÃ¤ckta PxWeb-tabeller</h2><div class="tw"><table><thead><tr><th>Tabell</th><th>Status</th><th>Variabler</th></tr></thead><tbody id="tableRows"></tbody></table></div></div>
+    <div class="box"><h2>Upptäckta PxWeb-tabeller</h2><div class="tw"><table><thead><tr><th>Tabell</th><th>Status</th><th>Variabler</th></tr></thead><tbody id="tableRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-diagnostics" class="panel">
-    <div class="box"><h2>Diagnostik</h2><p class="small">HÃ¤r visas metadata, matchade mÃ¥tt, POST-querys och API-fel.</p><div id="diagLog" class="pre"></div></div>
+    <div class="box"><h2>Diagnostik</h2><p class="small">Här visas metadata, matchade mått, POST-querys och API-fel.</p><div id="diagLog" class="pre"></div></div>
   </section>
 </main>
 
@@ -149,4 +155,3 @@
 <script src="app/init.js"></script>
 </body>
 </html>
-

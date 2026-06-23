@@ -12,6 +12,7 @@ from config_paths import DEFAULT_LASAR, resolve_paths
 from betyg.constants import AK9_SUBJECTS
 from betyg.io import publish_processed_json
 from betyg.metrics import eligibility, merit, sv_sva_group
+from betyg.pipeline import control_rows
 
 
 class MetricsTests(unittest.TestCase):
@@ -54,6 +55,24 @@ class PublishTests(unittest.TestCase):
             self.assertTrue((target_dir / "manifest.json").exists())
             self.assertTrue((target_dir / "betygsstatistik_oversikt.json").exists())
             self.assertFalse((target_dir / "secret.json").exists())
+
+
+class ControlRowsTests(unittest.TestCase):
+    def test_control_rows_counts_valid_and_special_codes(self) -> None:
+        rows = [
+            {"Skolenhetskod": "123", "sv_sva_grupp": "SV", "Sv": "A", "Ma": "F"},
+            {"Skolenhetskod": "123", "sv_sva_grupp": "SV", "Sv": "2", "Ma": ""},
+            {"Skolenhetskod": "123", "sv_sva_grupp": "SVA", "Sv": "", "Ma": "Y"},
+        ]
+        lookup = {"123": "Testskolan"}
+        result = control_rows(rows, "2025-2026", 9, ["Sv", "Ma"], lookup)
+        sv_all = next(row for row in result if row["niva"] == "alla_skolenheter" and row["elevgrupp"] == "Alla" and row["amne"] == "Sv")
+        self.assertEqual(sv_all["antal_giltiga_betyg"], 1)
+        self.assertEqual(sv_all["specialkod_2"], 1)
+        self.assertEqual(sv_all["antal_tomma"], 1)
+        ma_sv = next(row for row in result if row["niva"] == "skolenhet" and row["elevgrupp"] == "SV" and row["amne"] == "Ma")
+        self.assertEqual(ma_sv["antal_F"], 1)
+        self.assertEqual(ma_sv["antal_tomma"], 1)
 
 
 class ConfigPathsTests(unittest.TestCase):

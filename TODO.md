@@ -1,4 +1,4 @@
-# TODO
+﻿# TODO
 
 ## Excel-ersattning
 
@@ -18,7 +18,7 @@ Behörighet gymnasiet betyder i projektet yrkesbehörighet till gymnasiet, inte 
 | Fördelning betyg pr ämne tabell | Delvis | Visa full A-F-fördelning per ämne, årskurs, skolenhet och elevgrupp. |
 | Fördelning betyg per ämne diagr | Delvis | Bygg diagram på samma filtrerade A-F-data. |
 | Uppnått kunskapskr i alla ämnen | Delvis | Visa egen tabell per årskurs, skolenhet och kön. |
-| Kontroll antal betyg | Saknas | Bygg kontrollvy för antal betyg per ämne och specialkoder. |
+| Kontroll antal betyg | Klar | Kontrollvy finns för antal betyg per ämne och specialkoder. |
 
 ## Byggordning
 
@@ -28,7 +28,7 @@ Behörighet gymnasiet betyder i projektet yrkesbehörighet till gymnasiet, inte 
 - [x] Bygg ämnesvy för betygspoäng.
 - [x] Bygg full A-F-fördelning.
 - [x] Bygg uppnått alla ämnen och yrkesbehörighet åk 9.
-- [ ] Bygg kontrollvy för antal betyg och specialkoder.
+- [x] Bygg kontrollvy för antal betyg och specialkoder.
 - [ ] Validera 2024/25 mot Excel blad för blad.
 
 ## Senare
@@ -37,3 +37,4 @@ Behörighet gymnasiet betyder i projektet yrkesbehörighet till gymnasiet, inte 
 - [ ] Lägg till CSV-export.
 - [ ] Lägg till jämförelse med flera kommuner.
 - [ ] Förbättra tillgänglighet och utskriftsvy.
+

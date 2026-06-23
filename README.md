@@ -1,4 +1,4 @@
-# Betygsstatistik Sävsjö
+﻿# Betygsstatistik Sävsjö
 
 ## Syfte
 
@@ -137,13 +137,21 @@ src/scb_betyg_import.py
 
 Frontendlogiken är nu uppdelad i `app/`:
 
-- `core.js` for shared constants, state and small helpers
-- `local-data.js` for local JSON loading, filters and local rendering
-- `pxweb.js` for PxWeb discovery, metadata and query building
-- `render.js` for API fallback rendering and chart helpers
-- `init.js` for startup and event binding
+- `core.js` för delade konstanter, state och små hjälpfunktioner
+- `local-data.js` för lokal JSON-laddning, filter och lokal rendering
+- `pxweb.js` för PxWeb-upptäckt, metadata och querybygge
+- `render.js` för API-fallbackrendering och diagramhjälpare
+- `init.js` för uppstart och event binding
 
 `npm run build:pages` kopierar `index.html` och `app/`, och sätter `STATIC_PAGES_BUILD = true` i publicerad `docs/app/core.js`.
+
+Lokal SCB-import kan också skapa kontrollfilen:
+
+```text
+data/output/<läsår>/json/betygsstatistik_kontroll_betyg.json
+```
+
+Den används i fliken **Kontroll** för att visa antal giltiga betyg, tomma värden, specialkoder och ogiltiga koder per ämne.
 
 Lägg SCB:s semikolonseparerade betygsfiler i separata mappar per läsår och årskurs:
 
@@ -227,3 +235,4 @@ data/output/2025-2026/json/skolenheter_lookup.json
 Relationen betyg/NP beraknas bara for ak 6 och 9, eftersom ak 3 saknar terminsbetyg i betygsflodet. Personnummer anvands bara internt for matchning och skrivs inte till publicerad JSON.
 
 Skolenhetsnamn hamtas fran Skolverkets skolenhetsregister API v2 nar importen kan na API:t. For Savsjos kanda grundskolor finns ocksa en lokal fallbacktabell sa att sidan kan visa skolnamn aven om API:t inte svarar. Om en kod fortfarande inte kan matchas visas skolenhetskoden som fallback.
+
