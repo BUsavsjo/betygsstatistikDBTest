@@ -304,7 +304,10 @@ function renderLocalOutcomes(local, meritRows){
     .filter(r => r.andel_uppnatt_alla_amnen != null)
     .sort((a,b) => `${a.arskurs}${schoolLabel(a)}${a.kon}${a.elevgrupp}`.localeCompare(`${b.arskurs}${schoolLabel(b)}${b.kon}${b.elevgrupp}`, 'sv', {numeric:true}));
   $('knowledgeRows').innerHTML = outcomeRows.map(r => `<tr><td>${esc(r.arskurs)}</td><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.elevgrupp || 'Alla')}</td><td>${esc(r.antal_elever ?? '-')}</td><td>${fmt(r.andel_uppnatt_alla_amnen, ' %')}</td></tr>`).join('') || '<tr><td colspan="6" class="muted">Ingen data för uppnått alla ämnen matchar urvalet.</td></tr>';
-  const knowledgeChartRows = outcomeRows.filter(r => r.kon === 'Alla' && r.elevgrupp === 'Alla').slice(0, 18);
+  const knowledgeChartRows = outcomeRows
+    .filter(r => (state.filters.gender === 'Alla' ? r.kon === 'Alla' : r.kon === state.filters.gender))
+    .filter(r => (state.filters.group === 'Alla' ? r.elevgrupp === 'Alla' : r.elevgrupp === state.filters.group))
+    .slice(0, 18);
   makeChart('knowledgeChart','bar',{
     labels: knowledgeChartRows.map(r => `Åk ${r.arskurs} ${schoolLabel(r)}`),
     datasets:[{label:'Uppnått alla ämnen %', data:knowledgeChartRows.map(r => r.andel_uppnatt_alla_amnen), backgroundColor:'#347f6a'}]
@@ -314,7 +317,10 @@ function renderLocalOutcomes(local, meritRows){
     .filter(r => r.andel_behoriga_yrkesprogram != null)
     .sort((a,b) => `${schoolLabel(a)}${a.kon}${a.elevgrupp}`.localeCompare(`${schoolLabel(b)}${b.kon}${b.elevgrupp}`, 'sv', {numeric:true}));
   $('vocationalRows').innerHTML = vocationalRows.map(r => `<tr><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.elevgrupp || 'Alla')}</td><td>${esc(r.antal_elever ?? '-')}</td><td>${fmt(r.andel_behoriga_yrkesprogram, ' %')}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Ingen yrkesbehörighetsdata för åk 9 matchar urvalet.</td></tr>';
-  const vocationalChartRows = vocationalRows.filter(r => r.kon === 'Alla' && r.elevgrupp === 'Alla').slice(0, 12);
+  const vocationalChartRows = vocationalRows
+    .filter(r => (state.filters.gender === 'Alla' ? r.kon === 'Alla' : r.kon === state.filters.gender))
+    .filter(r => (state.filters.group === 'Alla' ? r.elevgrupp === 'Alla' : r.elevgrupp === state.filters.group))
+    .slice(0, 12);
   makeChart('vocationalChart','bar',{
     labels: vocationalChartRows.map(r => schoolLabel(r)),
     datasets:[{label:'Yrkesbehörighet åk 9 %', data:vocationalChartRows.map(r => r.andel_behoriga_yrkesprogram), backgroundColor:'#2f6f9f'}]
