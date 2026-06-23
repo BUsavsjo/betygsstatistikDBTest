@@ -6,7 +6,7 @@ from typing import Any
 
 from .constants import GradeSpec, NP_SPECS, SPECIAL_CODES, SPECS, VALID_GRADES
 from .io import publish_processed_json, read_grade_files, read_np_files, write_csv, write_json
-from .metrics import base_groups, clean, eligibility, grade, grade_distribution, merit, overview, reached_all_subjects, school_name, sv_sva_group, sv_sva_summary
+from .metrics import base_groups, clean, eligibility, gender_from_personnr, grade, grade_distribution, merit, overview, reached_all_subjects, school_name, segmented_groups, sv_sva_group, sv_sva_summary
 from .np_data import aggregate_np
 from .skolenheter import skolenhet_lookup
 
@@ -36,6 +36,7 @@ def import_diagnostics(rows: list[dict[str, Any]], diagnostics: list[dict[str, A
         "invalid_grade_codes": invalid_codes[:500],
         "invalid_grade_code_count": len(invalid_codes),
         "sv_sva_groups": Counter(row["sv_sva_grupp"] for row in rows),
+        "kon": Counter(row["kon"] for row in rows),
         "special_codes_by_subject": {key: dict(value) for key, value in special_counts.items() if sum(value.values())},
     }
 
@@ -43,10 +44,7 @@ def import_diagnostics(rows: list[dict[str, Any]], diagnostics: list[dict[str, A
 def control_rows(rows: list[dict[str, Any]], lasar: str, arskurs: int, subjects: list[str], lookup: dict[str, str | None]) -> list[dict[str, Any]]:
     result: list[dict[str, Any]] = []
     for level, school_code, subset in base_groups(rows):
-        for group_name in ("Alla", "SV", "SVA", "oklar", "SV_och_SVA"):
-            group_rows = subset if group_name == "Alla" else [row for row in subset if row["sv_sva_grupp"] == group_name]
-            if not group_rows:
-                continue
+        for kon, group_name, group_rows in segmented_groups(subset):
             for subject in subjects:
                 values = [clean(row.get(subject)).upper() for row in group_rows]
                 valid = [value for value in values if value in VALID_GRADES]
@@ -58,6 +56,7 @@ def control_rows(rows: list[dict[str, Any]], lasar: str, arskurs: int, subjects:
                     "niva": level,
                     "skolenhetskod": school_code,
                     "skolenhetsnamn": school_name(level, school_code, lookup),
+                    "kon": kon,
                     "elevgrupp": group_name,
                     "amne": subject,
                     "antal_elever": len(group_rows),
@@ -113,6 +112,7 @@ def build_year(
             merit16, merit17 = merit(row, spec.subjects)
             row["arskurs"] = spec.arskurs
             row["lasar"] = lasar
+            row["kon"] = gender_from_personnr(row.get("PersonNr"))
             row["sv_sva_grupp"] = sv_sva_group(row)
             row["meritvarde_16"] = merit16
             row["meritvarde_17"] = merit17
@@ -124,7 +124,7 @@ def build_year(
             school_codes.add(clean(row.get("Skolenhetskod")))
 
         write_csv(output_dir / f"betyg_ak{spec.arskurs}_rensad.csv", rows, spec.columns + [
-            "arskurs", "lasar", "sv_sva_grupp", "meritvarde_16", "meritvarde_17", "uppnatt_alla_amnen",
+            "arskurs", "lasar", "kon", "sv_sva_grupp", "meritvarde_16", "meritvarde_17", "uppnatt_alla_amnen",
             "behorig_yrkesprogram", "behorig_hogskoleforberedande_es",
             "behorig_hogskoleforberedande_ek_hu_sa", "behorig_hogskoleforberedande_na_te",
             "behorig_hogskoleforberedande_nagot_program",

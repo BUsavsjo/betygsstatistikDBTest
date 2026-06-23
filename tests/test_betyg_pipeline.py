@@ -11,11 +11,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from config_paths import DEFAULT_LASAR, resolve_paths
 from betyg.constants import AK9_SUBJECTS
 from betyg.io import publish_processed_json
-from betyg.metrics import eligibility, merit, sv_sva_group
+from betyg.metrics import eligibility, gender_from_personnr, merit, overview, sv_sva_group
 from betyg.pipeline import control_rows
 
 
 class MetricsTests(unittest.TestCase):
+    def test_gender_from_personnr_uses_second_last_digit(self) -> None:
+        self.assertEqual(gender_from_personnr("20100101-1234"), "Pojkar")
+        self.assertEqual(gender_from_personnr("20100101-1244"), "Flickor")
+        self.assertEqual(gender_from_personnr(""), "okänt")
+
     def test_sv_sva_group_prefers_distinct_states(self) -> None:
         self.assertEqual(sv_sva_group({"Sv": "C", "Sva": ""}), "SV")
         self.assertEqual(sv_sva_group({"Sv": "", "Sva": "B"}), "SVA")
@@ -58,11 +63,43 @@ class PublishTests(unittest.TestCase):
 
 
 class ControlRowsTests(unittest.TestCase):
+    def test_overview_includes_gender_and_sv_sva_segments(self) -> None:
+        rows = [
+            {
+                "Skolenhetskod": "123",
+                "kon": "Pojkar",
+                "sv_sva_grupp": "SV",
+                "meritvarde_16": 160,
+                "meritvarde_17": 170,
+                "uppnatt_alla_amnen": True,
+                "behorig_yrkesprogram": True,
+                "behorig_hogskoleforberedande_nagot_program": False,
+            },
+            {
+                "Skolenhetskod": "123",
+                "kon": "Flickor",
+                "sv_sva_grupp": "SVA",
+                "meritvarde_16": 180,
+                "meritvarde_17": 190,
+                "uppnatt_alla_amnen": False,
+                "behorig_yrkesprogram": False,
+                "behorig_hogskoleforberedande_nagot_program": False,
+            },
+        ]
+        result = overview(rows, "2025-2026", 9, {"123": "Testskolan"})
+
+        segments = {(row["niva"], row["kon"], row["elevgrupp"]) for row in result}
+        self.assertIn(("skolenhet", "Alla", "Alla"), segments)
+        self.assertIn(("skolenhet", "Pojkar", "Alla"), segments)
+        self.assertIn(("skolenhet", "Flickor", "Alla"), segments)
+        self.assertIn(("skolenhet", "Alla", "SV"), segments)
+        self.assertIn(("skolenhet", "Alla", "SVA"), segments)
+
     def test_control_rows_counts_valid_and_special_codes(self) -> None:
         rows = [
-            {"Skolenhetskod": "123", "sv_sva_grupp": "SV", "Sv": "A", "Ma": "F"},
-            {"Skolenhetskod": "123", "sv_sva_grupp": "SV", "Sv": "2", "Ma": ""},
-            {"Skolenhetskod": "123", "sv_sva_grupp": "SVA", "Sv": "", "Ma": "Y"},
+            {"Skolenhetskod": "123", "kon": "Pojkar", "sv_sva_grupp": "SV", "Sv": "A", "Ma": "F"},
+            {"Skolenhetskod": "123", "kon": "Flickor", "sv_sva_grupp": "SV", "Sv": "2", "Ma": ""},
+            {"Skolenhetskod": "123", "kon": "Flickor", "sv_sva_grupp": "SVA", "Sv": "", "Ma": "Y"},
         ]
         lookup = {"123": "Testskolan"}
         result = control_rows(rows, "2025-2026", 9, ["Sv", "Ma"], lookup)
