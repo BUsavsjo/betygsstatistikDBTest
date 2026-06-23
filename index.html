@@ -30,6 +30,10 @@
     <strong>Datagräns:</strong> Appen visar bara mått som finns i Skolverkets öppna PxWeb API. Om skolenhetsnivå eller betygsfördelning inte publiceras öppet visas det tydligt i tabellen och i diagnostiken.
   </section>
 
+  <section id="demoNotice" class="box notice" style="display:none">
+    <strong>Demodata:</strong> Sidan visar anonym testdata. Kör en riktig SCB-import för att ersätta den med skarp lokal statistik.
+  </section>
+
   <section class="box status">
     <div id="statusDot" class="dot loading"></div>
     <div><strong id="statusText">Startar...</strong><div id="statusSub" class="small">Förbereder API-anrop.</div></div>
@@ -178,9 +182,7 @@ function fmt(v, suffix=''){
   const n = Number.parseFloat(String(v ?? '').replace(',','.'));
   return Number.isFinite(n) ? `${n.toLocaleString('sv-SE', {maximumFractionDigits:1})}${suffix}` : '-';
 }
-async function tryLoadLocalYear(localYear){
-  if(!localYear) return null;
-  const base = `/data/output/${localYear}/json`;
+async function tryLoadLocalSource(base, sourceKind){
   try{
     const [manifest, overview, svSva, distribution] = await Promise.all([
       fetchJson(`${base}/manifest.json`),
@@ -195,10 +197,16 @@ async function tryLoadLocalYear(localYear){
     const hasGrades = manifest.arskurser?.some(a => Number(a.rows) > 0);
     const hasNp = manifest.np_arskurser?.some(a => Number(a.rows) > 0) || npPass.length || npRelation.length;
     if(!hasGrades && !hasNp) return null;
-    return {base, manifest, overview, svSva, distribution, npPass, npRelation};
+    return {base, sourceKind, isDemo: sourceKind === 'demo' || norm(manifest.source).includes('dummy') || norm(manifest.source).includes('demo'), manifest, overview, svSva, distribution, npPass, npRelation};
   }catch{
     return null;
   }
+}
+async function tryLoadLocalYear(localYear){
+  if(!localYear) return null;
+  const output = await tryLoadLocalSource(`/data/output/${localYear}/json`, 'output');
+  if(output) return output;
+  return tryLoadLocalSource(`/data/demo/${localYear}/json`, 'demo');
 }
 async function fetchJsonOptional(url, fallback){
   try{ return await fetchJson(url); }catch{ return fallback; }
@@ -259,14 +267,16 @@ function populateLocalFilters(local){
   $('groupFilter').innerHTML = '<option value="Alla">Alla</option>' + groups.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join('');
   $('localFilters').classList.add('active');
 }
+function rowGender(row){ return row.kon || 'Alla'; }
+function rowGroup(row){ return row.elevgrupp || 'Alla'; }
 function localFilterRows(rows, {allowAllLevel=false, forceGrade=null}={}){
   const f = state.filters;
   return (rows || []).filter(r => {
     const grade = String(r.arskurs ?? '');
     if(forceGrade && Number(r.arskurs) !== Number(forceGrade)) return false;
     if(f.grades.length && !f.grades.includes(grade)) return false;
-    if(f.gender !== 'Alla' && r.kon !== f.gender) return false;
-    if(f.group !== 'Alla' && r.elevgrupp !== f.group) return false;
+    if(f.gender !== 'Alla' && rowGender(r) !== f.gender) return false;
+    if(f.group !== 'Alla' && rowGroup(r) !== f.group) return false;
     if(allowAllLevel && (r.niva === 'alla_skolenheter' || r.niva === 'kommun')) return true;
     return r.niva === 'skolenhet' && (!f.schools.length || f.schools.includes(schoolKey(r)));
   });
@@ -276,7 +286,7 @@ function localBaseFilter(rows, {forceGrade=null}={}){
   return (rows || []).filter(r => {
     if(forceGrade && Number(r.arskurs) !== Number(forceGrade)) return false;
     if(f.grades.length && !f.grades.includes(String(r.arskurs ?? ''))) return false;
-    if(f.group !== 'Alla' && r.elevgrupp !== f.group) return false;
+    if(f.group !== 'Alla' && rowGroup(r) !== f.group) return false;
     return r.niva === 'skolenhet' && (!f.schools.length || f.schools.includes(schoolKey(r)));
   });
 }
@@ -293,20 +303,20 @@ function gradePointAverage(row){
 }
 function subjectDistributionRows(local){
   return localFilterRows(local.distribution || [])
-    .filter(r => r.elevgrupp === (state.filters.group === 'Alla' ? 'Alla' : state.filters.group))
-    .filter(r => state.filters.gender === 'Alla' ? r.kon === 'Alla' : true)
+    .filter(r => rowGroup(r) === (state.filters.group === 'Alla' ? 'Alla' : state.filters.group))
+    .filter(r => state.filters.gender === 'Alla' ? rowGender(r) === 'Alla' : true)
     .filter(r => Number(r.antal_betyg) > 0)
     .map(r => ({...r, betygspoang: gradePointAverage(r)}))
-    .sort((a,b) => `${a.arskurs}${schoolLabel(a)}${a.kon}${a.elevgrupp}${a.amne}`.localeCompare(`${b.arskurs}${schoolLabel(b)}${b.kon}${b.elevgrupp}${b.amne}`, 'sv', {numeric:true}));
+    .sort((a,b) => `${a.arskurs}${schoolLabel(a)}${rowGender(a)}${rowGroup(a)}${a.amne}`.localeCompare(`${b.arskurs}${schoolLabel(b)}${rowGender(b)}${rowGroup(b)}${b.amne}`, 'sv', {numeric:true}));
 }
 function renderLocalOutcomes(local, meritRows){
   const outcomeRows = meritRows
     .filter(r => r.andel_uppnatt_alla_amnen != null)
-    .sort((a,b) => `${a.arskurs}${schoolLabel(a)}${a.kon}${a.elevgrupp}`.localeCompare(`${b.arskurs}${schoolLabel(b)}${b.kon}${b.elevgrupp}`, 'sv', {numeric:true}));
+    .sort((a,b) => `${a.arskurs}${schoolLabel(a)}${rowGender(a)}${rowGroup(a)}`.localeCompare(`${b.arskurs}${schoolLabel(b)}${rowGender(b)}${rowGroup(b)}`, 'sv', {numeric:true}));
   $('knowledgeRows').innerHTML = outcomeRows.map(r => `<tr><td>${esc(r.arskurs)}</td><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.elevgrupp || 'Alla')}</td><td>${esc(r.antal_elever ?? '-')}</td><td>${fmt(r.andel_uppnatt_alla_amnen, ' %')}</td></tr>`).join('') || '<tr><td colspan="6" class="muted">Ingen data för uppnått alla ämnen matchar urvalet.</td></tr>';
   const knowledgeChartRows = outcomeRows
-    .filter(r => (state.filters.gender === 'Alla' ? r.kon === 'Alla' : r.kon === state.filters.gender))
-    .filter(r => (state.filters.group === 'Alla' ? r.elevgrupp === 'Alla' : r.elevgrupp === state.filters.group))
+    .filter(r => (state.filters.gender === 'Alla' ? rowGender(r) === 'Alla' : rowGender(r) === state.filters.gender))
+    .filter(r => (state.filters.group === 'Alla' ? rowGroup(r) === 'Alla' : rowGroup(r) === state.filters.group))
     .slice(0, 18);
   makeChart('knowledgeChart','bar',{
     labels: knowledgeChartRows.map(r => `Åk ${r.arskurs} ${schoolLabel(r)}`),
@@ -315,11 +325,11 @@ function renderLocalOutcomes(local, meritRows){
 
   const vocationalRows = localFilterRows(local.overview || [], {forceGrade:9})
     .filter(r => r.andel_behoriga_yrkesprogram != null)
-    .sort((a,b) => `${schoolLabel(a)}${a.kon}${a.elevgrupp}`.localeCompare(`${schoolLabel(b)}${b.kon}${b.elevgrupp}`, 'sv', {numeric:true}));
+    .sort((a,b) => `${schoolLabel(a)}${rowGender(a)}${rowGroup(a)}`.localeCompare(`${schoolLabel(b)}${rowGender(b)}${rowGroup(b)}`, 'sv', {numeric:true}));
   $('vocationalRows').innerHTML = vocationalRows.map(r => `<tr><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.elevgrupp || 'Alla')}</td><td>${esc(r.antal_elever ?? '-')}</td><td>${fmt(r.andel_behoriga_yrkesprogram, ' %')}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Ingen yrkesbehörighetsdata för åk 9 matchar urvalet.</td></tr>';
   const vocationalChartRows = vocationalRows
-    .filter(r => (state.filters.gender === 'Alla' ? r.kon === 'Alla' : r.kon === state.filters.gender))
-    .filter(r => (state.filters.group === 'Alla' ? r.elevgrupp === 'Alla' : r.elevgrupp === state.filters.group))
+    .filter(r => (state.filters.gender === 'Alla' ? rowGender(r) === 'Alla' : rowGender(r) === state.filters.gender))
+    .filter(r => (state.filters.group === 'Alla' ? rowGroup(r) === 'Alla' : rowGroup(r) === state.filters.group))
     .slice(0, 12);
   makeChart('vocationalChart','bar',{
     labels: vocationalChartRows.map(r => schoolLabel(r)),
@@ -331,18 +341,18 @@ function renderFilteredLocal(){
   if(!local) return;
 
   const meritRows = localFilterRows(local.overview || []);
-  const cardBase = localFilterRows(local.overview || [], {allowAllLevel:true}).find(r => r.niva === 'alla_skolenheter' && Number(r.arskurs) === 9 && r.kon === 'Alla' && r.elevgrupp === 'Alla')
-    || localFilterRows(local.overview || [], {allowAllLevel:true}).find(r => r.niva === 'alla_skolenheter' && r.kon === 'Alla' && r.elevgrupp === 'Alla')
+  const cardBase = localFilterRows(local.overview || [], {allowAllLevel:true}).find(r => r.niva === 'alla_skolenheter' && Number(r.arskurs) === 9 && rowGender(r) === 'Alla' && rowGroup(r) === 'Alla')
+    || localFilterRows(local.overview || [], {allowAllLevel:true}).find(r => r.niva === 'alla_skolenheter' && rowGender(r) === 'Alla' && rowGroup(r) === 'Alla')
     || meritRows[0] || {};
   $('meritCard').textContent = fmt(cardBase.genomsnittligt_meritvarde_17 || cardBase.genomsnittligt_meritvarde_16);
   $('vocCard').textContent = cardBase.andel_behoriga_yrkesprogram == null ? '-' : fmt(cardBase.andel_behoriga_yrkesprogram, ' %');
 
   $('localMeritRows').innerHTML = meritRows
-    .sort((a,b) => `${a.arskurs}${schoolLabel(a)}${a.kon}${a.elevgrupp}`.localeCompare(`${b.arskurs}${schoolLabel(b)}${b.kon}${b.elevgrupp}`, 'sv', {numeric:true}))
+    .sort((a,b) => `${a.arskurs}${schoolLabel(a)}${rowGender(a)}${rowGroup(a)}`.localeCompare(`${b.arskurs}${schoolLabel(b)}${rowGender(b)}${rowGroup(b)}`, 'sv', {numeric:true}))
     .map(r => `<tr><td>${esc(r.arskurs)}</td><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.elevgrupp || 'Alla')}</td><td>${esc(r.antal_elever ?? '-')}</td><td>${fmt(r.genomsnittligt_meritvarde_16)}</td><td>${fmt(r.genomsnittligt_meritvarde_17)}</td><td>${fmt(r.andel_uppnatt_alla_amnen, ' %')}</td><td>${r.andel_behoriga_yrkesprogram == null ? '-' : fmt(r.andel_behoriga_yrkesprogram, ' %')}</td></tr>`)
     .join('') || '<tr><td colspan="9" class="muted">Inga rader matchar urvalet.</td></tr>';
 
-  const chartRows = meritRows.filter(r => r.kon === 'Alla' && r.elevgrupp === 'Alla');
+  const chartRows = meritRows.filter(r => rowGender(r) === 'Alla' && rowGroup(r) === 'Alla');
   makeChart('overviewChart','bar',{
     labels: chartRows.map(r => `Åk ${r.arskurs} ${schoolLabel(r)}`),
     datasets:[
@@ -351,7 +361,7 @@ function renderFilteredLocal(){
     ]
   },{scales:{y:{beginAtZero:false}}});
 
-  const genderSource = localBaseFilter(local.overview || []).filter(r => r.elevgrupp === (state.filters.group === 'Alla' ? 'Alla' : state.filters.group));
+  const genderSource = localBaseFilter(local.overview || []).filter(r => rowGroup(r) === (state.filters.group === 'Alla' ? 'Alla' : state.filters.group));
   const genderGroups = {};
   for(const row of genderSource){
     const key = `${row.arskurs}|${schoolKey(row)}|${row.elevgrupp || 'Alla'}`;
@@ -409,8 +419,8 @@ function renderLocalNp(local){
   const f = state.filters;
   const npFilter = r => {
     if(f.grades.length && !f.grades.includes(String(r.arskurs ?? ''))) return false;
-    if(f.gender !== 'Alla' && r.kon !== f.gender) return false;
-    if(f.gender === 'Alla' && r.kon && r.kon !== 'Alla') return false;
+    if(f.gender !== 'Alla' && rowGender(r) !== f.gender) return false;
+    if(f.gender === 'Alla' && rowGender(r) !== 'Alla') return false;
     if(r.niva === 'kommun') return true;
     return r.niva === 'skolenhet' && (!f.schools.length || f.schools.includes(schoolKey(r)));
   };
@@ -440,9 +450,10 @@ function renderLocalNp(local){
 }
 function renderLocalData(local){
   state.local = local;
+  $('demoNotice').style.display = local.isDemo ? 'block' : 'none';
   state.tables = [];
   state.metrics = [
-    {key:'localScb', label:'Lokal SCB-import', status:'ok', reason:`${local.manifest.arskurser?.map(a => `åk ${a.arskurs}: ${a.rows}`).join(', ') || 'data finns'}`}
+    {key:'localScb', label:local.isDemo ? 'Demodata' : 'Lokal SCB-import', status:'ok', reason:`${local.manifest.arskurser?.map(a => `åk ${a.arskurs}: ${a.rows}`).join(', ') || 'data finns'}`}
   ];
   $('tableCount').textContent = local.manifest.files?.length || 0;
   $('metricCount').textContent = 'lokal';
@@ -452,7 +463,7 @@ function renderLocalData(local){
   $('npRows').innerHTML = '<tr><td colspan="4" class="muted">PxWeb-fallback anvands inte nar lokal SCB-import ar laddad.</td></tr>';
   const hasSvSvaRows = (local.svSva || []).some(r => ['SV','SVA'].includes(r.elevgrupp));
   $('availabilityRows').innerHTML = [
-    ['Årets SCB-betyg', 'OK', `Läst från ${local.base}`],
+    [local.isDemo ? 'Demodata' : 'Årets SCB-betyg', 'OK', `Läst från ${local.base}`],
     ['SV/SVA-jämförelse', hasSvSvaRows ? 'OK' : 'Ej hittad', 'Beräknas från Sv/Sva-kolumnerna.'],
     ['NP andel godkända', (local.npPass || []).length ? 'OK' : 'Ej hittad', 'Beräknas från lokal NP-import per kommun och skolenhet.'],
     ['Relation betyg och NP', (local.npRelation || []).length ? 'OK' : 'Ej hittad', 'Kräver både betygsfil och NP-fil med matchande elev/skolenhet.'],
@@ -460,7 +471,7 @@ function renderLocalData(local){
   ].map(r => `<tr><td><strong>${esc(r[0])}</strong></td><td class="${r[1] === 'OK' ? 'ok' : 'warn'}">${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('');
   $('tableRows').innerHTML = (local.manifest.files || []).map(f => `<tr><td><strong>${esc(f.file)}</strong></td><td class="ok">läst</td><td>${esc(f.rows)} rader</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Manifestet innehåller inga filrader.</td></tr>';
   log('Lokal SCB-import används', local.manifest);
-  setStatus('ok', 'Lokal SCB-import laddad.', `Visar anonymiserad statistik från ${local.base}.`);
+  setStatus(local.isDemo ? 'warn' : 'ok', local.isDemo ? 'Demodata laddad.' : 'Lokal SCB-import laddad.', `${local.isDemo ? 'Visar anonym testdata' : 'Visar anonymiserad statistik'} från ${local.base}.`);
 }
 function norm(s){
   return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
@@ -819,6 +830,7 @@ async function loadAll(){
   state = {tables:[], metrics:[], diagnostics:[], local:null, filters:{grades:[], schools:[], gender:'Alla', group:'Alla'}};
   $('diagLog').textContent = '';
   $('localFilters').classList.remove('active');
+  $('demoNotice').style.display = 'none';
   $('localMeritRows').innerHTML = '';
   setStatus('loading', 'Hämtar PxWeb-kategorier...', 'Läser tabellistan från Skolverket.');
   const selectedYear = $('yearSel').selectedOptions[0];
