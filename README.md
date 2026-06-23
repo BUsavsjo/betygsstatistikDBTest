@@ -137,4 +137,4 @@ data/output/2025-2026/json/skolenheter_lookup.json
 
 Relationen betyg/NP beraknas bara for ak 6 och 9, eftersom ak 3 saknar terminsbetyg i betygsflodet. Personnummer anvands bara internt for matchning och skrivs inte till publicerad JSON.
 
-Skolenhetsnamn hamtas fran Skolverkets skolenhetsregister API v2 nar importen kan na API:t. Om namn inte kan hamtas visas skolenhetskoden som fallback.
+Skolenhetsnamn hamtas fran Skolverkets skolenhetsregister API v2 nar importen kan na API:t. For Savsjos kanda grundskolor finns ocksa en lokal fallbacktabell sa att sidan kan visa skolnamn aven om API:t inte svarar. Om en kod fortfarande inte kan matchas visas skolenhetskoden som fallback.

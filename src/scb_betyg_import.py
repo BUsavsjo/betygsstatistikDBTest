@@ -21,6 +21,15 @@ VALID_GRADES = {"A", "B", "C", "D", "E", "F"}
 PASSING_GRADES = {"A", "B", "C", "D", "E"}
 SPECIAL_CODES = {"", "2", "3", "9", "Y", "Z"}
 GRADE_POINTS = {"A": 20.0, "B": 17.5, "C": 15.0, "D": 12.5, "E": 10.0, "F": 0.0}
+SAVSJO_SCHOOL_NAMES = {
+    "13654995": "Hagneskolan",
+    "28504550": "Savsjo kristna skola",
+    "53857703": "Vallsjoskolan",
+    "59983229": "Hofgardsskolan",
+    "60194444": "Vrigstad skola",
+    "74170440": "Rorviks skola",
+    "77440739": "Stockaryds skola",
+}
 
 AK6_COLUMNS = [
     "System", "Datum", "Version", "PersonNr", "Skolenhetskod", "Klass", "Fornamn", "Efternamn",
@@ -284,11 +293,15 @@ def skolenhet_lookup(codes: set[str]) -> dict[str, str | None]:
                         break
             except Exception:
                 continue
+        if lookup[code] is None:
+            # Keep known Savsjo school names available when the register API does
+            # not resolve a school unit code in the current environment.
+            lookup[code] = SAVSJO_SCHOOL_NAMES.get(code)
     return lookup
 
 
 def school_name(level: str, code: str | None, lookup: dict[str, str | None]) -> str:
-    if level == "kommun":
+    if level in {"kommun", "alla_skolenheter"}:
         return "Alla skolenheter"
     return lookup.get(code or "") or code or "Okänd skolenhet"
 
@@ -303,7 +316,7 @@ def base_groups(rows: list[dict[str, Any]]) -> list[tuple[str, str | None, list[
     return groups
 
 
-def overview(rows: list[dict[str, Any]], lasar: str, arskurs: int) -> list[dict[str, Any]]:
+def overview(rows: list[dict[str, Any]], lasar: str, arskurs: int, lookup: dict[str, str | None]) -> list[dict[str, Any]]:
     result = []
     for level, school_code, subset in base_groups(rows):
         merit16 = [row["meritvarde_16"] for row in subset]
@@ -313,6 +326,7 @@ def overview(rows: list[dict[str, Any]], lasar: str, arskurs: int) -> list[dict[
             "arskurs": arskurs,
             "niva": level,
             "skolenhetskod": school_code,
+            "skolenhetsnamn": school_name(level, school_code, lookup),
             "antal_elever": len(subset),
             "genomsnittligt_meritvarde_16": average(merit16),
             "genomsnittligt_meritvarde_17": average(merit17),
@@ -327,7 +341,7 @@ def overview(rows: list[dict[str, Any]], lasar: str, arskurs: int) -> list[dict[
     return result
 
 
-def grade_distribution(rows: list[dict[str, Any]], lasar: str, arskurs: int, subjects: list[str]) -> list[dict[str, Any]]:
+def grade_distribution(rows: list[dict[str, Any]], lasar: str, arskurs: int, subjects: list[str], lookup: dict[str, str | None]) -> list[dict[str, Any]]:
     result = []
     for level, school_code, subset in base_groups(rows):
         for group_name in ("Alla", "SV", "SVA", "oklar", "SV_och_SVA"):
@@ -343,6 +357,7 @@ def grade_distribution(rows: list[dict[str, Any]], lasar: str, arskurs: int, sub
                     "arskurs": arskurs,
                     "niva": level,
                     "skolenhetskod": school_code,
+                    "skolenhetsnamn": school_name(level, school_code, lookup),
                     "elevgrupp": group_name,
                     "amne": subject,
                     "antal_betyg": total,
@@ -359,7 +374,7 @@ def grade_distribution(rows: list[dict[str, Any]], lasar: str, arskurs: int, sub
     return result
 
 
-def sv_sva_summary(rows: list[dict[str, Any]], lasar: str, arskurs: int) -> list[dict[str, Any]]:
+def sv_sva_summary(rows: list[dict[str, Any]], lasar: str, arskurs: int, lookup: dict[str, str | None]) -> list[dict[str, Any]]:
     result = []
     for level, school_code, subset in base_groups(rows):
         for group_name in ("SV", "SVA", "oklar", "SV_och_SVA"):
@@ -373,6 +388,7 @@ def sv_sva_summary(rows: list[dict[str, Any]], lasar: str, arskurs: int) -> list
                 "arskurs": arskurs,
                 "niva": level,
                 "skolenhetskod": school_code,
+                "skolenhetsnamn": school_name(level, school_code, lookup),
                 "elevgrupp": group_name,
                 "antal_elever": len(group_rows),
                 "andel_av_elever": percentage(len(group_rows), len(subset)),
@@ -568,6 +584,7 @@ def build_year(lasar: str) -> None:
     all_sv_sva: list[dict[str, Any]] = []
     all_np_pass: list[dict[str, Any]] = []
     all_np_relation: list[dict[str, Any]] = []
+    grade_batches: list[tuple[GradeSpec, list[dict[str, Any]], list[dict[str, Any]]]] = []
     manifest = {"lasar": lasar, "source": "local_scb", "arskurser": [], "np_arskurser": [], "files": []}
     grade_rows_by_key: dict[tuple[int, str, str], dict[str, str]] = {}
     school_codes: set[str] = set()
@@ -596,13 +613,7 @@ def build_year(lasar: str) -> None:
         ])
         diag = import_diagnostics(rows, diagnostics, spec, lasar)
         write_json(diagnostics_dir / f"import_betyg_ak{spec.arskurs}.json", diag)
-
-        if rows:
-            all_overview.extend(overview(rows, lasar, spec.arskurs))
-            all_distribution.extend(grade_distribution(rows, lasar, spec.arskurs, spec.subjects))
-            all_sv_sva.extend(sv_sva_summary(rows, lasar, spec.arskurs))
-            manifest["arskurser"].append({"arskurs": spec.arskurs, "rows": len(rows)})
-        manifest["files"].extend(d for d in diagnostics if d.get("message") == "file_read")
+        grade_batches.append((spec, rows, diagnostics))
 
     np_rows_by_spec: dict[int, list[tuple[dict[str, str], dict[str, str] | None]]] = {}
     for spec in NP_SPECS.values():
@@ -632,6 +643,13 @@ def build_year(lasar: str) -> None:
 
     lookup = skolenhet_lookup(school_codes)
     write_json(json_dir / "skolenheter_lookup.json", lookup)
+    for spec, rows, diagnostics in grade_batches:
+        if rows:
+            all_overview.extend(overview(rows, lasar, spec.arskurs, lookup))
+            all_distribution.extend(grade_distribution(rows, lasar, spec.arskurs, spec.subjects, lookup))
+            all_sv_sva.extend(sv_sva_summary(rows, lasar, spec.arskurs, lookup))
+            manifest["arskurser"].append({"arskurs": spec.arskurs, "rows": len(rows)})
+        manifest["files"].extend(d for d in diagnostics if d.get("message") == "file_read")
     for arskurs, linked_rows in np_rows_by_spec.items():
         np_pass, np_relation = aggregate_np(linked_rows, lasar, arskurs, lookup)
         all_np_pass.extend(np_pass)
