@@ -6,7 +6,7 @@ const ROOTS = [
   '/Underlag_for_analys_inom_det_nationella_kvalitetssystemet/Grundskola/'
 ];
 const $ = id => document.getElementById(id);
-let state = { tables: [], metrics: [], diagnostics: [], local: null, filters: { grades: [], schools: [], gender: 'Alla', group: 'Alla' } };
+let state = { tables: [], metrics: [], diagnostics: [], local: null, localSchools: [], filters: { grades: [], schools: [], gender: 'Alla', group: 'Alla' } };
 let charts = {};
 const STATIC_PAGES_BUILD = false;
 const IS_GITHUB_PAGES = location.hostname.endsWith('github.io');

@@ -1,5 +1,5 @@
 async function loadAll(){
-  state = {tables:[], metrics:[], diagnostics:[], local:null, filters:{grades:[], schools:[], gender:'Alla', group:'Alla'}};
+  state = {tables:[], metrics:[], diagnostics:[], local:null, localSchools:[], filters:{grades:[], schools:[], gender:'Alla', group:'Alla'}};
   $('diagLog').textContent = '';
   $('localFilters').classList.remove('active');
   $('demoNotice').style.display = 'none';
@@ -80,12 +80,12 @@ $('reloadBtn').addEventListener('click', loadAll);
 $('diagBtn').addEventListener('click', () => document.querySelector('[data-tab="diagnostics"]').click());
 ['gradeFilter','schoolFilter','genderFilter','groupFilter'].forEach(id => {
   $(id).addEventListener('change', () => {
-    updateFilterState();
+    updateFilterState(id === 'gradeFilter');
     renderFilteredLocal();
   });
 });
 $('selectAllSchoolsBtn').addEventListener('click', () => {
-  [...$('schoolFilter').options].forEach(o => o.selected = true);
+  [...$('schoolFilter').options].forEach(o => o.selected = !o.disabled);
   updateFilterState();
   renderFilteredLocal();
 });

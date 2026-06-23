@@ -47,17 +47,54 @@ function schoolLabel(row){
 function schoolKey(row){
   return row.niva === 'alla_skolenheter' || row.niva === 'kommun' ? '__all__' : String(row.skolenhetskod || '');
 }
-function updateFilterState(){
+function normalizedSchoolName(value){
+  return norm(value).replace(/\s+/g, ' ');
+}
+function schoolSupportedGrades(school){
+  const name = normalizedSchoolName(school.label || school.skolenhetsnamn || '');
+  if(name.includes('hofgard')) return ['9'];
+  if(name.includes('rorvik')) return ['6', '9'];
+  return ['6'];
+}
+function schoolSupportsGrades(school, grades){
+  const supported = school.supportedGrades || schoolSupportedGrades(school);
+  const wantedGrades = (grades || []).map(String);
+  return !wantedGrades.length || wantedGrades.some(g => supported.includes(g));
+}
+function schoolSupportsRowGrade(row){
+  if(row.niva !== 'skolenhet') return true;
+  return schoolSupportsGrades({label: schoolLabel(row)}, [String(row.arskurs ?? '')]);
+}
+function updateFilterState(resetSchoolsForGrade=false){
+  const grades = selectedValues('gradeFilter');
+  let schools = selectedValues('schoolFilter');
+  if(state.localSchools?.length){
+    const availableSchools = state.localSchools.filter(s => schoolSupportsGrades(s, grades)).map(s => String(s.value));
+    schools = resetSchoolsForGrade ? availableSchools : schools.filter(s => availableSchools.includes(String(s)));
+    if(!schools.length) schools = availableSchools;
+  }
   state.filters = {
-    grades: selectedValues('gradeFilter'),
-    schools: selectedValues('schoolFilter'),
+    grades,
+    schools,
     gender: $('genderFilter').value || 'Alla',
     group: $('groupFilter').value || 'Alla'
   };
+  if(state.localSchools?.length) populateSchoolFilter();
 }
 function populateSelect(id, options, selectedValues){
   const selected = new Set(selectedValues || []);
   $(id).innerHTML = options.map(o => `<option value="${esc(o.value)}"${selected.has(String(o.value)) ? ' selected' : ''}>${esc(o.label)}</option>`).join('');
+}
+function populateSchoolFilter(){
+  const selected = new Set(state.filters.schools || []);
+  const grades = state.filters.grades || [];
+  $('schoolFilter').innerHTML = (state.localSchools || []).map(s => {
+    const available = schoolSupportsGrades(s, grades);
+    const gradeLabel = s.supportedGrades?.length ? ` (åk ${s.supportedGrades.join(', ')})` : '';
+    const selectedAttr = available && selected.has(String(s.value)) ? ' selected' : '';
+    const disabledAttr = available ? '' : ' disabled';
+    return `<option value="${esc(s.value)}"${selectedAttr}${disabledAttr}>${esc(s.label + gradeLabel)}</option>`;
+  }).join('');
 }
 function populateLocalFilters(local){
   const overview = local.overview || [];
@@ -65,7 +102,8 @@ function populateLocalFilters(local){
   const schoolRows = overview.filter(r => r.niva === 'skolenhet');
   const schools = uniqueSorted(schoolRows.map(r => schoolKey(r))).map(code => {
     const row = schoolRows.find(r => schoolKey(r) === code);
-    return {value: code, label: schoolLabel(row)};
+    const label = schoolLabel(row);
+    return {value: code, label, supportedGrades: schoolSupportedGrades({label})};
   });
   const filterRows = [
     ...(local.overview || []),
@@ -80,9 +118,10 @@ function populateLocalFilters(local){
   state.filters.schools = schools.map(s => s.value);
   state.filters.gender = 'Alla';
   state.filters.group = 'Alla';
+  state.localSchools = schools;
 
   populateSelect('gradeFilter', grades.map(g => ({value:g, label:`Åk ${g}`})), state.filters.grades);
-  populateSelect('schoolFilter', schools, state.filters.schools);
+  populateSchoolFilter();
   $('genderFilter').innerHTML = '<option value="Alla">Alla</option>' + genders.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join('');
   $('groupFilter').innerHTML = '<option value="Alla">Alla</option>' + groups.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join('');
   $('localFilters').classList.add('active');
@@ -98,6 +137,7 @@ function localFilterRows(rows, {allowAllLevel=false, forceGrade=null}={}){
     if(f.gender !== 'Alla' && rowGender(r) !== f.gender) return false;
     if(f.group !== 'Alla' && rowGroup(r) !== f.group) return false;
     if(allowAllLevel && (r.niva === 'alla_skolenheter' || r.niva === 'kommun')) return true;
+    if(!schoolSupportsRowGrade(r)) return false;
     return r.niva === 'skolenhet' && (!f.schools.length || f.schools.includes(schoolKey(r)));
   });
 }
@@ -107,6 +147,7 @@ function localBaseFilter(rows, {forceGrade=null}={}){
     if(forceGrade && Number(r.arskurs) !== Number(forceGrade)) return false;
     if(f.grades.length && !f.grades.includes(String(r.arskurs ?? ''))) return false;
     if(f.group !== 'Alla' && rowGroup(r) !== f.group) return false;
+    if(!schoolSupportsRowGrade(r)) return false;
     return r.niva === 'skolenhet' && (!f.schools.length || f.schools.includes(schoolKey(r)));
   });
 }
@@ -261,6 +302,7 @@ function renderLocalNp(local){
     if(f.gender !== 'Alla' && rowGender(r) !== f.gender) return false;
     if(f.gender === 'Alla' && rowGender(r) !== 'Alla') return false;
     if(r.niva === 'kommun') return true;
+    if(!schoolSupportsRowGrade(r)) return false;
     return r.niva === 'skolenhet' && (!f.schools.length || f.schools.includes(schoolKey(r)));
   };
   const npPass = (local.npPass || []).filter(npFilter);
