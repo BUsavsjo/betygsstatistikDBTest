@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import shutil
 import urllib.parse
 import urllib.request
 from collections import Counter, defaultdict
@@ -16,11 +17,21 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 RAW_BASE = BASE_DIR / "data" / "raw" / "betyg"
 NP_RAW_BASE = BASE_DIR / "data" / "raw" / "np"
 OUTPUT_BASE = BASE_DIR / "data" / "output"
+PROCESSED_BASE = BASE_DIR / "data" / "processed"
 
 VALID_GRADES = {"A", "B", "C", "D", "E", "F"}
 PASSING_GRADES = {"A", "B", "C", "D", "E"}
 SPECIAL_CODES = {"", "2", "3", "9", "Y", "Z"}
 GRADE_POINTS = {"A": 20.0, "B": 17.5, "C": 15.0, "D": 12.5, "E": 10.0, "F": 0.0}
+PUBLIC_JSON_FILES = [
+    "manifest.json",
+    "betygsstatistik_oversikt.json",
+    "betygsstatistik_sv_sva.json",
+    "betygsstatistik_betygsfordelning_amne.json",
+    "np_andel_godkanda.json",
+    "np_betyg_relation.json",
+    "skolenheter_lookup.json",
+]
 SAVSJO_SCHOOL_NAMES = {
     "13654995": "Hagneskolan",
     "28504550": "Savsjo kristna skola",
@@ -575,7 +586,22 @@ def write_csv(path: Path, rows: list[dict[str, Any]], fieldnames: list[str]) -> 
         writer.writerows(rows)
 
 
-def build_year(lasar: str) -> None:
+def publish_processed_json(lasar: str) -> Path:
+    source_dir = OUTPUT_BASE / lasar / "json"
+    target_dir = PROCESSED_BASE / lasar / "json"
+    if not source_dir.exists():
+        raise FileNotFoundError(f"Saknar JSON-output: {source_dir}")
+
+    target_dir.mkdir(parents=True, exist_ok=True)
+    for filename in PUBLIC_JSON_FILES:
+        source = source_dir / filename
+        if source.exists():
+            shutil.copy2(source, target_dir / filename)
+
+    return target_dir
+
+
+def build_year(lasar: str, publish: bool = False) -> None:
     output_dir = OUTPUT_BASE / lasar
     json_dir = output_dir / "json"
     diagnostics_dir = output_dir / "diagnostik"
@@ -662,14 +688,22 @@ def build_year(lasar: str) -> None:
     write_json(json_dir / "np_andel_godkanda.json", all_np_pass)
     write_json(json_dir / "np_betyg_relation.json", all_np_relation)
     print(f"Created local grade statistics in {json_dir}")
+    if publish:
+        processed_dir = publish_processed_json(lasar)
+        print(f"Copied public processed JSON to {processed_dir}")
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Import SCB grade txt files and create anonymized JSON statistics.")
     parser.add_argument("--lasar", required=True, help="School year folder, for example 2025-2026")
+    parser.add_argument(
+        "--publish",
+        action="store_true",
+        help="Copy approved aggregate JSON from data/output to data/processed for GitHub Pages.",
+    )
     return parser.parse_args()
 
 
 if __name__ == "__main__":
     args = parse_args()
-    build_year(args.lasar)
+    build_year(args.lasar, publish=args.publish)

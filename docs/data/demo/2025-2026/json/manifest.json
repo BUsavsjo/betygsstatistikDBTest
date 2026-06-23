@@ -1,0 +1,19 @@
+{
+  "lasar": "2025-2026",
+  "source": "dummy_local_scb",
+  "arskurser": [
+    {"arskurs": 6, "rows": 96},
+    {"arskurs": 9, "rows": 88}
+  ],
+  "np_arskurser": [
+    {"arskurs": 6, "rows": 82, "matched_grade_rows": 79},
+    {"arskurs": 9, "rows": 76, "matched_grade_rows": 73}
+  ],
+  "files": [
+    {"message": "file_read", "file": "dummy_betyg_ak6.txt", "rows": 96, "kind": "betyg_ak6"},
+    {"message": "file_read", "file": "dummy_betyg_ak9.txt", "rows": 88, "kind": "betyg_ak9"},
+    {"message": "file_read", "file": "dummy_np_ak6.txt", "rows": 82, "kind": "np_ak6"},
+    {"message": "file_read", "file": "dummy_np_ak9.txt", "rows": 76, "kind": "np_ak9"}
+  ],
+  "note": "Anonym dummydata for UI-test. Ersätts av npm run import:scb när riktig SCB-output skapas."
+}
