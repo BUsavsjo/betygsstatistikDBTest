@@ -3,6 +3,7 @@ const path = require('path');
 
 const root = path.resolve(__dirname, '..');
 const docs = path.join(root, 'docs');
+const appDir = path.join(root, 'app');
 
 function removeDir(target) {
   if (fs.existsSync(target)) {
@@ -22,12 +23,19 @@ function copyFile(from, to) {
 function copyIndexForPages() {
   const source = path.join(root, 'index.html');
   const target = path.join(docs, 'index.html');
-  const html = fs.readFileSync(source, 'utf8').replace(
+  ensureDir(path.dirname(target));
+  fs.copyFileSync(source, target);
+}
+
+function copyAppForPages() {
+  const source = path.join(appDir, 'core.js');
+  const target = path.join(docs, 'app', 'core.js');
+  const script = fs.readFileSync(source, 'utf8').replace(
     'const STATIC_PAGES_BUILD = false;',
     'const STATIC_PAGES_BUILD = true;'
   );
   ensureDir(path.dirname(target));
-  fs.writeFileSync(target, html, 'utf8');
+  fs.writeFileSync(target, script, 'utf8');
 }
 
 function copyDirIfExists(from, to) {
@@ -49,6 +57,8 @@ removeDir(docs);
 ensureDir(docs);
 
 copyIndexForPages();
+copyDirIfExists(path.join(root, 'app'), path.join(docs, 'app'));
+copyAppForPages();
 copyDirIfExists(path.join(root, 'data', 'processed'), path.join(docs, 'data', 'processed'));
 copyDirIfExists(path.join(root, 'data', 'demo'), path.join(docs, 'data', 'demo'));
 
@@ -59,5 +69,5 @@ fs.writeFileSync(
 );
 
 console.log('GitHub Pages package created in docs/.');
-console.log('Included: index.html, data/processed if present, and data/demo.');
+console.log('Included: index.html, app/, data/processed if present, and data/demo.');
 console.log('Excluded: server.js, data/raw, data/output, documentation, exports and dependencies.');

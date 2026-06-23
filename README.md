@@ -118,6 +118,33 @@ Publicera aldrig `data/raw`, `data/output`, elevdata, exporter, `.env` eller dok
 
 ## Lokal SCB-import för årets betygsdata
 
+Importkoden är uppdelad i mindre moduler under `src/betyg/`:
+
+- `constants.py` för specifikationer och fasta värden
+- `io.py` för filinläsning, skrivning och publiceringskopiering
+- `metrics.py` för betygsberäkningar och aggregering
+- `np_data.py` för NP-logik och betyg/NP-relation
+- `skolenheter.py` för namnuppslag av skolenheter
+- `pipeline.py` för den samlade importkörningen
+
+CLI-ingången är fortsatt:
+
+```text
+src/scb_betyg_import.py
+```
+
+Äldre `busavsjo_*`-skript som använder `src/config_paths.py` utgår nu från läsåret `2025-2026` om inget annat anges. För att köra dem mot ett annat läsår kan du sätta miljövariabeln `BETYGSSTATISTIK_LASAR`.
+
+Frontendlogiken är nu uppdelad i `app/`:
+
+- `core.js` for shared constants, state and small helpers
+- `local-data.js` for local JSON loading, filters and local rendering
+- `pxweb.js` for PxWeb discovery, metadata and query building
+- `render.js` for API fallback rendering and chart helpers
+- `init.js` for startup and event binding
+
+`npm run build:pages` kopierar `index.html` och `app/`, och sätter `STATIC_PAGES_BUILD = true` i publicerad `docs/app/core.js`.
+
 Lägg SCB:s semikolonseparerade betygsfiler i separata mappar per läsår och årskurs:
 
 ```text
@@ -164,6 +191,14 @@ Webbappen försöker först läsa publiceringsklar JSON från `data/processed/<l
 Rådata, rensade elevfiler och genererad output ligger i `.gitignore`. Publicera inte personnummer, namn, rådata eller exporter med elevrader.
 
 Lokal SCB-import kan visa bland annat meritvärde, betygsfördelning, andel A-E/F, gymnasiebehörighet för åk 9, uppnått alla ämnen och jämförelse mellan elever som läser svenska respektive svenska som andraspråk.
+
+## Tester
+
+Kör de inledande regressionstesterna för importlogiken med:
+
+```bash
+python -m unittest discover -s tests -v
+```
 
 ## Felsökning
 
