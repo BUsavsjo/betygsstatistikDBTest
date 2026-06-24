@@ -4,7 +4,7 @@ from collections import Counter, defaultdict
 from typing import Any
 
 from .constants import GRADE_POINTS, PASSING_GRADES
-from .metrics import clean, grade, percentage, school_name
+from .metrics import clean, grade, percentage, school_name, segmented_groups
 
 
 def grade_relation(term_grade: str | None, np_grade: str | None) -> str | None:
@@ -93,6 +93,8 @@ def aggregate_np(
             expanded.append({
                 "skolenhetskod": code,
                 "amne": item["amne"],
+                "kon": grade_row.get("kon") if grade_row else "okänt",
+                "sv_sva_grupp": grade_row.get("sv_sva_grupp") if grade_row else "oklar",
                 "godkand_np": item["godkand_np"],
                 "np_betyg": item.get("np_betyg"),
                 "terminsbetyg": term_grade,
@@ -111,35 +113,38 @@ def aggregate_np(
         for item in subset:
             by_subject[item["amne"]].append(item)
         for subject, subject_rows in sorted(by_subject.items()):
-            total = len(subject_rows)
-            passed = sum(1 for item in subject_rows if item["godkand_np"])
-            base = {
-                "lasar": lasar,
-                "arskurs": arskurs,
-                "niva": level,
-                "skolenhetskod": code,
-                "skolenhetsnamn": school_name(level, code, lookup),
-                "amne": subject,
-                "antal_np": total,
-                "antal_godkanda_np": passed,
-                "andel_godkanda_np": percentage(passed, total),
-                "antal_med_betygsmatch": sum(1 for item in subject_rows if item["matched_grade"]),
-                "source": "local_scb_np",
-            }
-            result_rows.append(base)
+            for kon, elevgrupp, segment in segmented_groups(subject_rows):
+                total = len(segment)
+                passed = sum(1 for item in segment if item["godkand_np"])
+                base = {
+                    "lasar": lasar,
+                    "arskurs": arskurs,
+                    "niva": level,
+                    "skolenhetskod": code,
+                    "skolenhetsnamn": school_name(level, code, lookup),
+                    "kon": kon,
+                    "elevgrupp": elevgrupp,
+                    "amne": subject,
+                    "antal_np": total,
+                    "antal_godkanda_np": passed,
+                    "andel_godkanda_np": percentage(passed, total),
+                    "antal_med_betygsmatch": sum(1 for item in segment if item["matched_grade"]),
+                    "source": "local_scb_np",
+                }
+                result_rows.append(base)
 
-            comparable = [item for item in subject_rows if item["relation"]]
-            if comparable:
-                counts = Counter(item["relation"] for item in comparable)
-                relation_rows.append({
-                    **base,
-                    "antal_jamforda": len(comparable),
-                    "antal_betyg_hogre_an_np": counts["betyg_hogre_an_np"],
-                    "antal_betyg_lika_np": counts["betyg_lika_np"],
-                    "antal_betyg_lagre_an_np": counts["betyg_lagre_an_np"],
-                    "andel_betyg_hogre_an_np": percentage(counts["betyg_hogre_an_np"], len(comparable)),
-                    "andel_betyg_lika_np": percentage(counts["betyg_lika_np"], len(comparable)),
-                    "andel_betyg_lagre_an_np": percentage(counts["betyg_lagre_an_np"], len(comparable)),
-                })
+                comparable = [item for item in segment if item["relation"]]
+                if comparable:
+                    counts = Counter(item["relation"] for item in comparable)
+                    relation_rows.append({
+                        **base,
+                        "antal_jamforda": len(comparable),
+                        "antal_betyg_hogre_an_np": counts["betyg_hogre_an_np"],
+                        "antal_betyg_lika_np": counts["betyg_lika_np"],
+                        "antal_betyg_lagre_an_np": counts["betyg_lagre_an_np"],
+                        "andel_betyg_hogre_an_np": percentage(counts["betyg_hogre_an_np"], len(comparable)),
+                        "andel_betyg_lika_np": percentage(counts["betyg_lika_np"], len(comparable)),
+                        "andel_betyg_lagre_an_np": percentage(counts["betyg_lagre_an_np"], len(comparable)),
+                    })
 
     return result_rows, relation_rows

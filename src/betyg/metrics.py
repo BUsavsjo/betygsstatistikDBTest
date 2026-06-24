@@ -100,6 +100,21 @@ def percentage(part: int, total: int) -> float | None:
     return round(part / total * 100, 2) if total else None
 
 
+def kolada_grade6_all_subjects_percentage(passed: int, total: int) -> float | None:
+    """Match Kolada/Siris display rule for grade 6 all-subjects attainment.
+
+    If 40 or more students are in the group and only 1-4 students did not
+    reach the criteria in all subjects they study, the displayed value should
+    be 95 instead of the exact percentage.
+    """
+    if not total:
+        return None
+    failed = total - passed
+    if total >= 40 and 1 <= failed <= 4:
+        return 95.0
+    return percentage(passed, total)
+
+
 def school_name(level: str, code: str | None, lookup: dict[str, str | None]) -> str:
     if level in {"kommun", "alla_skolenheter"}:
         return "Alla skolenheter"
@@ -144,6 +159,7 @@ def overview(rows: list[dict[str, Any]], lasar: str, arskurs: int, lookup: dict[
         for kon, elevgrupp, segment in segmented_groups(subset):
             merit16 = [row["meritvarde_16"] for row in segment]
             merit17 = [row["meritvarde_17"] for row in segment]
+            passed_all_subjects = sum(1 for row in segment if row["uppnatt_alla_amnen"])
             item = {
                 "lasar": lasar,
                 "arskurs": arskurs,
@@ -156,7 +172,7 @@ def overview(rows: list[dict[str, Any]], lasar: str, arskurs: int, lookup: dict[
                 "genomsnittligt_meritvarde_16": average(merit16),
                 "genomsnittligt_meritvarde_17": average(merit17),
                 "median_meritvarde_17": round(median(merit17), 2) if merit17 else None,
-                "andel_uppnatt_alla_amnen": percentage(sum(1 for row in segment if row["uppnatt_alla_amnen"]), len(segment)),
+                "andel_uppnatt_alla_amnen": kolada_grade6_all_subjects_percentage(passed_all_subjects, len(segment)) if arskurs == 6 else percentage(passed_all_subjects, len(segment)),
                 "source": "local_scb",
             }
             if arskurs == 9:
@@ -219,7 +235,7 @@ def sv_sva_summary(rows: list[dict[str, Any]], lasar: str, arskurs: int, lookup:
                 "genomsnittligt_meritvarde_17": average([row["meritvarde_17"] for row in group_rows]),
                 "median_meritvarde_17": round(median([row["meritvarde_17"] for row in group_rows]), 2),
                 "andel_godkand_sv_sva": percentage(sum(1 for current_grade in valid_subject_grades if current_grade in PASSING_GRADES), len(valid_subject_grades)),
-                "andel_uppnatt_alla_amnen": percentage(sum(1 for row in group_rows if row["uppnatt_alla_amnen"]), len(group_rows)),
+                "andel_uppnatt_alla_amnen": kolada_grade6_all_subjects_percentage(sum(1 for row in group_rows if row["uppnatt_alla_amnen"]), len(group_rows)) if arskurs == 6 else percentage(sum(1 for row in group_rows if row["uppnatt_alla_amnen"]), len(group_rows)),
                 "source": "local_scb",
             }
             if arskurs == 9:

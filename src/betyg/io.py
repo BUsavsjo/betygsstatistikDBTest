@@ -64,7 +64,8 @@ def read_np_files(raw_base: Path, lasar: str, spec: NpSpec) -> tuple[list[dict[s
         rows = read_text_rows(path)
         diagnostics.append({"level": "info", "message": "file_read", "file": path.name, "rows": len(rows)})
         for row_number, row in enumerate(rows, start=1):
-            if len(row) != len(spec.columns):
+            normalized_row = normalize_np_row(spec, row)
+            if normalized_row is None:
                 diagnostics.append({
                     "level": "error",
                     "message": "wrong_column_count",
@@ -74,12 +75,22 @@ def read_np_files(raw_base: Path, lasar: str, spec: NpSpec) -> tuple[list[dict[s
                     "actual": len(row),
                 })
                 continue
-            record = {col: clean(row[index]) for index, col in enumerate(spec.columns)}
+            record = {col: clean(normalized_row[index]) for index, col in enumerate(spec.columns)}
             record["_source_file"] = path.name
             record["_source_row"] = str(row_number)
             records.append(record)
 
     return records, diagnostics
+
+
+def normalize_np_row(spec: NpSpec, row: list[str]) -> list[str] | None:
+    if len(row) == len(spec.columns):
+        return row
+    for candidate in spec.alternate_columns or []:
+        if len(row) == len(candidate):
+            values = {col: clean(row[index]) for index, col in enumerate(candidate)}
+            return [values.get(col, "") for col in spec.columns]
+    return None
 
 
 def write_json(path: Path, data: Any) -> None:
