@@ -13,12 +13,92 @@
   ],
   "np_arskurser": [
     {
+      "arskurs": 3,
+      "rows": 154,
+      "matched_grade_rows": 0
+    },
+    {
+      "arskurs": 6,
+      "rows": 141,
+      "matched_grade_rows": 141
+    },
+    {
       "arskurs": 9,
       "rows": 121,
       "matched_grade_rows": 121
     }
   ],
   "files": [
+    {
+      "level": "info",
+      "message": "file_read",
+      "file": "SCB_NP_20260624_1101.Ak3 (1)vrigstad.txt",
+      "rows": 37,
+      "kind": "np_ak3"
+    },
+    {
+      "level": "info",
+      "message": "file_read",
+      "file": "SCB_NP_20260624_1122.Ak3vallssjo.txt",
+      "rows": 42,
+      "kind": "np_ak3"
+    },
+    {
+      "level": "info",
+      "message": "file_read",
+      "file": "SCB_NP_20260624_1124.Ak3stockaryd.txt",
+      "rows": 19,
+      "kind": "np_ak3"
+    },
+    {
+      "level": "info",
+      "message": "file_read",
+      "file": "SCB_NP_20260624_1126.Ak3rorvik.txt",
+      "rows": 21,
+      "kind": "np_ak3"
+    },
+    {
+      "level": "info",
+      "message": "file_read",
+      "file": "SCB_NP_20260624_1127.Ak3hagne.txt",
+      "rows": 35,
+      "kind": "np_ak3"
+    },
+    {
+      "level": "info",
+      "message": "file_read",
+      "file": "SCB_NP_20260624_1050.Ak6hange.txt",
+      "rows": 35,
+      "kind": "np_ak6"
+    },
+    {
+      "level": "info",
+      "message": "file_read",
+      "file": "SCB_NP_20260624_1053.Ak6rorvik.txt",
+      "rows": 19,
+      "kind": "np_ak6"
+    },
+    {
+      "level": "info",
+      "message": "file_read",
+      "file": "SCB_NP_20260624_1058.Ak6stockaryd.txt",
+      "rows": 16,
+      "kind": "np_ak6"
+    },
+    {
+      "level": "info",
+      "message": "file_read",
+      "file": "SCB_NP_20260624_1059.Ak6vallsjo.txt",
+      "rows": 48,
+      "kind": "np_ak6"
+    },
+    {
+      "level": "info",
+      "message": "file_read",
+      "file": "SCB_NP_20260624_1100vrigstad.Ak6.txt",
+      "rows": 23,
+      "kind": "np_ak6"
+    },
     {
       "level": "info",
       "message": "file_read",

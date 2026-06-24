@@ -1,26 +1,26 @@
 function renderMetricRows(){
   $('metricCount').textContent = state.metrics.filter(m => m.status === 'ok').length;
-  $('metricRows').innerHTML = state.metrics.map(m => `<tr><td><strong>${esc(m.label)}</strong></td><td class="${m.status === 'ok' ? 'ok' : m.status === 'error' ? 'err' : 'warn'}">${m.status === 'ok' ? 'Data hämtad' : m.status === 'error' ? 'POST-fel' : 'Ej hittad'}</td><td>${m.table ? `${esc(m.table.text)}<br><code>${esc(m.table.path)}</code>` : esc(m.reason)}</td></tr>`).join('');
+  $('metricRows').innerHTML = state.metrics.map(m => `<tr><td><strong>${esc(m.label)}</strong></td><td class="${m.status === 'ok' ? 'ok' : m.status === 'error' ? 'err' : 'warn'}">${m.status === 'ok' ? 'Klar' : m.status === 'error' ? 'Tekniskt fel' : 'Saknas'}</td><td>${esc(m.table ? m.table.text : m.reason)}</td></tr>`).join('');
 }
 function renderTables(){
   $('tableCount').textContent = state.tables.length;
-  $('tableRows').innerHTML = state.tables.map(t => `<tr><td><strong>${esc(t.text)}</strong><br><code>${esc(t.path)}</code></td><td class="ok">metadata ok</td><td>${esc(variableSummary(t.meta))}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Inga tabeller hittades.</td></tr>';
+  $('tableRows').innerHTML = state.tables.map(t => `<tr><td><strong>${esc(t.text)}</strong><br><code>${esc(t.path)}</code></td><td class="ok">Inläst</td><td>${esc(variableSummary(t.meta))}</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Inga tekniska datakällor hittades.</td></tr>';
 }
 function renderAvailability(){
   const byKey = Object.fromEntries(state.metrics.map(m => [m.key, m]));
   const rows = [
-    ['Pojkar/Flickor', byKey.merit?.status === 'ok' ? 'Delvis/OK' : 'Ej bekräftad', 'Visas om tabellen har könsdimension.'],
-    ['Meritvärde', byKey.merit?.status === 'ok' ? 'OK' : 'Ej hittad', byKey.merit?.table?.text || byKey.merit?.reason],
-    ['Meritvärde elever som läser SVA', byKey.svaMerit?.status === 'ok' ? 'OK' : 'Ej hittad', byKey.svaMerit?.table?.text || byKey.svaMerit?.reason],
-    ['Betygspoäng per ämne', byKey.subjectPoints?.status === 'ok' ? 'OK' : 'Ej hittad', byKey.subjectPoints?.table?.text || byKey.subjectPoints?.reason],
-    ['Kontroll antal betyg och specialkoder', 'Lokal vy', 'Visas när lokal SCB-import finns.'],
-    ['NP GAP åk 6/9', byKey.npGap?.status === 'ok' ? 'Delvis' : 'Ej komplett', byKey.npGap?.status === 'ok' ? 'Öppna mått finns för NP åk 3 samt betyg minst E i SV/SVA och matematik åk 6/9. Kompletta NP-resultat åk 6/9 för SV, EN och matematik hittades inte i PxWeb.' : byKey.npGap?.reason],
-    ['Relation betyg och nationella prov', byKey.npRelation?.status === 'ok' ? 'OK' : 'Ej hittad', byKey.npRelation?.table?.text || byKey.npRelation?.reason],
-    ['Uppnått kunskapskrav i alla ämnen', byKey.knowledgeAll?.status === 'ok' ? 'OK' : 'Ej hittad', byKey.knowledgeAll?.table?.text || byKey.knowledgeAll?.reason],
-    ['Yrkesbehörighet till gymnasiet', byKey.vocational?.status === 'ok' ? 'OK' : byKey.vocational?.status === 'error' ? 'POST-fel' : 'Ej hittad', byKey.vocational?.table?.text || byKey.vocational?.reason],
-    ['Betygsfördelning per skolenhet och kommun', byKey.gradeDistribution?.status === 'ok' ? 'OK' : byKey.gradeDistribution?.status === 'error' ? 'POST-fel' : 'Ej hittad', byKey.gradeDistribution?.reason || 'Skolenhetsnivå kräver att tabellen innehåller skolenhetsdimension.']
+    ['Skillnader mellan flickor och pojkar', byKey.merit?.status === 'ok' ? 'Tillgänglig' : 'Osäker', 'Visas när könsuppdelat underlag finns tillgängligt.'],
+    ['Meritvärde', byKey.merit?.status === 'ok' ? 'Tillgänglig' : 'Saknas', byKey.merit?.table?.text || byKey.merit?.reason],
+    ['Meritvärde för elever som läser SVA', byKey.svaMerit?.status === 'ok' ? 'Tillgänglig' : 'Saknas', byKey.svaMerit?.table?.text || byKey.svaMerit?.reason],
+    ['Resultat per ämne', byKey.subjectPoints?.status === 'ok' ? 'Tillgänglig' : 'Saknas', byKey.subjectPoints?.table?.text || byKey.subjectPoints?.reason],
+    ['Datakontroll för lokal import', 'Lokal vy', 'Visas när lokal SCB-import finns.'],
+    ['Nationella prov jämfört med betyg', byKey.npGap?.status === 'ok' ? 'Delvis tillgänglig' : 'Begränsad', byKey.npGap?.status === 'ok' ? 'Jämförelsetal finns för delar av underlaget, men inte för alla ämnen och årskurser.' : byKey.npGap?.reason],
+    ['Relation mellan betyg och nationella prov', byKey.npRelation?.status === 'ok' ? 'Tillgänglig' : 'Saknas', byKey.npRelation?.table?.text || byKey.npRelation?.reason],
+    ['Måluppfyllelse i alla ämnen', byKey.knowledgeAll?.status === 'ok' ? 'Tillgänglig' : 'Saknas', byKey.knowledgeAll?.table?.text || byKey.knowledgeAll?.reason],
+    ['Yrkesbehörighet till gymnasiet', byKey.vocational?.status === 'ok' ? 'Tillgänglig' : byKey.vocational?.status === 'error' ? 'Tekniskt fel' : 'Saknas', byKey.vocational?.table?.text || byKey.vocational?.reason],
+    ['Fördelning av betyg per skolenhet och kommun', byKey.gradeDistribution?.status === 'ok' ? 'Tillgänglig' : byKey.gradeDistribution?.status === 'error' ? 'Tekniskt fel' : 'Saknas', byKey.gradeDistribution?.reason || 'Detaljerad skolnivå kräver att underlaget innehåller skolenheter.']
   ];
-  $('availabilityRows').innerHTML = rows.map(r => `<tr><td><strong>${esc(r[0])}</strong></td><td class="${r[1].includes('OK') ? 'ok' : 'warn'}">${esc(r[1])}</td><td>${esc(r[2] || '')}</td></tr>`).join('');
+  $('availabilityRows').innerHTML = rows.map(r => `<tr><td><strong>${esc(r[0])}</strong></td><td class="${/Tillgänglig|Lokal vy/.test(r[1]) ? 'ok' : 'warn'}">${esc(r[1])}</td><td>${esc(r[2] || '')}</td></tr>`).join('');
 }
 function destroyChart(id){ if(charts[id]) charts[id].destroy(); }
 function makeChart(id, type, data, options={}){

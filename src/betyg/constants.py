@@ -83,6 +83,13 @@ NP_AK6_COLUMNS = [
     "EN_GRUPP", "EN_A_DELT", "EN_B_DELT", "EN_C_DELT", "EN_A_PRP", "EN_B_PRP", "EN_C_PRP", "EN_PROVB",
 ]
 
+NP_AK6_COLUMNS_COMPACT = [
+    "System", "Datum", "Version", "PersonNr", "Skolenhetskod",
+    "MA_GRUPP", "MA_A_DELT", "MA_B_DELT", "MA_C_DELT", "MA_D_DELT", "MA_E_DELT", "MA_PROVB",
+    "SV_GRUPP", "SV_KURSPLAN", "SV_A_PRP", "SV_B_PRP", "SV_C_PRP", "SV_PROVB",
+    "EN_GRUPP", "EN_A_PRP", "EN_B_PRP", "EN_C_PRP", "EN_PROVB",
+]
+
 NP_AK9_COLUMNS = [
     "System", "Datum", "Version", "PersonNr", "Skolenhetskod",
     "MA_GRUPP", "MA_A_DELT", "MA_B_DELT", "MA_C_DELT", "MA_D_DELT", "MA_PROVB",
@@ -103,6 +110,6 @@ class NpSpec:
 
 NP_SPECS = {
     3: NpSpec(3, "ak3", NP_AK3_COLUMNS, alternate_columns=[NP_AK3_COLUMNS_COMPACT]),
-    6: NpSpec(6, "ak6", NP_AK6_COLUMNS),
+    6: NpSpec(6, "ak6", NP_AK6_COLUMNS, alternate_columns=[NP_AK6_COLUMNS_COMPACT]),
     9: NpSpec(9, "ak9", NP_AK9_COLUMNS),
 }

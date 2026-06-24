@@ -12,16 +12,16 @@ const STATIC_PAGES_BUILD = false;
 const IS_GITHUB_PAGES = location.hostname.endsWith('github.io');
 
 const wantedViews = [
-  ['Pojkar/Flickor', 'Söker mått med könsuppdelning. PxWeb-tabeller utan könsdimension kan bara visas totalt.'],
-  ['Meritvärde', 'Söker mått vars text innehåller meritvärde.'],
-  ['Meritvärde elever som läser SVA', 'Söker specifikt meritvärde kopplat till svenska som andraspråk. Publiceras inte alltid öppet.'],
-  ['Betygspoäng per ämne', 'Söker genomsnittlig betygspoäng per ämne.'],
-  ['Kontroll antal betyg och specialkoder', 'Visas från lokal SCB-import för att kontrollera giltiga betyg, tomma värden och specialkoder per ämne.'],
-  ['NP GAP åk 6/9', 'Söker NP-resultat och jämför med motsvarande betygsmått för SV/SVA, engelska och matematik.'],
-  ['Relation betyg och nationella prov', 'Söker färdig relation mellan betyg och provbetyg.'],
-  ['Uppnått kunskapskrav i alla ämnen', 'Söker andel elever med lägst E i samtliga ämnen.'],
-  ['Yrkesbehörighet till gymnasiet', 'Söker behörighetsmått för yrkesprogram.'],
-  ['Betygsfördelning per skolenhet och kommun', 'Söker betygsfördelning och skolenhetsdimension. Skolverket kan begränsa skolnivå i öppet API.']
+  ['Skillnader mellan flickor och pojkar', 'Visar jämförelser när könsuppdelat underlag finns tillgängligt.'],
+  ['Meritvärde', 'Visar meritvärde när underlag för valt läsår finns.'],
+  ['Meritvärde för elever som läser SVA', 'Visar särskilt underlag för svenska som andraspråk när det finns publicerat.'],
+  ['Resultat per ämne', 'Visar genomsnittliga resultat per ämne.'],
+  ['Datakontroll för lokal import', 'Visas från lokal SCB-import för att kontrollera giltiga betyg, tomma värden och specialkoder per ämne.'],
+  ['Nationella prov jämfört med betyg', 'Visar jämförelser mellan nationella prov och betyg där underlag finns.'],
+  ['Relation mellan betyg och nationella prov', 'Visar färdiga jämförelser mellan betyg och provresultat.'],
+  ['Måluppfyllelse i alla ämnen', 'Visar andel elever som når målen i samtliga ämnen.'],
+  ['Yrkesbehörighet till gymnasiet', 'Visar andel elever som är behöriga till yrkesprogram.'],
+  ['Fördelning av betyg per skolenhet och kommun', 'Visar betygsfördelning när tillräckligt detaljerat underlag finns tillgängligt.']
 ];
 
 function setStatus(type, text, sub=''){

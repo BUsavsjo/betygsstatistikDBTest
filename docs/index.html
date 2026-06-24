@@ -14,21 +14,26 @@
     main{max-width:1240px;margin:0 auto;padding:22px 18px 44px}.box{background:var(--card);border:1px solid var(--brd);border-radius:8px;padding:17px 19px;margin-bottom:15px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
     .notice{background:#fff8e6;border-color:#edd39a;color:#493813}.status{display:flex;align-items:center;gap:10px}.dot{width:10px;height:10px;border-radius:50%;background:var(--mut)}.dot.loading{background:var(--o);animation:pulse 1s infinite}.dot.ok{background:var(--g)}.dot.warn{background:var(--o)}.dot.error{background:var(--r)}@keyframes pulse{50%{opacity:.35}}
     .toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap}select,button{border:1px solid var(--brd);border-radius:7px;padding:8px 10px;background:#fff;color:var(--txt)}select[multiple]{min-width:210px;min-height:92px;padding:6px}button{cursor:pointer;background:var(--p);border-color:var(--p);color:#fff}.secondary{background:#fff;color:var(--p)}
+    .toolbar-spacer{flex:1 1 auto}
     .filters{display:none;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;align-items:end}.filters.active{display:grid}.filter label{display:block;font-size:.75rem;text-transform:uppercase;color:var(--mut);font-weight:750;margin-bottom:6px}.filter select{width:100%}.filter-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.card{background:#fff;border:1px solid var(--brd);border-top:3px solid var(--p);border-radius:8px;padding:14px 15px}.label{font-size:.72rem;text-transform:uppercase;color:var(--mut);font-weight:750}.value{font-size:1.8rem;font-weight:760;color:var(--p);margin-top:6px}.small{font-size:.8rem;color:var(--mut);line-height:1.45}.tabs{display:flex;gap:0;overflow:auto;border-bottom:2px solid var(--brd);margin:16px 0}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.card{background:#fff;border:1px solid var(--brd);border-top:3px solid var(--p);border-radius:8px;padding:14px 15px}.label{font-size:.72rem;text-transform:uppercase;color:var(--mut);font-weight:750}.value{font-size:1.8rem;font-weight:760;color:var(--p);margin-top:6px}.small{font-size:.8rem;color:var(--mut);line-height:1.45}.tabs{display:flex;flex-wrap:wrap;gap:0;overflow:visible;border-bottom:2px solid var(--brd);margin:16px 0}
+    .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}.kpi-card{background:linear-gradient(180deg,#ffffff 0%,#f6fafc 100%);border:1px solid var(--brd);border-left:5px solid var(--p);border-radius:12px;padding:18px 18px 16px;box-shadow:0 2px 10px rgba(24,55,71,.05)}.kpi-card h3{margin:0 0 10px;font-size:1rem;line-height:1.35}.kpi-topline{display:flex;justify-content:space-between;gap:14px;align-items:flex-end;margin-bottom:12px}.kpi-main{font-size:2.5rem;font-weight:780;color:var(--p);line-height:1}.kpi-main-sub{font-size:.8rem;color:var(--mut);margin-top:4px}.kpi-breakdown{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.kpi-chip{background:#fff;border:1px solid var(--brd);border-radius:10px;padding:10px 10px 9px}.kpi-chip-label{display:block;font-size:.69rem;text-transform:uppercase;color:var(--mut);font-weight:800}.kpi-chip-value{display:block;font-size:1.15rem;font-weight:760;color:var(--txt);margin-top:4px}.kpi-empty{padding:16px;border:1px dashed var(--brd);border-radius:10px;background:#fbfcfd;color:var(--mut)}
     .tab{padding:10px 15px;cursor:pointer;color:var(--mut);font-weight:650;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}.tab.active{color:var(--p);border-bottom-color:var(--p)}.panel{display:none}.panel.active{display:block}
     .chart{height:300px;position:relative}.tw{overflow:auto}table{width:100%;border-collapse:collapse;font-size:.84rem}th,td{padding:9px 10px;border-bottom:1px solid var(--brd);text-align:left;vertical-align:top}th{background:#f7f9fb;color:var(--mut);font-size:.72rem;text-transform:uppercase}.pct-cell{min-width:92px;display:grid;grid-template-columns:minmax(46px,1fr) auto;gap:8px;align-items:center}.pct-bar{height:7px;background:#edf2f5;border-radius:999px;overflow:hidden}.pct-fill{display:block;height:100%;background:linear-gradient(90deg,var(--p2),var(--p));border-radius:inherit}.pct-label{font-variant-numeric:tabular-nums;white-space:nowrap}.ok{color:var(--g);font-weight:700}.warn{color:var(--o);font-weight:700}.err{color:var(--r);font-weight:700}.muted{color:var(--mut)}code{background:#eef2f5;padding:2px 5px;border-radius:4px}.pre{white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace;background:#f6f8fa;border:1px solid var(--brd);border-radius:8px;padding:12px;max-height:330px;overflow:auto;font-size:.78rem}
+    details.tech-details{margin-top:12px;border:1px solid var(--brd);border-radius:8px;background:#fbfcfd}
+    details.tech-details summary{cursor:pointer;padding:12px 14px;font-weight:650;color:var(--p)}
+    details.tech-details > div{padding:0 14px 14px}
   </style>
 </head>
 <body>
 <header>
-  <div><h1>Betygsstatistik Sävsjö</h1><p>Livekontroll av Skolverkets öppna PxWeb-data för betyg, kön, SVA, ämnen och behörighet.</p></div>
+  <div><h1>Betygsstatistik Sävsjö</h1><p>Översikt över betyg, ämnesresultat, måluppfyllelse och nationella prov.</p></div>
   <div class="badge">Kommunekod 0684 · Grundskola</div>
 </header>
 
 <main>
   <section class="box notice">
-    <strong>Datagräns:</strong> Appen visar bara mått som finns i Skolverkets öppna PxWeb API. Om skolenhetsnivå eller betygsfördelning inte publiceras öppet visas det tydligt i tabellen och i diagnostiken.
+    <strong>Om underlaget:</strong> Sidan visar det underlag som finns tillgängligt för valt läsår. När detaljer saknas på skolnivå eller ämnesnivå förklaras det direkt i respektive vy.
   </section>
 
   <section id="demoNotice" class="box notice" style="display:none">
@@ -50,7 +55,8 @@
       <option value="2021/22" data-local="2021-2022" data-jmf="2022" data-underlag="2021">2021/22</option>
     </select>
     <button id="reloadBtn">Ladda om</button>
-    <button id="diagBtn" class="secondary">Visa diagnostik</button>
+    <div class="toolbar-spacer"></div>
+    <button id="diagBtn" class="secondary">Teknisk vy</button>
   </section>
 
   <section id="localFilters" class="box filters">
@@ -77,33 +83,32 @@
   </section>
 
   <section class="grid">
-    <div class="card"><div class="label">PxWeb-tabeller</div><div id="tableCount" class="value">-</div><div class="small">Tabeller med metadata</div></div>
-    <div class="card"><div class="label">Lyckade mått</div><div id="metricCount" class="value">-</div><div class="small">Mått som gav data</div></div>
+    <div class="card"><div class="label">Datakällor</div><div id="tableCount" class="value">-</div><div class="small">Källor som har lästs in</div></div>
+    <div class="card"><div class="label">Fungerande vyer</div><div id="metricCount" class="value">-</div><div class="small">Vyer med tillgängligt underlag</div></div>
     <div class="card"><div class="label">Meritvärde totalt</div><div id="meritCard" class="value">-</div><div class="small">Sävsjö, valt läsår</div></div>
     <div class="card"><div class="label">Yrkesbehörighet</div><div id="vocCard" class="value">-</div><div class="small">Sävsjö, valt läsår</div></div>
   </section>
 
   <div class="tabs">
     <div class="tab active" data-tab="overview">Översikt</div>
-    <div class="tab" data-tab="gender">Pojkar/Flickor</div>
-    <div class="tab" data-tab="subjects">Ämnen</div>
-    <div class="tab" data-tab="grades">Betygsfördelning</div>
-    <div class="tab" data-tab="control">Kontroll</div>
-    <div class="tab" data-tab="outcomes">Resultat</div>
-    <div class="tab" data-tab="np">NP GAP</div>
-    <div class="tab" data-tab="availability">Datatäckning</div>
-    <div class="tab" data-tab="tables">PxWeb-tabeller</div>
-    <div class="tab" data-tab="diagnostics">Diagnostik</div>
+    <div class="tab" data-tab="gender">Jämförelser</div>
+    <div class="tab" data-tab="subjects">Resultat per ämne</div>
+    <div class="tab" data-tab="grades">Fördelning av betyg</div>
+    <div class="tab" data-tab="outcomes">Måluppfyllelse</div>
+    <div class="tab" data-tab="np">Nationella prov</div>
+    <div class="tab" data-tab="availability">Vilken data som finns</div>
+    <div class="tab" data-tab="control">Datakontroll</div>
+    <div class="tab" data-tab="diagnostics">Teknisk diagnostik</div>
   </div>
 
   <section id="tab-overview" class="panel active">
     <div class="box"><h2>Meritvärde och yrkesbehörighet</h2><div class="chart"><canvas id="overviewChart"></canvas></div></div>
     <div class="box"><h2>Meritvärde per skolenhet och årskurs</h2><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th>Merit 16</th><th>Merit 17</th><th id="overviewKnowledgeHeader">Uppnått alla ämnen</th><th id="overviewVocationalHeader">Yrkesbehörighet</th></tr></thead><tbody id="localMeritRows"></tbody></table></div></div>
-    <div class="box"><h2>Efterfrågade mått</h2><div class="tw"><table><thead><tr><th>Mått</th><th>Status</th><th>Tabell / kommentar</th></tr></thead><tbody id="metricRows"></tbody></table></div></div>
+    <div class="box"><h2>Tillgängliga jämförelser</h2><div class="tw"><table><thead><tr><th>Vy</th><th>Status</th><th>Kommentar</th></tr></thead><tbody id="metricRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-gender" class="panel">
-    <div class="box"><h2>Könsjämförelse meritvärde</h2><p class="small">Den här tabellen visar pojkar och flickor bredvid varandra även när övriga vyer filtreras på ett kön.</p><div class="chart"><canvas id="genderChart"></canvas></div></div>
+    <div class="box"><h2>Skillnader mellan flickor och pojkar</h2><p class="small">Den här tabellen visar flickor och pojkar bredvid varandra även när övriga vyer filtreras på ett kön.</p><div class="chart"><canvas id="genderChart"></canvas></div></div>
     <div class="box"><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Elevgrupp</th><th>Pojkar</th><th>Flickor</th><th>Totalt</th><th>Skillnad F-P</th></tr></thead><tbody id="genderRows"></tbody></table></div></div>
     <div class="box"><h2>SV/SVA</h2><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Elevgrupp</th><th>Antal elever</th><th>Merit 17</th><th>Godkänd Sv/SVA</th><th>Uppnått alla ämnen</th></tr></thead><tbody id="svaRows"></tbody></table></div></div>
   </section>
@@ -119,12 +124,19 @@
   </section>
 
   <section id="tab-control" class="panel">
-    <div class="box"><h2>Kontroll antal betyg och specialkoder</h2><p class="small">Visar antal giltiga betyg, tomma värden, specialkoder och ogiltiga koder per ämne för lokal SCB-import.</p><div class="chart"><canvas id="controlChart"></canvas></div></div>
+    <div class="box"><h2>Datakontroll för lokal import</h2><p class="small">Visar antal giltiga betyg, tomma värden, specialkoder och ogiltiga koder per ämne för lokal SCB-import.</p><div class="chart"><canvas id="controlChart"></canvas></div></div>
     <div class="box"><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Elevgrupp</th><th>Ämne</th><th>Elever</th><th>Giltiga</th><th>A-E</th><th>F</th><th>Tomma</th><th>Special</th><th>Ogiltiga</th><th>2</th><th>3</th><th>9</th><th>Y</th><th>Z</th></tr></thead><tbody id="controlRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-outcomes" class="panel">
     <div class="box"><h2 id="outcomesTitle">Uppnått alla ämnen</h2><p id="outcomesDescription" class="small" style="display:none"></p></div>
+    <section class="grid">
+      <div class="card">
+        <div class="label">Kommun totalt</div>
+        <div id="knowledgeTotalCard" class="value">-</div>
+        <div id="knowledgeTotalSub" class="small">Alla skolenheter</div>
+      </div>
+    </section>
     <div class="box"><h2 id="knowledgeBoxTitle">Uppnått alla ämnen</h2><div class="chart"><canvas id="knowledgeChart"></canvas></div></div>
     <div class="box"><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th id="knowledgeMetricHeader">Uppnått alla ämnen</th></tr></thead><tbody id="knowledgeRows"></tbody></table></div></div>
     <div class="box"><h2>Yrkesbehörighet åk 9</h2><div class="chart"><canvas id="vocationalChart"></canvas></div></div>
@@ -134,11 +146,17 @@
   <section id="tab-np" class="panel">
     <div class="box">
       <h2>Nationella prov och betyg</h2>
-      <p class="small">Visar lokal NP-import när den finns, samt öppna PxWeb-mått för jämförelse med huvudman och riket.</p>
+      <p class="small">Visar lokal NP-import när den finns, samt öppna jämförelsetal för huvudman och riket.</p>
       <div class="toolbar">
         <span class="badge" style="color:var(--txt);border-color:var(--brd);background:#fff">Lokal SCB-import</span>
-        <span class="badge" style="color:var(--txt);border-color:var(--brd);background:#fff">Öppet PxWeb API</span>
+        <span class="badge" style="color:var(--txt);border-color:var(--brd);background:#fff">Öppna jämförelsetal</span>
       </div>
+    </div>
+
+    <div class="box">
+      <h2>Åk 3 KPI</h2>
+      <p class="small">Kolada-liknande nyckeltal för kommunala skolor, beräknade från lokal NP-import. Visar andel elever i åk 3 som klarat alla delar av ämnesprovet.</p>
+      <div id="npAk3Kpi" class="kpi-grid"></div>
     </div>
 
     <section class="grid">
@@ -167,22 +185,22 @@
     </div>
 
     <div class="box">
-      <h2>Öppna PxWeb-mått för huvudman och riket</h2>
-      <p class="small">Den här delen bygger inte på elevmatchning utan på öppna aggregerade mått från PxWeb. Den öppna PxWeb-strukturen innehåller inte komplett NP åk 6/9 för SV, EN och matematik.</p>
+      <h2>Jämförelsetal för huvudman och riket</h2>
+      <p class="small">Den här delen bygger inte på elevmatchning utan på öppna aggregerade jämförelsetal. Fullständiga provresultat finns inte tillgängliga för alla ämnen och årskurser.</p>
       <div class="tw"><table><thead><tr><th>Mått</th><th>Sävsjö huvudman</th><th>Riket</th><th>Gap</th></tr></thead><tbody id="npRows"></tbody></table></div>
     </div>
   </section>
 
   <section id="tab-availability" class="panel">
-    <div class="box"><h2>Datatäckning för önskade vyer</h2><div class="tw"><table><thead><tr><th>Önskad vy</th><th>API-status</th><th>Kommentar</th></tr></thead><tbody id="availabilityRows"></tbody></table></div></div>
-  </section>
-
-  <section id="tab-tables" class="panel">
-    <div class="box"><h2>Upptäckta PxWeb-tabeller</h2><div class="tw"><table><thead><tr><th>Tabell</th><th>Status</th><th>Variabler</th></tr></thead><tbody id="tableRows"></tbody></table></div></div>
+    <div class="box"><h2>Vilken data som finns tillgänglig</h2><div class="tw"><table><thead><tr><th>Vy</th><th>Status</th><th>Kommentar</th></tr></thead><tbody id="availabilityRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-diagnostics" class="panel">
-    <div class="box"><h2>Diagnostik</h2><p class="small">Här visas metadata, matchade mått, POST-querys och API-fel.</p><div id="diagLog" class="pre"></div></div>
+    <div class="box"><h2>Teknisk diagnostik</h2><p class="small">Här finns detaljer för felsökning och verifiering av tekniska datakällor.</p><div id="diagLog" class="pre"></div></div>
+    <details class="tech-details">
+      <summary>Visa tekniskt underlag</summary>
+      <div class="tw"><table><thead><tr><th>Datakälla</th><th>Status</th><th>Teknisk information</th></tr></thead><tbody id="tableRows"></tbody></table></div>
+    </details>
   </section>
 </main>
 
