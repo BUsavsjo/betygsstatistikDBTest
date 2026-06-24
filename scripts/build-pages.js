@@ -53,6 +53,21 @@ function copyDirIfExists(from, to) {
   return true;
 }
 
+function copyOutputJsonForPages() {
+  const outputRoot = path.join(root, 'data', 'output');
+  const docsOutputRoot = path.join(docs, 'data', 'output');
+  if (!fs.existsSync(outputRoot)) return false;
+
+  let copied = false;
+  for (const entry of fs.readdirSync(outputRoot, {withFileTypes: true})) {
+    if (!entry.isDirectory()) continue;
+    const source = path.join(outputRoot, entry.name, 'json');
+    const target = path.join(docsOutputRoot, entry.name, 'json');
+    if (copyDirIfExists(source, target)) copied = true;
+  }
+  return copied;
+}
+
 removeDir(docs);
 ensureDir(docs);
 
@@ -60,6 +75,7 @@ copyIndexForPages();
 copyDirIfExists(path.join(root, 'app'), path.join(docs, 'app'));
 copyAppForPages();
 copyDirIfExists(path.join(root, 'data', 'processed'), path.join(docs, 'data', 'processed'));
+copyOutputJsonForPages();
 copyDirIfExists(path.join(root, 'data', 'demo'), path.join(docs, 'data', 'demo'));
 
 fs.writeFileSync(
@@ -69,5 +85,5 @@ fs.writeFileSync(
 );
 
 console.log('GitHub Pages package created in docs/.');
-console.log('Included: index.html, app/, data/processed if present, and data/demo.');
-console.log('Excluded: server.js, data/raw, data/output, documentation, exports and dependencies.');
+console.log('Included: index.html, app/, data/processed if present, data/output/*/json if present, and data/demo.');
+console.log('Excluded: server.js, data/raw, data/output diagnostics/csv, documentation, exports and dependencies.');
