@@ -243,6 +243,8 @@ NP-importen använder datafilsbeskrivningarna för åk 3, 6 och 9. Den skapar ag
 
 För åk 3 finns stöd både för den dokumenterade 35-kolumnsstrukturen och en kompakt 31-kolumnsvariant där `MA_G1_*` och `MA_G2_*` saknas. Den kompakta varianten normaliseras internt till samma fältnamn innan aggregering, så KPI-vyn för åk 3 kan byggas från lokal NP-data utan manuell filredigering.
 
+När betygsmatchning saknas för åk 3 härleds kön direkt från personnumret i NP-filen, så `np_andel_godkanda.json` kan visa fördelning mellan flickor och pojkar utan att publicera personnummer.
+
 ```text
 data/output/2025-2026/json/np_andel_godkanda.json
 data/output/2025-2026/json/np_betyg_relation.json

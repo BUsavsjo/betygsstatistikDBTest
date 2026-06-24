@@ -242,6 +242,72 @@ class ControlRowsTests(unittest.TestCase):
 
 
 class NpAggregationTests(unittest.TestCase):
+    def test_aggregate_np_for_ak3_derives_gender_from_np_personnummer(self) -> None:
+        np_rows_by_grade = [
+            (
+                {
+                    "PersonNr": "20160101-1234",
+                    "Skolenhetskod": "123",
+                    "MA_A_PR": "1",
+                    "MA_B_PR": "1",
+                    "MA_C_PR": "1",
+                    "MA_D_PR": "1",
+                    "MA_E_PR": "1",
+                    "MA_F_PR": "1",
+                    "MA_G_PR": "1",
+                    "MA_G1_PR": "",
+                    "MA_G2_PR": "",
+                    "SV_A_PR": "1",
+                    "SV_B_PR": "1",
+                    "SV_C_PR": "1",
+                    "SV_D_PR": "1",
+                    "SV_E_PR": "1",
+                    "SV_F_PR": "1",
+                    "SV_G_PR": "1",
+                    "SV_H_PR": "1",
+                },
+                None,
+            ),
+            (
+                {
+                    "PersonNr": "20160101-1244",
+                    "Skolenhetskod": "123",
+                    "MA_A_PR": "1",
+                    "MA_B_PR": "1",
+                    "MA_C_PR": "1",
+                    "MA_D_PR": "1",
+                    "MA_E_PR": "1",
+                    "MA_F_PR": "1",
+                    "MA_G_PR": "1",
+                    "MA_G1_PR": "",
+                    "MA_G2_PR": "",
+                    "SV_A_PR": "1",
+                    "SV_B_PR": "1",
+                    "SV_C_PR": "1",
+                    "SV_D_PR": "1",
+                    "SV_E_PR": "1",
+                    "SV_F_PR": "1",
+                    "SV_G_PR": "1",
+                    "SV_H_PR": "1",
+                },
+                None,
+            ),
+        ]
+
+        np_pass, np_relation = aggregate_np(np_rows_by_grade, "2025-2026", 3, {"123": "Testskolan"})
+
+        self.assertEqual(np_relation, [])
+        boys_math = next(
+            row for row in np_pass
+            if row["niva"] == "kommun" and row["kon"] == "Pojkar" and row["elevgrupp"] == "Alla" and row["amne"] == "Ma"
+        )
+        girls_math = next(
+            row for row in np_pass
+            if row["niva"] == "kommun" and row["kon"] == "Flickor" and row["elevgrupp"] == "Alla" and row["amne"] == "Ma"
+        )
+        self.assertEqual(boys_math["antal_np"], 1)
+        self.assertEqual(girls_math["antal_np"], 1)
+
     def test_aggregate_np_includes_gender_and_sv_sva_segments(self) -> None:
         np_rows_by_grade = [
             (

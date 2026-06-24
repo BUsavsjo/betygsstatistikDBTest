@@ -202,13 +202,44 @@ function groupConsecutiveRows(rows, keyFn){
   }
   return groups;
 }
+function selectedSchoolSummary(){
+  const count = (state.filters?.schools || []).length;
+  return count ? `${count} skolenheter` : 'Alla skolenheter';
+}
+function currentTableSummary({groupLabel='Elevgrupp'}={}){
+  const grades = state.filters?.grades || [];
+  const gradeText = grades.length ? grades.map(g => `Årskurs: ${g}`).join(', ') : 'Årskurs: Alla';
+  const genderText = `Kön: ${state.filters?.gender || 'Alla'}`;
+  const groupText = `${groupLabel}: ${state.filters?.group || 'Alla'}`;
+  const schoolText = `Skolor: ${selectedSchoolSummary()}`;
+  return `${gradeText} · ${genderText} · ${groupText} · ${schoolText}`;
+}
+function setTableSummary(id, summary){
+  const el = $(id);
+  if(el) el.innerHTML = `<strong>Urval:</strong> ${esc(summary)}`;
+}
+function showGradeCell(value){
+  return (state.filters?.grades || []).length === 1 ? '' : esc(value);
+}
+function showGenderCell(value){
+  return state.filters?.gender !== 'Alla' ? '' : esc(value || 'Alla');
+}
+function showGroupCell(value){
+  return state.filters?.group !== 'Alla' ? '' : esc(value || 'Alla');
+}
+function rightCell(value){
+  return `<td class="numeric">${esc(value ?? '-')}</td>`;
+}
+function schoolCellHtml(row, span){
+  return `<td rowspan="${span}" class="school-cell"><strong>${esc(schoolLabel(row))}</strong></td>`;
+}
 function renderSchoolGroupedBody(rows, {emptyHtml, colspan, schoolCell, rowCells}){
   if(!rows.length) return emptyHtml;
   return groupConsecutiveRows(rows, row => schoolKey(row)).map(group => {
     return group.rows.map((row, index) => {
       const cells = rowCells(row, index, group.rows.length);
       const schoolHtml = index === 0 ? schoolCell(row, group.rows.length) : '';
-      return `<tr>${cells.beforeSchool || ''}${schoolHtml}${cells.afterSchool || ''}</tr>`;
+      return `<tr class="school-group${index === 0 ? ' school-group-start' : ''}">${cells.beforeSchool || ''}${schoolHtml}${cells.afterSchool || ''}</tr>`;
     }).join('');
   }).join('') || `<tr><td colspan="${colspan}" class="muted">Inga rader matchar urvalet.</td></tr>`;
 }
@@ -236,13 +267,14 @@ function renderLocalOutcomes(local, meritRows){
   $('knowledgeTotalSub').textContent = totalOutcome
     ? `${totalOutcome.antal_elever} elever · alla skolenheter`
     : 'Alla skolenheter';
+  setTableSummary('knowledgeTableSummary', currentTableSummary());
   $('knowledgeRows').innerHTML = renderSchoolGroupedBody(outcomeRows, {
     colspan: 6,
     emptyHtml: '<tr><td colspan="6" class="muted">Ingen data för uppnått alla ämnen matchar urvalet.</td></tr>',
-    schoolCell: (row, span) => `<td rowspan="${span}"><strong>${esc(schoolLabel(row))}</strong></td>`,
+    schoolCell: schoolCellHtml,
     rowCells: row => ({
-      beforeSchool: `<td>${esc(row.arskurs)}</td>`,
-      afterSchool: `<td>${esc(row.kon || 'Alla')}</td><td>${esc(row.elevgrupp || 'Alla')}</td><td>${studentCountCell(row.antal_elever)}</td><td>${pctBar(row.andel_uppnatt_alla_amnen, formatPercentWithCount(row.andel_uppnatt_alla_amnen, row.antal_elever))}</td>`
+      beforeSchool: `<td>${showGradeCell(row.arskurs)}</td>`,
+      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td class="numeric">${studentCountCell(row.antal_elever)}</td><td>${pctBar(row.andel_uppnatt_alla_amnen, formatPercentWithCount(row.andel_uppnatt_alla_amnen, row.antal_elever))}</td>`
     })
   });
   const knowledgeChartRows = outcomeRows
@@ -257,12 +289,13 @@ function renderLocalOutcomes(local, meritRows){
   const vocationalRows = localFilterRows(local.overview || [], {forceGrade:9})
     .filter(r => r.andel_behoriga_yrkesprogram != null)
     .sort((a,b) => `${schoolLabel(a)}${rowGender(a)}${rowGroup(a)}`.localeCompare(`${schoolLabel(b)}${rowGender(b)}${rowGroup(b)}`, 'sv', {numeric:true}));
+  setTableSummary('vocationalTableSummary', currentTableSummary());
   $('vocationalRows').innerHTML = renderSchoolGroupedBody(vocationalRows, {
     colspan: 5,
     emptyHtml: '<tr><td colspan="5" class="muted">Ingen yrkesbehörighetsdata för åk 9 matchar urvalet.</td></tr>',
-    schoolCell: (row, span) => `<td rowspan="${span}"><strong>${esc(schoolLabel(row))}</strong></td>`,
+    schoolCell: schoolCellHtml,
     rowCells: row => ({
-      afterSchool: `<td>${esc(row.kon || 'Alla')}</td><td>${esc(row.elevgrupp || 'Alla')}</td><td>${studentCountCell(row.antal_elever)}</td><td>${pctBar(row.andel_behoriga_yrkesprogram, formatPercentWithCount(row.andel_behoriga_yrkesprogram, row.antal_elever))}</td>`
+      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td class="numeric">${studentCountCell(row.antal_elever)}</td><td>${pctBar(row.andel_behoriga_yrkesprogram, formatPercentWithCount(row.andel_behoriga_yrkesprogram, row.antal_elever))}</td>`
     })
   });
   const vocationalChartRows = vocationalRows
@@ -279,13 +312,14 @@ function renderLocalControl(local){
     .filter(r => rowGroup(r) === (state.filters.group === 'Alla' ? 'Alla' : state.filters.group))
     .sort((a,b) => `${schoolLabel(a)}${a.arskurs}${a.elevgrupp}${a.amne}`.localeCompare(`${schoolLabel(b)}${b.arskurs}${b.elevgrupp}${b.amne}`, 'sv', {numeric:true}));
 
+  setTableSummary('controlTableSummary', currentTableSummary());
   $('controlRows').innerHTML = renderSchoolGroupedBody(controlRows.slice(0, 180), {
     colspan: 16,
     emptyHtml: '<tr><td colspan="16" class="muted">Ingen kontrolldata matchar urvalet.</td></tr>',
-    schoolCell: (row, span) => `<td rowspan="${span}"><strong>${esc(schoolLabel(row))}</strong></td>`,
+    schoolCell: schoolCellHtml,
     rowCells: row => ({
-      beforeSchool: `<td>${esc(row.arskurs)}</td>`,
-      afterSchool: `<td>${esc(row.elevgrupp || 'Alla')}</td><td>${esc(row.amne)}</td><td>${esc(row.antal_elever)}</td><td>${esc(row.antal_giltiga_betyg)}</td><td>${esc(row.antal_A_E)}</td><td>${esc(row.antal_F)}</td><td>${esc(row.antal_tomma)}</td><td>${esc(row.antal_specialkoder)}</td><td>${esc(row.antal_ogiltiga_koder)}</td><td>${esc(row.specialkod_2)}</td><td>${esc(row.specialkod_3)}</td><td>${esc(row.specialkod_9)}</td><td>${esc(row.specialkod_Y)}</td><td>${esc(row.specialkod_Z)}</td>`
+      beforeSchool: `<td>${showGradeCell(row.arskurs)}</td>`,
+      afterSchool: `<td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(row.amne)}</td>${rightCell(row.antal_elever)}${rightCell(row.antal_giltiga_betyg)}${rightCell(row.antal_A_E)}${rightCell(row.antal_F)}${rightCell(row.antal_tomma)}${rightCell(row.antal_specialkoder)}${rightCell(row.antal_ogiltiga_koder)}${rightCell(row.specialkod_2)}${rightCell(row.specialkod_3)}${rightCell(row.specialkod_9)}${rightCell(row.specialkod_Y)}${rightCell(row.specialkod_Z)}`
     })
   });
 
@@ -320,15 +354,16 @@ function renderFilteredLocal(){
 
   const sortedMeritRows = meritRows
     .sort((a,b) => `${schoolLabel(a)}${a.arskurs}${rowGender(a)}${rowGroup(a)}`.localeCompare(`${schoolLabel(b)}${b.arskurs}${rowGender(b)}${rowGroup(b)}`, 'sv', {numeric:true}));
+  setTableSummary('overviewTableSummary', currentTableSummary());
   $('localMeritRows').innerHTML = renderSchoolGroupedBody(sortedMeritRows, {
     colspan: showVocational ? 9 : 8,
     emptyHtml: `<tr><td colspan="${showVocational ? '9' : '8'}" class="muted">Inga rader matchar urvalet.</td></tr>`,
-    schoolCell: (row, span) => `<td rowspan="${span}"><strong>${esc(schoolLabel(row))}</strong></td>`,
+    schoolCell: schoolCellHtml,
     rowCells: row => {
       const vocationalCell = showVocational ? `<td>${row.andel_behoriga_yrkesprogram == null ? '-' : pctBar(row.andel_behoriga_yrkesprogram, formatPercentWithCount(row.andel_behoriga_yrkesprogram, row.antal_elever))}</td>` : '';
       return {
-        beforeSchool: `<td>${esc(row.arskurs)}</td>`,
-        afterSchool: `<td>${esc(row.kon || 'Alla')}</td><td>${esc(row.elevgrupp || 'Alla')}</td><td>${studentCountCell(row.antal_elever)}</td><td>${fmt(row.genomsnittligt_meritvarde_16)}</td><td>${fmt(row.genomsnittligt_meritvarde_17)}</td><td>${pctBar(row.andel_uppnatt_alla_amnen, formatPercentWithCount(row.andel_uppnatt_alla_amnen, row.antal_elever))}</td>${vocationalCell}`
+        beforeSchool: `<td>${showGradeCell(row.arskurs)}</td>`,
+        afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td class="numeric">${studentCountCell(row.antal_elever)}</td><td class="numeric">${fmt(row.genomsnittligt_meritvarde_16)}</td><td class="numeric">${fmt(row.genomsnittligt_meritvarde_17)}</td><td>${pctBar(row.andel_uppnatt_alla_amnen, formatPercentWithCount(row.andel_uppnatt_alla_amnen, row.antal_elever))}</td>${vocationalCell}`
       };
     }
   });
@@ -366,24 +401,26 @@ function renderFilteredLocal(){
   },{scales:{y:{beginAtZero:false}}});
 
   const svSvaRows = localFilterRows(local.svSva || []).filter(r => ['SV','SVA'].includes(r.elevgrupp));
+  setTableSummary('svaTableSummary', currentTableSummary({groupLabel:'Sv/Sva'}));
   $('svaRows').innerHTML = renderSchoolGroupedBody(svSvaRows, {
     colspan: 7,
     emptyHtml: '<tr><td colspan="7" class="muted">Ingen SV/SVA-data hittades för urvalet.</td></tr>',
-    schoolCell: (row, span) => `<td rowspan="${span}"><strong>${esc(schoolLabel(row))}</strong></td>`,
+    schoolCell: schoolCellHtml,
     rowCells: row => ({
-      beforeSchool: `<td>${esc(row.arskurs)}</td>`,
-      afterSchool: `<td>${esc(row.elevgrupp)}</td><td>${esc(row.antal_elever ?? '-')}</td><td>${fmt(row.genomsnittligt_meritvarde_17)}</td><td>${pctBar(row.andel_godkand_sv_sva)}</td><td>${pctBar(row.andel_uppnatt_alla_amnen)}</td>`
+      beforeSchool: `<td>${showGradeCell(row.arskurs)}</td>`,
+      afterSchool: `<td>${showGroupCell(row.elevgrupp)}</td>${rightCell(row.antal_elever ?? '-')}` + `<td class="numeric">${fmt(row.genomsnittligt_meritvarde_17)}</td><td>${pctBar(row.andel_godkand_sv_sva)}</td><td>${pctBar(row.andel_uppnatt_alla_amnen)}</td>`
     })
   });
 
   const subjectRows = subjectDistributionRows(local);
+  setTableSummary('subjectTableSummary', currentTableSummary({groupLabel:'Sv/Sva'}));
   $('subjectRows').innerHTML = renderSchoolGroupedBody(subjectRows.slice(0, 180), {
     colspan: 14,
     emptyHtml: '<tr><td colspan="14" class="muted">Ingen ämnesdata matchar urvalet.</td></tr>',
-    schoolCell: (row, span) => `<td rowspan="${span}"><strong>${esc(schoolLabel(row))}</strong></td>`,
+    schoolCell: schoolCellHtml,
     rowCells: row => ({
-      beforeSchool: `<td>${esc(row.arskurs)}</td>`,
-      afterSchool: `<td>${esc(row.kon || 'Alla')}</td><td>${esc(row.elevgrupp || 'Alla')}</td><td>${esc(row.amne)}</td><td>${fmt(row.betygspoang)}</td><td>${esc(row.antal_A ?? 0)}</td><td>${esc(row.antal_B ?? 0)}</td><td>${esc(row.antal_C ?? 0)}</td><td>${esc(row.antal_D ?? 0)}</td><td>${esc(row.antal_E ?? 0)}</td><td>${esc(row.antal_F ?? 0)}</td><td>${pctBar(row.andel_A_E)}</td><td>${esc(row.antal_betyg)}</td>`
+      beforeSchool: `<td>${showGradeCell(row.arskurs)}</td>`,
+      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(row.amne)}</td><td class="numeric">${fmt(row.betygspoang)}</td>${rightCell(row.antal_A ?? 0)}${rightCell(row.antal_B ?? 0)}${rightCell(row.antal_C ?? 0)}${rightCell(row.antal_D ?? 0)}${rightCell(row.antal_E ?? 0)}${rightCell(row.antal_F ?? 0)}<td>${pctBar(row.andel_A_E)}</td>${rightCell(row.antal_betyg)}`
     })
   });
   const topSubjects = subjectRows.slice(0, 24);
@@ -395,13 +432,14 @@ function renderFilteredLocal(){
     ]
   },{scales:{y:{beginAtZero:true,max:20},y1:{beginAtZero:true,max:100,position:'right',grid:{drawOnChartArea:false}}}});
 
+  setTableSummary('gradeDistTableSummary', currentTableSummary({groupLabel:'Sv/Sva'}));
   $('gradeDistRows').innerHTML = renderSchoolGroupedBody(subjectRows.slice(0, 180), {
     colspan: 12,
     emptyHtml: '<tr><td colspan="12" class="muted">Ingen betygsfördelning matchar urvalet.</td></tr>',
-    schoolCell: (row, span) => `<td rowspan="${span}"><strong>${esc(schoolLabel(row))}</strong></td>`,
+    schoolCell: schoolCellHtml,
     rowCells: row => ({
-      beforeSchool: `<td>${esc(row.arskurs)}</td>`,
-      afterSchool: `<td>${esc(row.kon || 'Alla')}</td><td>${esc(row.elevgrupp || 'Alla')}</td><td>${esc(row.amne)}</td><td>${pctBar(row.andel_A)}</td><td>${pctBar(row.andel_B)}</td><td>${pctBar(row.andel_C)}</td><td>${pctBar(row.andel_D)}</td><td>${pctBar(row.andel_E)}</td><td>${pctBar(row.andel_F)}</td><td>${esc(row.antal_betyg)}</td>`
+      beforeSchool: `<td>${showGradeCell(row.arskurs)}</td>`,
+      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(row.amne)}</td><td>${pctBar(row.andel_A)}</td><td>${pctBar(row.andel_B)}</td><td>${pctBar(row.andel_C)}</td><td>${pctBar(row.andel_D)}</td><td>${pctBar(row.andel_E)}</td><td>${pctBar(row.andel_F)}</td>${rightCell(row.antal_betyg)}`
     })
   });
   const gradeChartRows = subjectRows.slice(0, 18);
@@ -442,32 +480,34 @@ function renderLocalNp(local){
   const totalPassed = passRows.reduce((sum, row) => sum + Number(row.antal_godkanda_np || 0), 0);
   const totalCompared = relationRows.reduce((sum, row) => sum + Number(row.antal_jamforda || 0), 0);
   const totalHigher = relationRows.reduce((sum, row) => sum + Number(row.antal_betyg_hogre_an_np || 0), 0);
-  const selectedGradeText = f.grades.length ? f.grades.map(g => `Åk ${g}`).join(', ') : 'Alla årskurser';
-  const selectedSchoolText = f.schools.length ? `${f.schools.length} skolenheter` : 'Alla skolenheter';
-  const selectedGroupText = f.group === 'Alla' ? 'Alla elevgrupper' : f.group;
-  const selectedGenderText = f.gender === 'Alla' ? 'Alla kön' : f.gender;
+  const selectedGradeText = f.grades.length ? f.grades.map(g => `Årskurs: ${g}`).join(', ') : 'Årskurs: Alla';
+  const selectedSchoolText = `Skolor: ${selectedSchoolSummary()}`;
+  const selectedGroupText = `Sv/Sva: ${f.group === 'Alla' ? 'Alla' : f.group}`;
+  const selectedGenderText = `Kön: ${f.gender === 'Alla' ? 'Alla' : f.gender}`;
 
   $('npComparedCard').textContent = totalCompared ? totalCompared.toLocaleString('sv-SE') : '-';
   $('npPassRateCard').textContent = totalNp ? fmt((totalPassed / totalNp) * 100, ' %') : '-';
   $('npHigherCard').textContent = totalCompared ? fmt((totalHigher / totalCompared) * 100, ' %') : '-';
   $('npSourceCard').textContent = local.npPass?.length || local.npRelation?.length ? 'Lokal' : 'Öppen källa';
-  $('npFilterSummary').textContent = `Urval: ${selectedGradeText} • ${selectedSchoolText} • ${selectedGroupText} • ${selectedGenderText}`;
+  $('npFilterSummary').textContent = `Urval: ${selectedGradeText} · ${selectedGenderText} · ${selectedGroupText} · ${selectedSchoolText}`;
+  setTableSummary('npPassTableSummary', `${selectedGradeText} · ${selectedGenderText} · ${selectedGroupText} · ${selectedSchoolText}`);
+  setTableSummary('npRelationTableSummary', `${selectedGradeText} · ${selectedGenderText} · ${selectedGroupText} · ${selectedSchoolText}`);
   renderAk3Kpis(local);
 
   $('npLocalRows').innerHTML = renderSchoolGroupedBody(passRows, {
     colspan: 8,
     emptyHtml: '<tr><td colspan="8" class="muted">Ingen lokal NP-data hittades.</td></tr>',
-    schoolCell: (row, span) => `<td rowspan="${span}"><strong>${esc(row.skolenhetsnamn || row.skolenhetskod || row.niva)}</strong></td>`,
+    schoolCell: (row, span) => `<td rowspan="${span}" class="school-cell"><strong>${esc(row.skolenhetsnamn || row.skolenhetskod || row.niva)}</strong></td>`,
     rowCells: row => ({
-      afterSchool: `<td>${esc(row.arskurs)}</td><td>${esc(row.kon || 'Alla')}</td><td>${esc(row.elevgrupp || 'Alla')}</td><td>${esc(row.amne)}</td><td>${esc(row.antal_np)}</td><td>${pctBar(row.andel_godkanda_np)}</td><td>${esc(row.antal_med_betygsmatch ?? '-')}</td>`
+      afterSchool: `<td>${showGradeCell(row.arskurs)}</td><td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(row.amne)}</td>${rightCell(row.antal_np)}<td>${pctBar(row.andel_godkanda_np)}</td>${rightCell(row.antal_med_betygsmatch ?? '-')}`
     })
   });
   $('npRelationRows').innerHTML = renderSchoolGroupedBody(relationRows, {
     colspan: 9,
     emptyHtml: '<tr><td colspan="9" class="muted">Ingen betyg-NP-relation kunde beräknas för aktuellt urval.</td></tr>',
-    schoolCell: (row, span) => `<td rowspan="${span}"><strong>${esc(row.skolenhetsnamn || row.skolenhetskod || row.niva)}</strong></td>`,
+    schoolCell: (row, span) => `<td rowspan="${span}" class="school-cell"><strong>${esc(row.skolenhetsnamn || row.skolenhetskod || row.niva)}</strong></td>`,
     rowCells: row => ({
-      afterSchool: `<td>${esc(row.arskurs)}</td><td>${esc(row.kon || 'Alla')}</td><td>${esc(row.elevgrupp || 'Alla')}</td><td>${esc(row.amne)}</td><td>${esc(row.antal_jamforda)}</td><td>${pctBar(row.andel_betyg_hogre_an_np)}</td><td>${pctBar(row.andel_betyg_lika_np)}</td><td>${pctBar(row.andel_betyg_lagre_an_np)}</td>`
+      afterSchool: `<td>${showGradeCell(row.arskurs)}</td><td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(row.amne)}</td>${rightCell(row.antal_jamforda)}<td>${pctBar(row.andel_betyg_hogre_an_np)}</td><td>${pctBar(row.andel_betyg_lika_np)}</td><td>${pctBar(row.andel_betyg_lagre_an_np)}</td>`
     })
   });
 
