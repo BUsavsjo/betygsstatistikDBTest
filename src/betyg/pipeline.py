@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from .constants import GradeSpec, NP_SPECS, SPECIAL_CODES, SPECS, VALID_GRADES
+from .datafile_control import create_control_cases, write_datafile_control_workbook
 from .io import publish_processed_json, read_grade_files, read_np_files, write_csv, write_json
 from .metrics import base_groups, clean, eligibility, gender_from_personnr, grade, grade_distribution, merit, overview, reached_all_subjects, school_name, segmented_groups, sv_sva_group, sv_sva_summary
 from .np_data import aggregate_np
@@ -89,6 +90,7 @@ def build_year(
     root = base_dir or Path(__file__).resolve().parent.parent.parent
     grade_raw = raw_base or root / "data" / "raw" / "betyg"
     np_raw = np_raw_base or root / "data" / "raw" / "np"
+    documentation_base = root / "data" / "dokumentation"
     output_root = output_base or root / "data" / "output"
     processed_root = processed_base or root / "data" / "processed"
 
@@ -180,7 +182,18 @@ def build_year(
     write_json(json_dir / "betygsstatistik_sv_sva.json", all_sv_sva)
     write_json(json_dir / "np_andel_godkanda.json", all_np_pass)
     write_json(json_dir / "np_betyg_relation.json", all_np_relation)
+    control_cases = create_control_cases(
+        lasar=lasar,
+        grade_raw=grade_raw,
+        np_raw=np_raw,
+        documentation_base=documentation_base,
+        grade_specs=list(SPECS.values()),
+        np_specs=list(NP_SPECS.values()),
+    )
+    control_workbook = diagnostics_dir / "datafilsbeskrivning_jamforelse.xlsx"
+    write_datafile_control_workbook(control_workbook, lasar=lasar, cases=control_cases)
     print(f"Created local grade statistics in {json_dir}")
+    print(f"Created datafile control workbook in {control_workbook}")
     if publish:
         processed_dir = publish_processed_json(output_root, processed_root, lasar)
         print(f"Copied public processed JSON to {processed_dir}")

@@ -8,11 +8,46 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
+from openpyxl import Workbook
+
 from config_paths import DEFAULT_LASAR, resolve_paths
 from betyg.constants import AK9_SUBJECTS
+from betyg.datafile_control import ControlCase, build_case_rows
 from betyg.io import publish_processed_json
 from betyg.metrics import eligibility, gender_from_personnr, merit, overview, sv_sva_group
 from betyg.pipeline import control_rows
+
+
+class DatafileControlTests(unittest.TestCase):
+    def test_datafile_control_compares_documentation_import_and_txt_values(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            docs = root / "datafilsbeskrivning.xlsx"
+            raw_dir = root / "raw"
+            raw_dir.mkdir()
+            workbook = Workbook()
+            sheet = workbook.active
+            sheet.append(["Variabelnamn", "F?ltinneh?ll", "Till?tna tecken", "(Max) l?ngd"])
+            sheet.append(["PersonNr", "Elevens personnummer", "BS", 12])
+            sheet.append(["M1 (spr?k)", "Modernt spr?k 1", "A", 20])
+            workbook.save(docs)
+            workbook.close()
+            (raw_dir / "test.txt").write_text("201001011234;SPA\n", encoding="utf-8")
+
+            rows, errors = build_case_rows(ControlCase(
+                sheet_name="test",
+                kind="betyg",
+                arskurs=6,
+                raw_dir=raw_dir,
+                documentation_path=docs,
+                import_columns=["PersonNr", "M1_sprak"],
+            ))
+
+        self.assertEqual(errors, [])
+        self.assertEqual(rows[0]["Status"], "OK")
+        self.assertEqual(rows[0]["Exempelv?rden"], "[maskerat]")
+        self.assertEqual(rows[1]["Datafilsbeskrivning: Normaliserat namn"], "M1_sprak")
+        self.assertEqual(rows[1]["Status"], "OK")
 
 
 class MetricsTests(unittest.TestCase):

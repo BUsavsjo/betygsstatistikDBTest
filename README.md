@@ -188,6 +188,14 @@ data/output/2025-2026/json/
 data/output/2025-2026/diagnostik/
 ```
 
+Vid import skapas ?ven en Excel-fil f?r manuell f?ltkontroll:
+
+```text
+data/output/2025-2026/diagnostik/datafilsbeskrivning_jamforelse.xlsx
+```
+
+Den j?mf?r f?lten i SCB:s datafilsbeskrivningar under `data/dokumentation/` med importkodens kolumnlistor och faktisk TXT-inl?sning. Bladen visar position, variabelnamn, f?ltinneh?ll, till?tna tecken, maxl?ngd, antal ifyllda/tomma v?rden, faktisk maxl?ngd, exempelv?rden och status. Exempelv?rden f?r personnummer, f?rnamn och efternamn maskas, men filen ligger ?nd? under `data/output` eftersom den bygger p? r?data och inte ska publiceras.
+
 Med `--publish` kopieras endast whitelistade aggregerade JSON-filer vidare till:
 
 ```text
