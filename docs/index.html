@@ -19,7 +19,7 @@
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.card{background:#fff;border:1px solid var(--brd);border-top:3px solid var(--p);border-radius:8px;padding:14px 15px}.label{font-size:.72rem;text-transform:uppercase;color:var(--mut);font-weight:750}.value{font-size:1.8rem;font-weight:760;color:var(--p);margin-top:6px}.small{font-size:.8rem;color:var(--mut);line-height:1.45}.tabs{display:flex;flex-wrap:wrap;gap:0;overflow:visible;border-bottom:2px solid var(--brd);margin:16px 0}
     .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}.kpi-card{background:linear-gradient(180deg,#ffffff 0%,#f6fafc 100%);border:1px solid var(--brd);border-left:5px solid var(--p);border-radius:12px;padding:18px 18px 16px;box-shadow:0 2px 10px rgba(24,55,71,.05)}.kpi-card h3{margin:0 0 10px;font-size:1rem;line-height:1.35}.kpi-topline{display:flex;justify-content:space-between;gap:14px;align-items:flex-end;margin-bottom:12px}.kpi-main{font-size:2.5rem;font-weight:780;color:var(--p);line-height:1}.kpi-main-sub{font-size:.8rem;color:var(--mut);margin-top:4px}.kpi-breakdown{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.kpi-chip{background:#fff;border:1px solid var(--brd);border-radius:10px;padding:10px 10px 9px}.kpi-chip-label{display:block;font-size:.69rem;text-transform:uppercase;color:var(--mut);font-weight:800}.kpi-chip-value{display:block;font-size:1.15rem;font-weight:760;color:var(--txt);margin-top:4px}.kpi-empty{padding:16px;border:1px dashed var(--brd);border-radius:10px;background:#fbfcfd;color:var(--mut)}
     .tab{padding:10px 15px;cursor:pointer;color:var(--mut);font-weight:650;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}.tab.active{color:var(--p);border-bottom-color:var(--p)}.panel{display:none}.panel.active{display:block}
-    .chart{height:300px;position:relative}.tw{overflow:auto}table{width:100%;border-collapse:collapse;font-size:.84rem}th,td{padding:9px 10px;border-bottom:1px solid var(--brd);text-align:left;vertical-align:top}th{background:#f7f9fb;color:var(--mut);font-size:.72rem;text-transform:uppercase}.pct-cell{min-width:92px;display:grid;grid-template-columns:minmax(46px,1fr) auto;gap:8px;align-items:center}.pct-bar{height:7px;background:#edf2f5;border-radius:999px;overflow:hidden}.pct-fill{display:block;height:100%;background:linear-gradient(90deg,var(--p2),var(--p));border-radius:inherit}.pct-label{font-variant-numeric:tabular-nums;white-space:nowrap}.ok{color:var(--g);font-weight:700}.warn{color:var(--o);font-weight:700}.err{color:var(--r);font-weight:700}.muted{color:var(--mut)}code{background:#eef2f5;padding:2px 5px;border-radius:4px}.pre{white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace;background:#f6f8fa;border:1px solid var(--brd);border-radius:8px;padding:12px;max-height:330px;overflow:auto;font-size:.78rem}
+    .chart{height:300px;position:relative}.tw{overflow:auto}table{width:100%;border-collapse:separate;border-spacing:0;font-size:.84rem}th,td{padding:9px 10px;border-bottom:1px solid var(--brd);text-align:left;vertical-align:top}th{position:sticky;top:0;z-index:2;background:#f7f9fb;color:var(--mut);font-size:.72rem;text-transform:uppercase}.table-summary{margin:-2px 0 10px;color:var(--mut);font-size:.8rem}.table-summary strong{color:var(--txt)}.school-group td{background:#fbfcfd}.school-group-start td{border-top:8px solid #fff}.school-cell{position:sticky;left:0;z-index:1;background:inherit;box-shadow:1px 0 0 var(--brd);min-width:180px}.school-group .school-cell{background:#f3f7fa}.school-cell strong{display:block}.numeric{text-align:right;font-variant-numeric:tabular-nums}.pct-cell{min-width:92px;display:grid;grid-template-columns:minmax(46px,1fr) auto;gap:8px;align-items:center}.pct-bar{height:7px;background:#edf2f5;border-radius:999px;overflow:hidden}.pct-fill{display:block;height:100%;background:linear-gradient(90deg,var(--p2),var(--p));border-radius:inherit}.pct-label{font-variant-numeric:tabular-nums;white-space:nowrap}.ok{color:var(--g);font-weight:700}.warn{color:var(--o);font-weight:700}.err{color:var(--r);font-weight:700}.muted{color:var(--mut)}code{background:#eef2f5;padding:2px 5px;border-radius:4px}.pre{white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace;background:#f6f8fa;border:1px solid var(--brd);border-radius:8px;padding:12px;max-height:330px;overflow:auto;font-size:.78rem}
     details.tech-details{margin-top:12px;border:1px solid var(--brd);border-radius:8px;background:#fbfcfd}
     details.tech-details summary{cursor:pointer;padding:12px 14px;font-weight:650;color:var(--p)}
     details.tech-details > div{padding:0 14px 14px}
@@ -103,29 +103,29 @@
 
   <section id="tab-overview" class="panel active">
     <div class="box"><h2>Meritvärde och yrkesbehörighet</h2><div class="chart"><canvas id="overviewChart"></canvas></div></div>
-    <div class="box"><h2>Meritvärde per skolenhet och årskurs</h2><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th>Merit 16</th><th>Merit 17</th><th id="overviewKnowledgeHeader">Uppnått alla ämnen</th><th id="overviewVocationalHeader">Yrkesbehörighet</th></tr></thead><tbody id="localMeritRows"></tbody></table></div></div>
+    <div class="box"><h2>Meritvärde per skolenhet och årskurs</h2><div id="overviewTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th>Merit 16</th><th>Merit 17</th><th id="overviewKnowledgeHeader">Uppnått alla ämnen</th><th id="overviewVocationalHeader">Yrkesbehörighet</th></tr></thead><tbody id="localMeritRows"></tbody></table></div></div>
     <div class="box"><h2>Tillgängliga jämförelser</h2><div class="tw"><table><thead><tr><th>Vy</th><th>Status</th><th>Kommentar</th></tr></thead><tbody id="metricRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-gender" class="panel">
     <div class="box"><h2>Skillnader mellan flickor och pojkar</h2><p class="small">Den här tabellen visar flickor och pojkar bredvid varandra även när övriga vyer filtreras på ett kön.</p><div class="chart"><canvas id="genderChart"></canvas></div></div>
     <div class="box"><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Elevgrupp</th><th>Pojkar</th><th>Flickor</th><th>Totalt</th><th>Skillnad F-P</th></tr></thead><tbody id="genderRows"></tbody></table></div></div>
-    <div class="box"><h2>SV/SVA</h2><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Elevgrupp</th><th>Antal elever</th><th>Merit 17</th><th>Godkänd Sv/SVA</th><th>Uppnått alla ämnen</th></tr></thead><tbody id="svaRows"></tbody></table></div></div>
+    <div class="box"><h2>SV/SVA</h2><div id="svaTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Elevgrupp</th><th>Antal elever</th><th>Merit 17</th><th>Godkänd Sv/SVA</th><th>Uppnått alla ämnen</th></tr></thead><tbody id="svaRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-subjects" class="panel">
     <div class="box"><h2>Betygspoäng per ämne</h2><div class="chart"><canvas id="subjectChart"></canvas></div></div>
-    <div class="box"><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Ämne</th><th>Betygspoäng</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>A-E</th><th>Antal</th></tr></thead><tbody id="subjectRows"></tbody></table></div></div>
+    <div class="box"><div id="subjectTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Ämne</th><th>Betygspoäng</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>A-E</th><th>Antal</th></tr></thead><tbody id="subjectRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-grades" class="panel">
     <div class="box"><h2>Betygsfördelning A-F</h2><div class="chart"><canvas id="gradeDistChart"></canvas></div></div>
-    <div class="box"><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Ämne</th><th>A %</th><th>B %</th><th>C %</th><th>D %</th><th>E %</th><th>F %</th><th>Antal</th></tr></thead><tbody id="gradeDistRows"></tbody></table></div></div>
+    <div class="box"><div id="gradeDistTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Ämne</th><th>A %</th><th>B %</th><th>C %</th><th>D %</th><th>E %</th><th>F %</th><th>Antal</th></tr></thead><tbody id="gradeDistRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-control" class="panel">
     <div class="box"><h2>Datakontroll för lokal import</h2><p class="small">Visar antal giltiga betyg, tomma värden, specialkoder och ogiltiga koder per ämne för lokal SCB-import.</p><div class="chart"><canvas id="controlChart"></canvas></div></div>
-    <div class="box"><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Elevgrupp</th><th>Ämne</th><th>Elever</th><th>Giltiga</th><th>A-E</th><th>F</th><th>Tomma</th><th>Special</th><th>Ogiltiga</th><th>2</th><th>3</th><th>9</th><th>Y</th><th>Z</th></tr></thead><tbody id="controlRows"></tbody></table></div></div>
+    <div class="box"><div id="controlTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Ämne</th><th>Elever</th><th>Giltiga</th><th>A-E</th><th>F</th><th>Tomma</th><th>Special</th><th>Ogiltiga</th><th>2</th><th>3</th><th>9</th><th>Y</th><th>Z</th></tr></thead><tbody id="controlRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-outcomes" class="panel">
@@ -138,9 +138,9 @@
       </div>
     </section>
     <div class="box"><h2 id="knowledgeBoxTitle">Uppnått alla ämnen</h2><div class="chart"><canvas id="knowledgeChart"></canvas></div></div>
-    <div class="box"><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th id="knowledgeMetricHeader">Uppnått alla ämnen</th></tr></thead><tbody id="knowledgeRows"></tbody></table></div></div>
+    <div class="box"><div id="knowledgeTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th id="knowledgeMetricHeader">Uppnått alla ämnen</th></tr></thead><tbody id="knowledgeRows"></tbody></table></div></div>
     <div class="box"><h2>Yrkesbehörighet åk 9</h2><div class="chart"><canvas id="vocationalChart"></canvas></div></div>
-    <div class="box"><div class="tw"><table><thead><tr><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th>Yrkesbehörighet</th></tr></thead><tbody id="vocationalRows"></tbody></table></div></div>
+    <div class="box"><div id="vocationalTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th>Yrkesbehörighet</th></tr></thead><tbody id="vocationalRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-np" class="panel">
@@ -174,14 +174,14 @@
     <div class="box">
       <h2>Andel godkända nationella prov</h2>
       <div class="chart"><canvas id="npPassChart"></canvas></div>
-      <div class="tw"><table><thead><tr><th>Nivå</th><th>Årskurs</th><th>Kön</th><th>SV/SVA</th><th>Ämne</th><th>Antal NP</th><th>Andel godkända</th><th>Betygsmatch</th></tr></thead><tbody id="npLocalRows"></tbody></table></div>
+      <div id="npPassTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Nivå</th><th>Årskurs</th><th>Kön</th><th>SV/SVA</th><th>Ämne</th><th>Antal NP</th><th>Andel godkända</th><th>Betygsmatch</th></tr></thead><tbody id="npLocalRows"></tbody></table></div>
     </div>
 
     <div class="box">
       <h2>Hur terminsbetyg förhåller sig till NP</h2>
       <p class="small">Visas för årskurser och ämnen där både betyg och NP-provresultat finns i lokal import.</p>
       <div class="chart"><canvas id="npRelationChart"></canvas></div>
-      <div class="tw"><table><thead><tr><th>Nivå</th><th>Årskurs</th><th>Kön</th><th>SV/SVA</th><th>Ämne</th><th>Jämförda elever</th><th>Betyg &gt; NP</th><th>Betyg = NP</th><th>Betyg &lt; NP</th></tr></thead><tbody id="npRelationRows"></tbody></table></div>
+      <div id="npRelationTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Nivå</th><th>Årskurs</th><th>Kön</th><th>SV/SVA</th><th>Ämne</th><th>Jämförda elever</th><th>Betyg &gt; NP</th><th>Betyg = NP</th><th>Betyg &lt; NP</th></tr></thead><tbody id="npRelationRows"></tbody></table></div>
     </div>
 
     <div class="box">

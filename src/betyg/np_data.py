@@ -4,7 +4,7 @@ from collections import Counter, defaultdict
 from typing import Any
 
 from .constants import GRADE_POINTS, PASSING_GRADES
-from .metrics import clean, grade, percentage, school_name, segmented_groups
+from .metrics import clean, gender_from_personnr, grade, percentage, school_name, segmented_groups
 
 
 def grade_relation(term_grade: str | None, np_grade: str | None) -> str | None:
@@ -93,7 +93,8 @@ def aggregate_np(
             expanded.append({
                 "skolenhetskod": code,
                 "amne": item["amne"],
-                "kon": grade_row.get("kon") if grade_row else "okänt",
+                # Ak 3 saknar betygsmatchning, sa kon behover kunna harledas direkt fran NP-raden.
+                "kon": grade_row.get("kon") if grade_row else gender_from_personnr(np_row.get("PersonNr")),
                 "sv_sva_grupp": grade_row.get("sv_sva_grupp") if grade_row else "oklar",
                 "godkand_np": item["godkand_np"],
                 "np_betyg": item.get("np_betyg"),
