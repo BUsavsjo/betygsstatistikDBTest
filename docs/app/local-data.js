@@ -47,17 +47,54 @@ function schoolLabel(row){
 function schoolKey(row){
   return row.niva === 'alla_skolenheter' || row.niva === 'kommun' ? '__all__' : String(row.skolenhetskod || '');
 }
-function updateFilterState(){
+function normalizedSchoolName(value){
+  return norm(value).replace(/\s+/g, ' ');
+}
+function schoolSupportedGrades(school){
+  const name = normalizedSchoolName(school.label || school.skolenhetsnamn || '');
+  if(name.includes('hofgard')) return ['9'];
+  if(name.includes('rorvik')) return ['6', '9'];
+  return ['6'];
+}
+function schoolSupportsGrades(school, grades){
+  const supported = school.supportedGrades || schoolSupportedGrades(school);
+  const wantedGrades = (grades || []).map(String);
+  return !wantedGrades.length || wantedGrades.some(g => supported.includes(g));
+}
+function schoolSupportsRowGrade(row){
+  if(row.niva !== 'skolenhet') return true;
+  return schoolSupportsGrades({label: schoolLabel(row)}, [String(row.arskurs ?? '')]);
+}
+function updateFilterState(resetSchoolsForGrade=false){
+  const grades = selectedValues('gradeFilter');
+  let schools = selectedValues('schoolFilter');
+  if(state.localSchools?.length){
+    const availableSchools = state.localSchools.filter(s => schoolSupportsGrades(s, grades)).map(s => String(s.value));
+    schools = resetSchoolsForGrade ? availableSchools : schools.filter(s => availableSchools.includes(String(s)));
+    if(!schools.length) schools = availableSchools;
+  }
   state.filters = {
-    grades: selectedValues('gradeFilter'),
-    schools: selectedValues('schoolFilter'),
+    grades,
+    schools,
     gender: $('genderFilter').value || 'Alla',
     group: $('groupFilter').value || 'Alla'
   };
+  if(state.localSchools?.length) populateSchoolFilter();
 }
 function populateSelect(id, options, selectedValues){
   const selected = new Set(selectedValues || []);
   $(id).innerHTML = options.map(o => `<option value="${esc(o.value)}"${selected.has(String(o.value)) ? ' selected' : ''}>${esc(o.label)}</option>`).join('');
+}
+function populateSchoolFilter(){
+  const selected = new Set(state.filters.schools || []);
+  const grades = state.filters.grades || [];
+  $('schoolFilter').innerHTML = (state.localSchools || []).map(s => {
+    const available = schoolSupportsGrades(s, grades);
+    const gradeLabel = s.supportedGrades?.length ? ` (åk ${s.supportedGrades.join(', ')})` : '';
+    const selectedAttr = available && selected.has(String(s.value)) ? ' selected' : '';
+    const disabledAttr = available ? '' : ' disabled';
+    return `<option value="${esc(s.value)}"${selectedAttr}${disabledAttr}>${esc(s.label + gradeLabel)}</option>`;
+  }).join('');
 }
 function populateLocalFilters(local){
   const overview = local.overview || [];
@@ -65,7 +102,8 @@ function populateLocalFilters(local){
   const schoolRows = overview.filter(r => r.niva === 'skolenhet');
   const schools = uniqueSorted(schoolRows.map(r => schoolKey(r))).map(code => {
     const row = schoolRows.find(r => schoolKey(r) === code);
-    return {value: code, label: schoolLabel(row)};
+    const label = schoolLabel(row);
+    return {value: code, label, supportedGrades: schoolSupportedGrades({label})};
   });
   const filterRows = [
     ...(local.overview || []),
@@ -80,9 +118,10 @@ function populateLocalFilters(local){
   state.filters.schools = schools.map(s => s.value);
   state.filters.gender = 'Alla';
   state.filters.group = 'Alla';
+  state.localSchools = schools;
 
   populateSelect('gradeFilter', grades.map(g => ({value:g, label:`Åk ${g}`})), state.filters.grades);
-  populateSelect('schoolFilter', schools, state.filters.schools);
+  populateSchoolFilter();
   $('genderFilter').innerHTML = '<option value="Alla">Alla</option>' + genders.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join('');
   $('groupFilter').innerHTML = '<option value="Alla">Alla</option>' + groups.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join('');
   $('localFilters').classList.add('active');
@@ -98,6 +137,7 @@ function localFilterRows(rows, {allowAllLevel=false, forceGrade=null}={}){
     if(f.gender !== 'Alla' && rowGender(r) !== f.gender) return false;
     if(f.group !== 'Alla' && rowGroup(r) !== f.group) return false;
     if(allowAllLevel && (r.niva === 'alla_skolenheter' || r.niva === 'kommun')) return true;
+    if(!schoolSupportsRowGrade(r)) return false;
     return r.niva === 'skolenhet' && (!f.schools.length || f.schools.includes(schoolKey(r)));
   });
 }
@@ -107,6 +147,7 @@ function localBaseFilter(rows, {forceGrade=null}={}){
     if(forceGrade && Number(r.arskurs) !== Number(forceGrade)) return false;
     if(f.grades.length && !f.grades.includes(String(r.arskurs ?? ''))) return false;
     if(f.group !== 'Alla' && rowGroup(r) !== f.group) return false;
+    if(!schoolSupportsRowGrade(r)) return false;
     return r.niva === 'skolenhet' && (!f.schools.length || f.schools.includes(schoolKey(r)));
   });
 }
@@ -130,23 +171,29 @@ function subjectDistributionRows(local){
     .sort((a,b) => `${a.arskurs}${schoolLabel(a)}${rowGender(a)}${rowGroup(a)}${a.amne}`.localeCompare(`${b.arskurs}${schoolLabel(b)}${rowGender(b)}${rowGroup(b)}${b.amne}`, 'sv', {numeric:true}));
 }
 function renderLocalOutcomes(local, meritRows){
+  const viewConfig = getGradeViewConfig(selectedSingleGrade());
+  $('outcomesTitle').textContent = viewConfig.title || viewConfig.labels.uppnatt_alla_amnen;
+  $('outcomesDescription').textContent = viewConfig.description || '';
+  $('outcomesDescription').style.display = viewConfig.description ? 'block' : 'none';
+  $('knowledgeMetricHeader').innerHTML = infoLabel(viewConfig.labels.uppnatt_alla_amnen, viewConfig.tooltips.uppnatt_alla_amnen);
+  $('knowledgeBoxTitle').textContent = viewConfig.labels.uppnatt_alla_amnen;
   const outcomeRows = meritRows
     .filter(r => r.andel_uppnatt_alla_amnen != null)
     .sort((a,b) => `${a.arskurs}${schoolLabel(a)}${rowGender(a)}${rowGroup(a)}`.localeCompare(`${b.arskurs}${schoolLabel(b)}${rowGender(b)}${rowGroup(b)}`, 'sv', {numeric:true}));
-  $('knowledgeRows').innerHTML = outcomeRows.map(r => `<tr><td>${esc(r.arskurs)}</td><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.elevgrupp || 'Alla')}</td><td>${esc(r.antal_elever ?? '-')}</td><td>${fmt(r.andel_uppnatt_alla_amnen, ' %')}</td></tr>`).join('') || '<tr><td colspan="6" class="muted">Ingen data för uppnått alla ämnen matchar urvalet.</td></tr>';
+  $('knowledgeRows').innerHTML = outcomeRows.map(r => `<tr><td>${esc(r.arskurs)}</td><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.elevgrupp || 'Alla')}</td><td>${studentCountCell(r.antal_elever)}</td><td>${pctBar(r.andel_uppnatt_alla_amnen, formatPercentWithCount(r.andel_uppnatt_alla_amnen, r.antal_elever))}</td></tr>`).join('') || '<tr><td colspan="6" class="muted">Ingen data för uppnått alla ämnen matchar urvalet.</td></tr>';
   const knowledgeChartRows = outcomeRows
     .filter(r => (state.filters.gender === 'Alla' ? rowGender(r) === 'Alla' : rowGender(r) === state.filters.gender))
     .filter(r => (state.filters.group === 'Alla' ? rowGroup(r) === 'Alla' : rowGroup(r) === state.filters.group))
     .slice(0, 18);
   makeChart('knowledgeChart','bar',{
     labels: knowledgeChartRows.map(r => `Åk ${r.arskurs} ${schoolLabel(r)}`),
-    datasets:[{label:'Uppnått alla ämnen %', data:knowledgeChartRows.map(r => r.andel_uppnatt_alla_amnen), backgroundColor:'#347f6a'}]
+    datasets:[{label:`${viewConfig.labels.uppnatt_alla_amnen} %`, data:knowledgeChartRows.map(r => r.andel_uppnatt_alla_amnen), backgroundColor:'#347f6a'}]
   },{scales:{y:{beginAtZero:true,max:100}}});
 
   const vocationalRows = localFilterRows(local.overview || [], {forceGrade:9})
     .filter(r => r.andel_behoriga_yrkesprogram != null)
     .sort((a,b) => `${schoolLabel(a)}${rowGender(a)}${rowGroup(a)}`.localeCompare(`${schoolLabel(b)}${rowGender(b)}${rowGroup(b)}`, 'sv', {numeric:true}));
-  $('vocationalRows').innerHTML = vocationalRows.map(r => `<tr><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.elevgrupp || 'Alla')}</td><td>${esc(r.antal_elever ?? '-')}</td><td>${fmt(r.andel_behoriga_yrkesprogram, ' %')}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Ingen yrkesbehörighetsdata för åk 9 matchar urvalet.</td></tr>';
+  $('vocationalRows').innerHTML = vocationalRows.map(r => `<tr><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.elevgrupp || 'Alla')}</td><td>${studentCountCell(r.antal_elever)}</td><td>${pctBar(r.andel_behoriga_yrkesprogram, formatPercentWithCount(r.andel_behoriga_yrkesprogram, r.antal_elever))}</td></tr>`).join('') || '<tr><td colspan="5" class="muted">Ingen yrkesbehörighetsdata för åk 9 matchar urvalet.</td></tr>';
   const vocationalChartRows = vocationalRows
     .filter(r => (state.filters.gender === 'Alla' ? rowGender(r) === 'Alla' : rowGender(r) === state.filters.gender))
     .filter(r => (state.filters.group === 'Alla' ? rowGroup(r) === 'Alla' : rowGroup(r) === state.filters.group))
@@ -179,23 +226,29 @@ function renderFilteredLocal(){
   if(!local) return;
 
   const meritRows = localFilterRows(local.overview || []);
+  const viewConfig = getGradeViewConfig(selectedSingleGrade());
   const cardBase = localFilterRows(local.overview || [], {allowAllLevel:true}).find(r => r.niva === 'alla_skolenheter' && Number(r.arskurs) === 9 && rowGender(r) === 'Alla' && rowGroup(r) === 'Alla')
     || localFilterRows(local.overview || [], {allowAllLevel:true}).find(r => r.niva === 'alla_skolenheter' && rowGender(r) === 'Alla' && rowGroup(r) === 'Alla')
     || meritRows[0] || {};
   $('meritCard').textContent = fmt(cardBase.genomsnittligt_meritvarde_17 || cardBase.genomsnittligt_meritvarde_16);
   $('vocCard').textContent = cardBase.andel_behoriga_yrkesprogram == null ? '-' : fmt(cardBase.andel_behoriga_yrkesprogram, ' %');
+  $('overviewKnowledgeHeader').innerHTML = infoLabel(viewConfig.labels.uppnatt_alla_amnen, viewConfig.tooltips.uppnatt_alla_amnen);
+  $('overviewVocationalHeader').style.display = viewConfig.hiddenColumns.includes('yrkesbehorighet') ? 'none' : '';
 
   $('localMeritRows').innerHTML = meritRows
     .sort((a,b) => `${a.arskurs}${schoolLabel(a)}${rowGender(a)}${rowGroup(a)}`.localeCompare(`${b.arskurs}${schoolLabel(b)}${rowGender(b)}${rowGroup(b)}`, 'sv', {numeric:true}))
-    .map(r => `<tr><td>${esc(r.arskurs)}</td><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.elevgrupp || 'Alla')}</td><td>${esc(r.antal_elever ?? '-')}</td><td>${fmt(r.genomsnittligt_meritvarde_16)}</td><td>${fmt(r.genomsnittligt_meritvarde_17)}</td><td>${fmt(r.andel_uppnatt_alla_amnen, ' %')}</td><td>${r.andel_behoriga_yrkesprogram == null ? '-' : fmt(r.andel_behoriga_yrkesprogram, ' %')}</td></tr>`)
-    .join('') || '<tr><td colspan="9" class="muted">Inga rader matchar urvalet.</td></tr>';
+    .map(r => {
+      const vocationalCell = viewConfig.hiddenColumns.includes('yrkesbehorighet') ? '' : `<td>${r.andel_behoriga_yrkesprogram == null ? '-' : pctBar(r.andel_behoriga_yrkesprogram, formatPercentWithCount(r.andel_behoriga_yrkesprogram, r.antal_elever))}</td>`;
+      return `<tr><td>${esc(r.arskurs)}</td><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.elevgrupp || 'Alla')}</td><td>${studentCountCell(r.antal_elever)}</td><td>${fmt(r.genomsnittligt_meritvarde_16)}</td><td>${fmt(r.genomsnittligt_meritvarde_17)}</td><td>${pctBar(r.andel_uppnatt_alla_amnen, formatPercentWithCount(r.andel_uppnatt_alla_amnen, r.antal_elever))}</td>${vocationalCell}</tr>`;
+    })
+    .join('') || `<tr><td colspan="${viewConfig.hiddenColumns.includes('yrkesbehorighet') ? '8' : '9'}" class="muted">Inga rader matchar urvalet.</td></tr>`;
 
   const chartRows = meritRows.filter(r => rowGender(r) === 'Alla' && rowGroup(r) === 'Alla');
   makeChart('overviewChart','bar',{
     labels: chartRows.map(r => `Åk ${r.arskurs} ${schoolLabel(r)}`),
     datasets:[
       {label:'Meritvärde 17', data:chartRows.map(r => r.genomsnittligt_meritvarde_17), backgroundColor:'#2f6f9f'},
-      {label:'Yrkesbehörighet %', data:chartRows.map(r => r.andel_behoriga_yrkesprogram), backgroundColor:'#347f6a'}
+      ...(viewConfig.hiddenColumns.includes('yrkesbehorighet') ? [] : [{label:'Yrkesbehörighet %', data:chartRows.map(r => r.andel_behoriga_yrkesprogram), backgroundColor:'#347f6a'}])
     ]
   },{scales:{y:{beginAtZero:false}}});
 
@@ -223,10 +276,10 @@ function renderFilteredLocal(){
   },{scales:{y:{beginAtZero:false}}});
 
   const svSvaRows = localFilterRows(local.svSva || []).filter(r => ['SV','SVA'].includes(r.elevgrupp));
-  $('svaRows').innerHTML = svSvaRows.map(r => `<tr><td>${esc(r.arskurs)}</td><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.elevgrupp)}</td><td>${esc(r.antal_elever ?? '-')}</td><td>${fmt(r.genomsnittligt_meritvarde_17)}</td><td>${fmt(r.andel_godkand_sv_sva, ' %')}</td><td>${fmt(r.andel_uppnatt_alla_amnen, ' %')}</td></tr>`).join('') || '<tr><td colspan="7" class="muted">Ingen SV/SVA-data hittades för urvalet.</td></tr>';
+  $('svaRows').innerHTML = svSvaRows.map(r => `<tr><td>${esc(r.arskurs)}</td><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.elevgrupp)}</td><td>${esc(r.antal_elever ?? '-')}</td><td>${fmt(r.genomsnittligt_meritvarde_17)}</td><td>${pctBar(r.andel_godkand_sv_sva)}</td><td>${pctBar(r.andel_uppnatt_alla_amnen)}</td></tr>`).join('') || '<tr><td colspan="7" class="muted">Ingen SV/SVA-data hittades för urvalet.</td></tr>';
 
   const subjectRows = subjectDistributionRows(local);
-  $('subjectRows').innerHTML = subjectRows.slice(0, 180).map(r => `<tr><td>${esc(r.arskurs)}</td><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.elevgrupp || 'Alla')}</td><td>${esc(r.amne)}</td><td>${fmt(r.betygspoang)}</td><td>${esc(r.antal_A ?? 0)}</td><td>${esc(r.antal_B ?? 0)}</td><td>${esc(r.antal_C ?? 0)}</td><td>${esc(r.antal_D ?? 0)}</td><td>${esc(r.antal_E ?? 0)}</td><td>${esc(r.antal_F ?? 0)}</td><td>${fmt(r.andel_A_E, ' %')}</td><td>${esc(r.antal_betyg)}</td></tr>`).join('') || '<tr><td colspan="14" class="muted">Ingen ämnesdata matchar urvalet.</td></tr>';
+  $('subjectRows').innerHTML = subjectRows.slice(0, 180).map(r => `<tr><td>${esc(r.arskurs)}</td><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.elevgrupp || 'Alla')}</td><td>${esc(r.amne)}</td><td>${fmt(r.betygspoang)}</td><td>${esc(r.antal_A ?? 0)}</td><td>${esc(r.antal_B ?? 0)}</td><td>${esc(r.antal_C ?? 0)}</td><td>${esc(r.antal_D ?? 0)}</td><td>${esc(r.antal_E ?? 0)}</td><td>${esc(r.antal_F ?? 0)}</td><td>${pctBar(r.andel_A_E)}</td><td>${esc(r.antal_betyg)}</td></tr>`).join('') || '<tr><td colspan="14" class="muted">Ingen ämnesdata matchar urvalet.</td></tr>';
   const topSubjects = subjectRows.slice(0, 24);
   makeChart('subjectChart','bar',{
     labels: topSubjects.map(r => `Åk ${r.arskurs} ${schoolLabel(r)} ${r.amne}`),
@@ -236,7 +289,7 @@ function renderFilteredLocal(){
     ]
   },{scales:{y:{beginAtZero:true,max:20},y1:{beginAtZero:true,max:100,position:'right',grid:{drawOnChartArea:false}}}});
 
-  $('gradeDistRows').innerHTML = subjectRows.slice(0, 180).map(r => `<tr><td>${esc(r.arskurs)}</td><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.elevgrupp || 'Alla')}</td><td>${esc(r.amne)}</td><td>${fmt(r.andel_A, ' %')}</td><td>${fmt(r.andel_B, ' %')}</td><td>${fmt(r.andel_C, ' %')}</td><td>${fmt(r.andel_D, ' %')}</td><td>${fmt(r.andel_E, ' %')}</td><td>${fmt(r.andel_F, ' %')}</td><td>${esc(r.antal_betyg)}</td></tr>`).join('') || '<tr><td colspan="12" class="muted">Ingen betygsfördelning matchar urvalet.</td></tr>';
+  $('gradeDistRows').innerHTML = subjectRows.slice(0, 180).map(r => `<tr><td>${esc(r.arskurs)}</td><td><strong>${esc(schoolLabel(r))}</strong></td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.elevgrupp || 'Alla')}</td><td>${esc(r.amne)}</td><td>${pctBar(r.andel_A)}</td><td>${pctBar(r.andel_B)}</td><td>${pctBar(r.andel_C)}</td><td>${pctBar(r.andel_D)}</td><td>${pctBar(r.andel_E)}</td><td>${pctBar(r.andel_F)}</td><td>${esc(r.antal_betyg)}</td></tr>`).join('') || '<tr><td colspan="12" class="muted">Ingen betygsfördelning matchar urvalet.</td></tr>';
   const gradeChartRows = subjectRows.slice(0, 18);
   makeChart('gradeDistChart','bar',{
     labels: gradeChartRows.map(r => `Åk ${r.arskurs} ${schoolLabel(r)} ${r.amne}`),
@@ -260,7 +313,10 @@ function renderLocalNp(local){
     if(f.grades.length && !f.grades.includes(String(r.arskurs ?? ''))) return false;
     if(f.gender !== 'Alla' && rowGender(r) !== f.gender) return false;
     if(f.gender === 'Alla' && rowGender(r) !== 'Alla') return false;
+    if(f.group !== 'Alla' && rowGroup(r) !== f.group) return false;
+    if(f.group === 'Alla' && rowGroup(r) !== 'Alla') return false;
     if(r.niva === 'kommun') return true;
+    if(!schoolSupportsRowGrade(r)) return false;
     return r.niva === 'skolenhet' && (!f.schools.length || f.schools.includes(schoolKey(r)));
   };
   const npPass = (local.npPass || []).filter(npFilter);
@@ -268,18 +324,33 @@ function renderLocalNp(local){
   const passRows = npPass.sort((a,b) => `${a.niva}${a.skolenhetsnamn}${a.arskurs}${a.amne}`.localeCompare(`${b.niva}${b.skolenhetsnamn}${b.arskurs}${b.amne}`, 'sv'));
   const relationRows = npRelation.sort((a,b) => `${a.niva}${a.skolenhetsnamn}${a.arskurs}${a.amne}`.localeCompare(`${b.niva}${b.skolenhetsnamn}${b.arskurs}${b.amne}`, 'sv'));
 
-  $('npLocalRows').innerHTML = passRows.map(r => `<tr><td><strong>${esc(r.skolenhetsnamn || r.skolenhetskod || r.niva)}</strong></td><td>${esc(r.arskurs)}</td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.amne)}</td><td>${esc(r.antal_np)}</td><td>${fmt(r.andel_godkanda_np, ' %')}</td><td>${esc(r.antal_med_betygsmatch ?? '-')}</td></tr>`).join('') || '<tr><td colspan="7" class="muted">Ingen lokal NP-data hittades.</td></tr>';
-  $('npRelationRows').innerHTML = relationRows.map(r => `<tr><td><strong>${esc(r.skolenhetsnamn || r.skolenhetskod || r.niva)}</strong></td><td>${esc(r.arskurs)}</td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.amne)}</td><td>${esc(r.antal_jamforda)}</td><td>${fmt(r.andel_betyg_hogre_an_np, ' %')}</td><td>${fmt(r.andel_betyg_lika_np, ' %')}</td><td>${fmt(r.andel_betyg_lagre_an_np, ' %')}</td></tr>`).join('') || '<tr><td colspan="8" class="muted">Ingen betyg-NP-relation kunde beräknas.</td></tr>';
+  const totalNp = passRows.reduce((sum, row) => sum + Number(row.antal_np || 0), 0);
+  const totalPassed = passRows.reduce((sum, row) => sum + Number(row.antal_godkanda_np || 0), 0);
+  const totalCompared = relationRows.reduce((sum, row) => sum + Number(row.antal_jamforda || 0), 0);
+  const totalHigher = relationRows.reduce((sum, row) => sum + Number(row.antal_betyg_hogre_an_np || 0), 0);
+  const selectedGradeText = f.grades.length ? f.grades.map(g => `Åk ${g}`).join(', ') : 'Alla årskurser';
+  const selectedSchoolText = f.schools.length ? `${f.schools.length} skolenheter` : 'Alla skolenheter';
+  const selectedGroupText = f.group === 'Alla' ? 'Alla elevgrupper' : f.group;
+  const selectedGenderText = f.gender === 'Alla' ? 'Alla kön' : f.gender;
+
+  $('npComparedCard').textContent = totalCompared ? totalCompared.toLocaleString('sv-SE') : '-';
+  $('npPassRateCard').textContent = totalNp ? fmt((totalPassed / totalNp) * 100, ' %') : '-';
+  $('npHigherCard').textContent = totalCompared ? fmt((totalHigher / totalCompared) * 100, ' %') : '-';
+  $('npSourceCard').textContent = local.npPass?.length || local.npRelation?.length ? 'Lokal' : 'PxWeb';
+  $('npFilterSummary').textContent = `Urval: ${selectedGradeText} • ${selectedSchoolText} • ${selectedGroupText} • ${selectedGenderText}`;
+
+  $('npLocalRows').innerHTML = passRows.map(r => `<tr><td><strong>${esc(r.skolenhetsnamn || r.skolenhetskod || r.niva)}</strong></td><td>${esc(r.arskurs)}</td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.elevgrupp || 'Alla')}</td><td>${esc(r.amne)}</td><td>${esc(r.antal_np)}</td><td>${pctBar(r.andel_godkanda_np)}</td><td>${esc(r.antal_med_betygsmatch ?? '-')}</td></tr>`).join('') || '<tr><td colspan="8" class="muted">Ingen lokal NP-data hittades.</td></tr>';
+  $('npRelationRows').innerHTML = relationRows.map(r => `<tr><td><strong>${esc(r.skolenhetsnamn || r.skolenhetskod || r.niva)}</strong></td><td>${esc(r.arskurs)}</td><td>${esc(r.kon || 'Alla')}</td><td>${esc(r.elevgrupp || 'Alla')}</td><td>${esc(r.amne)}</td><td>${esc(r.antal_jamforda)}</td><td>${pctBar(r.andel_betyg_hogre_an_np)}</td><td>${pctBar(r.andel_betyg_lika_np)}</td><td>${pctBar(r.andel_betyg_lagre_an_np)}</td></tr>`).join('') || '<tr><td colspan="9" class="muted">Ingen betyg-NP-relation kunde beräknas för aktuellt urval.</td></tr>';
 
   const topPass = passRows.filter(r => r.niva === 'kommun').slice(0, 12);
   makeChart('npPassChart','bar',{
-    labels: topPass.map(r => `Åk ${r.arskurs} ${r.kon || 'Alla'} ${r.amne}`),
+    labels: topPass.map(r => `Åk ${r.arskurs} ${r.amne}`),
     datasets:[{label:'Andel godkända NP %', data:topPass.map(r => r.andel_godkanda_np), backgroundColor:'#347f6a'}]
-  },{scales:{y:{beginAtZero:true,max:100}}});
+  },{indexAxis:'y',scales:{x:{beginAtZero:true,max:100}}});
 
   const topRelation = relationRows.filter(r => r.niva === 'kommun').slice(0, 12);
   makeChart('npRelationChart','bar',{
-    labels: topRelation.map(r => `Åk ${r.arskurs} ${r.kon || 'Alla'} ${r.amne}`),
+    labels: topRelation.map(r => `Åk ${r.arskurs} ${r.amne}`),
     datasets:[
       {label:'Betyg > NP %', data:topRelation.map(r => r.andel_betyg_hogre_an_np), backgroundColor:'#b86b1d'},
       {label:'Betyg = NP %', data:topRelation.map(r => r.andel_betyg_lika_np), backgroundColor:'#347f6a'},
@@ -313,3 +384,4 @@ function renderLocalData(local){
   log('Lokal SCB-import används', local.manifest);
   setStatus(local.isDemo ? 'warn' : 'ok', local.isDemo ? 'Demodata laddad.' : 'Lokal SCB-import laddad.', `${local.isDemo ? 'Visar anonym testdata' : 'Visar anonymiserad statistik'} från ${local.base}.`);
 }
+

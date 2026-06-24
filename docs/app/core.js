@@ -6,7 +6,7 @@ const ROOTS = [
   '/Underlag_for_analys_inom_det_nationella_kvalitetssystemet/Grundskola/'
 ];
 const $ = id => document.getElementById(id);
-let state = { tables: [], metrics: [], diagnostics: [], local: null, filters: { grades: [], schools: [], gender: 'Alla', group: 'Alla' } };
+let state = { tables: [], metrics: [], diagnostics: [], local: null, localSchools: [], filters: { grades: [], schools: [], gender: 'Alla', group: 'Alla' } };
 let charts = {};
 const STATIC_PAGES_BUILD = true;
 const IS_GITHUB_PAGES = location.hostname.endsWith('github.io');
@@ -39,4 +39,60 @@ function log(msg, obj){
 function fmt(v, suffix=''){
   const n = Number.parseFloat(String(v ?? '').replace(',','.'));
   return Number.isFinite(n) ? `${n.toLocaleString('sv-SE', {maximumFractionDigits:1})}${suffix}` : '-';
+}
+function formatPercentWithCount(percent, total){
+  const percentNumber = Number.parseFloat(String(percent ?? '').replace(',','.'));
+  const totalNumber = Number(total);
+  if(!Number.isFinite(percentNumber)) return '-';
+  if(!Number.isFinite(totalNumber) || totalNumber <= 0) return fmt(percentNumber, ' %');
+  const count = Math.round((percentNumber / 100) * totalNumber);
+  return `${fmt(percentNumber, ' %')} · ${count} av ${totalNumber.toLocaleString('sv-SE')}`;
+}
+function pctBar(v, label=null){
+  const n = Number.parseFloat(String(v ?? '').replace(',','.'));
+  if(!Number.isFinite(n)) return '-';
+  const width = Math.max(0, Math.min(100, n));
+  const display = label || fmt(n, ' %');
+  return `<div class="pct-cell" title="${esc(display)}"><div class="pct-bar"><span class="pct-fill" style="width:${width}%"></span></div><span class="pct-label">${esc(display)}</span></div>`;
+}
+function isSmallGroup(studentCount){
+  const count = Number(studentCount);
+  return count > 0 && count < 10;
+}
+function studentCountCell(studentCount){
+  const value = studentCount ?? '-';
+  const badge = isSmallGroup(studentCount) ? '<div class="badge-muted">Lågt elevantal</div>' : '';
+  return `${esc(value)}${badge}`;
+}
+function selectedSingleGrade(){
+  const grades = state.filters?.grades || [];
+  return grades.length === 1 ? Number(grades[0]) : null;
+}
+function getGradeViewConfig(grade){
+  const isGrade6 = Number(grade) === 6;
+  return {
+    grade: Number.isFinite(Number(grade)) ? Number(grade) : null,
+    isGrade6,
+    title: isGrade6 ? 'Åk 6 – terminsbetyg och uppföljningssignaler' : null,
+    description: isGrade6
+      ? 'Resultaten bygger på terminsbetyg i årskurs 6 och ska användas som signal för uppföljning, inte som slutligt resultat eller behörighetsmått.'
+      : null,
+    labels: {
+      uppnatt_alla_amnen: isGrade6 ? 'Minst E i alla ämnen med terminsbetyg' : 'Uppnått alla ämnen'
+    },
+    tooltips: {
+      uppnatt_alla_amnen: isGrade6
+        ? 'Åk 6 bygger på terminsbetyg. Måttet visar andel elever som har minst E i de ämnen där eleven har terminsbetyg. Det ska tolkas som uppföljningssignal, inte som slutligt resultat. Ämnen där eleven inte undervisats i årskurs 6 ska inte tolkas som underkända.'
+        : null
+    },
+    hiddenColumns: isGrade6 ? ['yrkesbehorighet'] : []
+  };
+}
+function gradeAwareLabel(key, grade){
+  const config = getGradeViewConfig(grade);
+  return config.labels[key] || key;
+}
+function infoLabel(label, tooltip){
+  if(!tooltip) return esc(label);
+  return `${esc(label)} <span class="info-icon" title="${esc(tooltip)}" aria-label="${esc(tooltip)}">i</span>`;
 }

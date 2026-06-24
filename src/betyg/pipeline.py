@@ -4,7 +4,7 @@ from collections import Counter
 from pathlib import Path
 from typing import Any
 
-from .constants import GradeSpec, NP_SPECS, SPECIAL_CODES, SPECS, VALID_GRADES
+from .constants import GradeSpec, NP_SPECIAL_CODES, NP_SPECS, NpSpec, SPECIAL_CODES, SPECS, VALID_GRADES
 from .datafile_control import create_control_cases, write_datafile_control_workbook
 from .io import publish_processed_json, read_grade_files, read_np_files, write_csv, write_json
 from .metrics import base_groups, clean, eligibility, gender_from_personnr, grade, grade_distribution, merit, overview, reached_all_subjects, school_name, segmented_groups, sv_sva_group, sv_sva_summary
@@ -39,6 +39,26 @@ def import_diagnostics(rows: list[dict[str, Any]], diagnostics: list[dict[str, A
         "sv_sva_groups": Counter(row["sv_sva_grupp"] for row in rows),
         "kon": Counter(row["kon"] for row in rows),
         "special_codes_by_subject": {key: dict(value) for key, value in special_counts.items() if sum(value.values())},
+    }
+
+
+def np_import_diagnostics(rows: list[dict[str, Any]], diagnostics: list[dict[str, Any]], spec: NpSpec, lasar: str, matched: int) -> dict[str, Any]:
+    special_counts: dict[str, Counter[str]] = {}
+    for row in rows:
+        for column in spec.columns:
+            value = clean(row.get(column)).upper()
+            if value in NP_SPECIAL_CODES:
+                special_counts.setdefault(column, Counter())[value] += 1
+
+    return {
+        "lasar": lasar,
+        "arskurs": spec.arskurs,
+        "source": "local_scb_np",
+        "expected_columns": len(spec.columns),
+        "imported_rows": len(rows),
+        "matched_grade_rows": matched,
+        "diagnostics": diagnostics,
+        "special_codes_by_column": {key: dict(value) for key, value in special_counts.items()},
     }
 
 
@@ -147,15 +167,7 @@ def build_year(
                 matched += 1
             linked_rows.append((row, grade_row))
         np_rows_by_spec[spec.arskurs] = linked_rows
-        write_json(diagnostics_dir / f"import_np_ak{spec.arskurs}.json", {
-            "lasar": lasar,
-            "arskurs": spec.arskurs,
-            "source": "local_scb_np",
-            "expected_columns": len(spec.columns),
-            "imported_rows": len(rows),
-            "matched_grade_rows": matched,
-            "diagnostics": diagnostics,
-        })
+        write_json(diagnostics_dir / f"import_np_ak{spec.arskurs}.json", np_import_diagnostics(rows, diagnostics, spec, lasar, matched))
         if rows:
             manifest["np_arskurser"].append({"arskurs": spec.arskurs, "rows": len(rows), "matched_grade_rows": matched})
         manifest["files"].extend({**diagnostic, "kind": f"np_ak{spec.arskurs}"} for diagnostic in diagnostics if diagnostic.get("message") == "file_read")

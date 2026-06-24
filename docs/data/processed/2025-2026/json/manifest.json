@@ -11,8 +11,28 @@
       "rows": 121
     }
   ],
-  "np_arskurser": [],
+  "np_arskurser": [
+    {
+      "arskurs": 9,
+      "rows": 121,
+      "matched_grade_rows": 121
+    }
+  ],
   "files": [
+    {
+      "level": "info",
+      "message": "file_read",
+      "file": "SCB_NP_20260623_2150.Ak9.txt",
+      "rows": 89,
+      "kind": "np_ak9"
+    },
+    {
+      "level": "info",
+      "message": "file_read",
+      "file": "SCB_NP_20260623_2202.Ak9.txt",
+      "rows": 32,
+      "kind": "np_ak9"
+    },
     {
       "level": "info",
       "message": "file_read",

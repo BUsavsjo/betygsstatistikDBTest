@@ -111,7 +111,7 @@ function renderNp(){
     const local = vals[HUVUDMAN_KOD];
     const national = vals['00'];
     const gap = Number.parseFloat(String(local).replace(',','.')) - Number.parseFloat(String(national).replace(',','.'));
-    return `<tr><td><strong>${esc(valueText(measureVar, measure))}</strong></td><td>${fmt(local, ' %')}</td><td>${fmt(national, ' %')}</td><td>${Number.isFinite(gap) ? fmt(gap, ' p.e.') : '-'}</td></tr>`;
+    return `<tr><td><strong>${esc(valueText(measureVar, measure))}</strong></td><td>${pctBar(local)}</td><td>${pctBar(national)}</td><td>${Number.isFinite(gap) ? fmt(gap, ' p.e.') : '-'}</td></tr>`;
   }).join('');
 }
 function renderOverview(){

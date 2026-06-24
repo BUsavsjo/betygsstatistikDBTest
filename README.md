@@ -188,13 +188,13 @@ data/output/2025-2026/json/
 data/output/2025-2026/diagnostik/
 ```
 
-Vid import skapas ?ven en Excel-fil f?r manuell f?ltkontroll:
+Vid import skapas även en Excel-fil för manuell fältkontroll:
 
 ```text
 data/output/2025-2026/diagnostik/datafilsbeskrivning_jamforelse.xlsx
 ```
 
-Den j?mf?r f?lten i SCB:s datafilsbeskrivningar under `data/dokumentation/` med importkodens kolumnlistor och faktisk TXT-inl?sning. Bladen visar position, variabelnamn, f?ltinneh?ll, till?tna tecken, maxl?ngd, antal ifyllda/tomma v?rden, faktisk maxl?ngd, exempelv?rden och status. Exempelv?rden f?r personnummer, f?rnamn och efternamn maskas, men filen ligger ?nd? under `data/output` eftersom den bygger p? r?data och inte ska publiceras.
+Den jämför fälten i SCB:s datafilsbeskrivningar under `data/dokumentation/` med importkodens kolumnlistor och faktisk TXT-inläsning. Bladen visar position, variabelnamn, fältinnehåll, tillåtna tecken, maxlängd, antal ifyllda/tomma värden, faktisk maxlängd, exempelvärden och status. Exempelvärden för personnummer, förnamn och efternamn maskas, men filen ligger ändå under `data/output` eftersom den bygger på rådata och inte ska publiceras.
 
 Med `--publish` kopieras endast whitelistade aggregerade JSON-filer vidare till:
 
@@ -232,7 +232,9 @@ python -m unittest discover -s tests -v
 
 ## Lokal NP-import
 
-NP-importen anvander datafilsbeskrivningarna for ak 3, 6 och 9. Den skapar aggregerad JSON for andel godkanda nationella prov samt relation mellan betyg och nationella prov per kommun och skolenhet nar bade betygsfil och NP-fil finns.
+NP-importen använder datafilsbeskrivningarna för åk 3, 6 och 9. Den skapar aggregerad JSON för andel godkända nationella prov samt relation mellan betyg och nationella prov per kommun och skolenhet när både betygsfil och NP-fil finns.
+
+För åk 3 finns stöd både för den dokumenterade 35-kolumnsstrukturen och en kompakt 31-kolumnsvariant där `MA_G1_*` och `MA_G2_*` saknas. Den kompakta varianten normaliseras internt till samma fältnamn innan aggregering, så KPI-vyn för åk 3 kan byggas från lokal NP-data utan manuell filredigering.
 
 ```text
 data/output/2025-2026/json/np_andel_godkanda.json
@@ -240,7 +242,9 @@ data/output/2025-2026/json/np_betyg_relation.json
 data/output/2025-2026/json/skolenheter_lookup.json
 ```
 
-Relationen betyg/NP beraknas bara for ak 6 och 9, eftersom ak 3 saknar terminsbetyg i betygsflodet. Personnummer anvands bara internt for matchning och skrivs inte till publicerad JSON.
+Relationen betyg/NP beräknas bara för åk 6 och 9, eftersom åk 3 saknar terminsbetyg i betygsflödet. Personnummer används bara internt för matchning och skrivs inte till publicerad JSON.
 
-Skolenhetsnamn hamtas fran Skolverkets skolenhetsregister API v2 nar importen kan na API:t. For Savsjos kanda grundskolor finns ocksa en lokal fallbacktabell sa att sidan kan visa skolnamn aven om API:t inte svarar. Om en kod fortfarande inte kan matchas visas skolenhetskoden som fallback.
+NP-diagnostiken i `data/output/<läsår>/diagnostik/import_np_ak*.json` räknar även dokumenterade specialkoder per kolumn, till exempel `77`, `88` och `99`, så bortfall och ersättningsprov kan granskas utan att publicera elevrader.
+
+Skolenhetsnamn hämtas från Skolverkets skolenhetsregister API v2 när importen kan nå API:t. För Sävsjös kända grundskolor finns också en lokal fallbacktabell så att sidan kan visa skolnamn även om API:t inte svarar. Om en kod fortfarande inte kan matchas visas skolenhetskoden som fallback.
 

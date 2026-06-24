@@ -10,13 +10,14 @@
     *{box-sizing:border-box}body{margin:0;font-family:Segoe UI,system-ui,sans-serif;background:var(--bg);color:var(--txt)}
     header{background:#183747;color:#fff;padding:22px 32px;display:flex;justify-content:space-between;gap:18px;align-items:center;flex-wrap:wrap}
     h1{margin:0;font-size:1.45rem}header p{margin:.35rem 0 0;color:#d8e5eb;font-size:.86rem}.badge{border:1px solid rgba(255,255,255,.3);border-radius:999px;padding:6px 13px;font-size:.78rem}
+    .badge-muted{display:inline-block;margin-top:4px;border:1px solid var(--brd);border-radius:999px;background:#f7f9fb;color:var(--mut);padding:2px 7px;font-size:.68rem;font-weight:650;white-space:nowrap}.info-icon{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;border:1px solid var(--brd);color:var(--mut);font-size:.68rem;font-weight:800;text-transform:none;vertical-align:middle;cursor:help}
     main{max-width:1240px;margin:0 auto;padding:22px 18px 44px}.box{background:var(--card);border:1px solid var(--brd);border-radius:8px;padding:17px 19px;margin-bottom:15px;box-shadow:0 1px 4px rgba(0,0,0,.04)}
     .notice{background:#fff8e6;border-color:#edd39a;color:#493813}.status{display:flex;align-items:center;gap:10px}.dot{width:10px;height:10px;border-radius:50%;background:var(--mut)}.dot.loading{background:var(--o);animation:pulse 1s infinite}.dot.ok{background:var(--g)}.dot.warn{background:var(--o)}.dot.error{background:var(--r)}@keyframes pulse{50%{opacity:.35}}
     .toolbar{display:flex;gap:12px;align-items:center;flex-wrap:wrap}select,button{border:1px solid var(--brd);border-radius:7px;padding:8px 10px;background:#fff;color:var(--txt)}select[multiple]{min-width:210px;min-height:92px;padding:6px}button{cursor:pointer;background:var(--p);border-color:var(--p);color:#fff}.secondary{background:#fff;color:var(--p)}
     .filters{display:none;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;align-items:end}.filters.active{display:grid}.filter label{display:block;font-size:.75rem;text-transform:uppercase;color:var(--mut);font-weight:750;margin-bottom:6px}.filter select{width:100%}.filter-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.card{background:#fff;border:1px solid var(--brd);border-top:3px solid var(--p);border-radius:8px;padding:14px 15px}.label{font-size:.72rem;text-transform:uppercase;color:var(--mut);font-weight:750}.value{font-size:1.8rem;font-weight:760;color:var(--p);margin-top:6px}.small{font-size:.8rem;color:var(--mut);line-height:1.45}.tabs{display:flex;gap:0;overflow:auto;border-bottom:2px solid var(--brd);margin:16px 0}
     .tab{padding:10px 15px;cursor:pointer;color:var(--mut);font-weight:650;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}.tab.active{color:var(--p);border-bottom-color:var(--p)}.panel{display:none}.panel.active{display:block}
-    .chart{height:300px;position:relative}.tw{overflow:auto}table{width:100%;border-collapse:collapse;font-size:.84rem}th,td{padding:9px 10px;border-bottom:1px solid var(--brd);text-align:left;vertical-align:top}th{background:#f7f9fb;color:var(--mut);font-size:.72rem;text-transform:uppercase}.ok{color:var(--g);font-weight:700}.warn{color:var(--o);font-weight:700}.err{color:var(--r);font-weight:700}.muted{color:var(--mut)}code{background:#eef2f5;padding:2px 5px;border-radius:4px}.pre{white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace;background:#f6f8fa;border:1px solid var(--brd);border-radius:8px;padding:12px;max-height:330px;overflow:auto;font-size:.78rem}
+    .chart{height:300px;position:relative}.tw{overflow:auto}table{width:100%;border-collapse:collapse;font-size:.84rem}th,td{padding:9px 10px;border-bottom:1px solid var(--brd);text-align:left;vertical-align:top}th{background:#f7f9fb;color:var(--mut);font-size:.72rem;text-transform:uppercase}.pct-cell{min-width:92px;display:grid;grid-template-columns:minmax(46px,1fr) auto;gap:8px;align-items:center}.pct-bar{height:7px;background:#edf2f5;border-radius:999px;overflow:hidden}.pct-fill{display:block;height:100%;background:linear-gradient(90deg,var(--p2),var(--p));border-radius:inherit}.pct-label{font-variant-numeric:tabular-nums;white-space:nowrap}.ok{color:var(--g);font-weight:700}.warn{color:var(--o);font-weight:700}.err{color:var(--r);font-weight:700}.muted{color:var(--mut)}code{background:#eef2f5;padding:2px 5px;border-radius:4px}.pre{white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace;background:#f6f8fa;border:1px solid var(--brd);border-radius:8px;padding:12px;max-height:330px;overflow:auto;font-size:.78rem}
   </style>
 </head>
 <body>
@@ -97,7 +98,7 @@
 
   <section id="tab-overview" class="panel active">
     <div class="box"><h2>Meritvärde och yrkesbehörighet</h2><div class="chart"><canvas id="overviewChart"></canvas></div></div>
-    <div class="box"><h2>Meritvärde per skolenhet och årskurs</h2><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th>Merit 16</th><th>Merit 17</th><th>Uppnått alla ämnen</th><th>Yrkesbehörighet</th></tr></thead><tbody id="localMeritRows"></tbody></table></div></div>
+    <div class="box"><h2>Meritvärde per skolenhet och årskurs</h2><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th>Merit 16</th><th>Merit 17</th><th id="overviewKnowledgeHeader">Uppnått alla ämnen</th><th id="overviewVocationalHeader">Yrkesbehörighet</th></tr></thead><tbody id="localMeritRows"></tbody></table></div></div>
     <div class="box"><h2>Efterfrågade mått</h2><div class="tw"><table><thead><tr><th>Mått</th><th>Status</th><th>Tabell / kommentar</th></tr></thead><tbody id="metricRows"></tbody></table></div></div>
   </section>
 
@@ -123,16 +124,53 @@
   </section>
 
   <section id="tab-outcomes" class="panel">
-    <div class="box"><h2>Uppnått alla ämnen</h2><div class="chart"><canvas id="knowledgeChart"></canvas></div></div>
-    <div class="box"><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th>Uppnått alla ämnen</th></tr></thead><tbody id="knowledgeRows"></tbody></table></div></div>
+    <div class="box"><h2 id="outcomesTitle">Uppnått alla ämnen</h2><p id="outcomesDescription" class="small" style="display:none"></p></div>
+    <div class="box"><h2 id="knowledgeBoxTitle">Uppnått alla ämnen</h2><div class="chart"><canvas id="knowledgeChart"></canvas></div></div>
+    <div class="box"><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th id="knowledgeMetricHeader">Uppnått alla ämnen</th></tr></thead><tbody id="knowledgeRows"></tbody></table></div></div>
     <div class="box"><h2>Yrkesbehörighet åk 9</h2><div class="chart"><canvas id="vocationalChart"></canvas></div></div>
     <div class="box"><div class="tw"><table><thead><tr><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th>Yrkesbehörighet</th></tr></thead><tbody id="vocationalRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-np" class="panel">
-    <div class="box"><h2>NP andel godkända</h2><div class="chart"><canvas id="npPassChart"></canvas></div><div class="tw"><table><thead><tr><th>Nivå</th><th>Årskurs</th><th>Kön</th><th>Ämne</th><th>Antal NP</th><th>Andel godkända</th><th>Betygsmatch</th></tr></thead><tbody id="npLocalRows"></tbody></table></div></div>
-    <div class="box"><h2>Relation betyg och nationella prov</h2><p class="small">Visas för årskurser och ämnen där både betyg och NP-provresultat finns i lokal import.</p><div class="chart"><canvas id="npRelationChart"></canvas></div><div class="tw"><table><thead><tr><th>Nivå</th><th>Årskurs</th><th>Kön</th><th>Ämne</th><th>Jämförda</th><th>Betyg &gt; NP</th><th>Betyg = NP</th><th>Betyg &lt; NP</th></tr></thead><tbody id="npRelationRows"></tbody></table></div></div>
-    <div class="box"><h2>NP GAP och närliggande betygsmått</h2><p class="small">Den öppna PxWeb-strukturen innehåller inte komplett NP åk 6/9 för SV, EN och matematik. Här visas de NP-/betygsnära mått som går att hämta för Sävsjö huvudman och riket.</p><div class="tw"><table><thead><tr><th>Mått</th><th>Sävsjö huvudman</th><th>Riket</th><th>GAP</th></tr></thead><tbody id="npRows"></tbody></table></div></div>
+    <div class="box">
+      <h2>Nationella prov och betyg</h2>
+      <p class="small">Visar lokal NP-import när den finns, samt öppna PxWeb-mått för jämförelse med huvudman och riket.</p>
+      <div class="toolbar">
+        <span class="badge" style="color:var(--txt);border-color:var(--brd);background:#fff">Lokal SCB-import</span>
+        <span class="badge" style="color:var(--txt);border-color:var(--brd);background:#fff">Öppet PxWeb API</span>
+      </div>
+    </div>
+
+    <section class="grid">
+      <div class="card"><div class="label">Jämförda prov</div><div id="npComparedCard" class="value">-</div><div class="small">NP-rader i aktuellt urval</div></div>
+      <div class="card"><div class="label">Andel godkända</div><div id="npPassRateCard" class="value">-</div><div class="small">Total andel godkända NP</div></div>
+      <div class="card"><div class="label">Betyg över NP</div><div id="npHigherCard" class="value">-</div><div class="small">Andel där terminsbetyget är högre</div></div>
+      <div class="card"><div class="label">Datakälla</div><div id="npSourceCard" class="value">-</div><div class="small">Lokal import och öppna API-mått</div></div>
+    </section>
+
+    <div class="box">
+      <div id="npFilterSummary" class="small">Urval: -</div>
+      <div class="small" style="margin-top:8px">Betyg &gt; NP: terminsbetyget högre än provbetyget. Betyg = NP: samma nivå. Betyg &lt; NP: terminsbetyget lägre än provbetyget.</div>
+    </div>
+
+    <div class="box">
+      <h2>Andel godkända nationella prov</h2>
+      <div class="chart"><canvas id="npPassChart"></canvas></div>
+      <div class="tw"><table><thead><tr><th>Nivå</th><th>Årskurs</th><th>Kön</th><th>SV/SVA</th><th>Ämne</th><th>Antal NP</th><th>Andel godkända</th><th>Betygsmatch</th></tr></thead><tbody id="npLocalRows"></tbody></table></div>
+    </div>
+
+    <div class="box">
+      <h2>Hur terminsbetyg förhåller sig till NP</h2>
+      <p class="small">Visas för årskurser och ämnen där både betyg och NP-provresultat finns i lokal import.</p>
+      <div class="chart"><canvas id="npRelationChart"></canvas></div>
+      <div class="tw"><table><thead><tr><th>Nivå</th><th>Årskurs</th><th>Kön</th><th>SV/SVA</th><th>Ämne</th><th>Jämförda elever</th><th>Betyg &gt; NP</th><th>Betyg = NP</th><th>Betyg &lt; NP</th></tr></thead><tbody id="npRelationRows"></tbody></table></div>
+    </div>
+
+    <div class="box">
+      <h2>Öppna PxWeb-mått för huvudman och riket</h2>
+      <p class="small">Den här delen bygger inte på elevmatchning utan på öppna aggregerade mått från PxWeb. Den öppna PxWeb-strukturen innehåller inte komplett NP åk 6/9 för SV, EN och matematik.</p>
+      <div class="tw"><table><thead><tr><th>Mått</th><th>Sävsjö huvudman</th><th>Riket</th><th>Gap</th></tr></thead><tbody id="npRows"></tbody></table></div>
+    </div>
   </section>
 
   <section id="tab-availability" class="panel">
