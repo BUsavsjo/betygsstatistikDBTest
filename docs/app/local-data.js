@@ -222,7 +222,7 @@ function showGradeCell(value){
   return (state.filters?.grades || []).length === 1 ? '' : esc(value);
 }
 function showGenderCell(value){
-  return state.filters?.gender !== 'Alla' ? '' : esc(value || 'Alla');
+  return esc(value || 'Alla');
 }
 function showGroupCell(value){
   return state.filters?.group !== 'Alla' ? '' : esc(value || 'Alla');
@@ -314,12 +314,12 @@ function renderLocalControl(local){
 
   setTableSummary('controlTableSummary', currentTableSummary());
   $('controlRows').innerHTML = renderSchoolGroupedBody(controlRows.slice(0, 180), {
-    colspan: 16,
-    emptyHtml: '<tr><td colspan="16" class="muted">Ingen kontrolldata matchar urvalet.</td></tr>',
+    colspan: 17,
+    emptyHtml: '<tr><td colspan="17" class="muted">Ingen kontrolldata matchar urvalet.</td></tr>',
     schoolCell: schoolCellHtml,
     rowCells: row => ({
       beforeSchool: `<td>${showGradeCell(row.arskurs)}</td>`,
-      afterSchool: `<td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(row.amne)}</td>${rightCell(row.antal_elever)}${rightCell(row.antal_giltiga_betyg)}${rightCell(row.antal_A_E)}${rightCell(row.antal_F)}${rightCell(row.antal_tomma)}${rightCell(row.antal_specialkoder)}${rightCell(row.antal_ogiltiga_koder)}${rightCell(row.specialkod_2)}${rightCell(row.specialkod_3)}${rightCell(row.specialkod_9)}${rightCell(row.specialkod_Y)}${rightCell(row.specialkod_Z)}`
+      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(row.amne)}</td>${rightCell(row.antal_elever)}${rightCell(row.antal_giltiga_betyg)}${rightCell(row.antal_A_E)}${rightCell(row.antal_F)}${rightCell(row.antal_tomma)}${rightCell(row.antal_specialkoder)}${rightCell(row.antal_ogiltiga_koder)}${rightCell(row.specialkod_2)}${rightCell(row.specialkod_3)}${rightCell(row.specialkod_9)}${rightCell(row.specialkod_Y)}${rightCell(row.specialkod_Z)}`
     })
   });
 
