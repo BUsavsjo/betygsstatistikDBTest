@@ -76,15 +76,21 @@ http://localhost:3000
 
 ## Publicera på GitHub Pages
 
-GitHub Pages kan bara servera statiska filer. Den publicerade versionen använder därför godkänd, aggregerad JSON från `data/processed/<läsår>/json` när den finns, annars demodata från `data/demo/<läsår>/json`. Den försöker inte använda den lokala PxWeb-proxyn i `server.js`.
+GitHub Pages kan bara servera statiska filer. Den publicerade versionen försöker därför läsa aggregerad JSON i följande ordning:
 
-Lägg bearbetad data som får publiceras här:
+1. `data/processed/<läsår>/json`
+2. `data/output/<läsår>/json`
+3. `data/demo/<läsår>/json`
+
+Den försöker inte använda den lokala PxWeb-proxyn i `server.js`.
+
+Lägg granskad bearbetad data som får publiceras här:
 
 ```text
 data/processed/2025-2026/json/
 ```
 
-Kopiera bara granskade JSON-filer dit. Använd inte `data/output` direkt som publiceringsyta.
+Om `data/processed/<läsår>/json` saknas kan `npm run build:pages` även paketera aggregerad JSON direkt från `data/output/<läsår>/json`. Då kopieras bara JSON-filerna under respektive `json/`-mapp, inte diagnostik, CSV eller andra arbetsfiler.
 
 Bygg publiceringsmappen:
 
@@ -97,6 +103,7 @@ Det skapar `docs/` med:
 ```text
 docs/index.html
 docs/data/processed/
+docs/data/output/
 docs/data/demo/
 docs/.nojekyll
 ```
@@ -114,7 +121,7 @@ Branch: main
 Folder: /docs
 ```
 
-Publicera aldrig `data/raw`, `data/output`, elevdata, exporter, `.env` eller dokumentation med personuppgifter. `npm run build:pages` kopierar bara `index.html`, `data/processed` och `data/demo`.
+Publicera aldrig `data/raw`, elevdata, exporter, `.env` eller dokumentation med personuppgifter. `npm run build:pages` kopierar bara `index.html`, `app/`, `data/processed`, `data/output/*/json` och `data/demo`.
 
 ## Lokal SCB-import för årets betygsdata
 
@@ -202,7 +209,7 @@ Med `--publish` kopieras endast whitelistade aggregerade JSON-filer vidare till:
 data/processed/2025-2026/json/
 ```
 
-Webbappen försöker först läsa publiceringsklar JSON från `data/processed/<läsår>/json`, därefter lokal JSON från `data/output/<läsår>/json`. Om lokal data saknas används befintligt PxWeb-flöde som fallback.
+Webbappen försöker först läsa publiceringsklar JSON från `data/processed/<läsår>/json`, därefter aggregerad JSON från `data/output/<läsår>/json`. Om lokal/publicerad data saknas används demodata eller befintligt PxWeb-flöde som fallback beroende på körläge.
 
 Rådata, rensade elevfiler och genererad output ligger i `.gitignore`. Publicera inte personnummer, namn, rådata eller exporter med elevrader.
 
