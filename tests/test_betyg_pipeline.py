@@ -65,6 +65,11 @@ class DatafileDescriptionContractTests(unittest.TestCase):
             with self.subTest(arskurs=arskurs):
                 self.assertEqual(SPECS[arskurs].columns, documented_columns(path))
 
+    def test_ak9_subjects_include_documented_modern_language_grade_columns(self) -> None:
+        self.assertIn("M1_betyg", AK9_SUBJECTS)
+        self.assertIn("M2_betyg", AK9_SUBJECTS)
+        self.assertIn("ML_betyg", AK9_SUBJECTS)
+
     def test_np_import_columns_match_2026_datafile_descriptions(self) -> None:
         cases = {
             3: PROJECT_ROOT / "data" / "dokumentation" / "np" / "datafilsbeskrivning_np3_2026.xlsx",

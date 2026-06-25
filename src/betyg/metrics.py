@@ -7,8 +7,43 @@ from typing import Any
 from .constants import GRADE_POINTS, PASSING_GRADES, VALID_GRADES
 
 
+SUBJECT_DISPLAY_NAMES = {
+    "Bl": "Bild",
+    "En": "Engelska",
+    "Hkk": "Hem- och konsumentkunskap",
+    "Idh": "Idrott och hälsa",
+    "Ma": "Matematik",
+    "M1_betyg": "Moderna språk, elevens val",
+    "M2_betyg": "Moderna språk, skolans val",
+    "ML_betyg": "Moderna språk som språkval",
+    "Modmalbe": "Modersmål",
+    "Mu": "Musik",
+    "No": "Naturorienterande ämnen (blockbetyg)",
+    "Bi": "Biologi",
+    "Fy": "Fysik",
+    "Ke": "Kemi",
+    "So": "Samhällsorienterande ämnen (blockbetyg)",
+    "Ge": "Geografi",
+    "Hi": "Historia",
+    "Re": "Religionskunskap",
+    "Sh": "Samhällskunskap",
+    "Sl": "Slöjd",
+    "Sv": "Svenska",
+    "Sva": "Svenska som andraspråk",
+    "Tn": "Teckenspråk",
+    "Tk": "Teknik",
+    "Ovr": "Övrigt ämne",
+}
+
+EXTRA_LANGUAGE_SUBJECTS = {"M1_betyg", "M2_betyg", "ML_betyg"}
+
+
 def clean(value: Any) -> str:
     return "" if value is None else str(value).strip()
+
+
+def subject_name(subject: str) -> str:
+    return SUBJECT_DISPLAY_NAMES.get(subject, subject)
 
 
 def grade(value: Any) -> str | None:
@@ -44,6 +79,8 @@ def merit(row: dict[str, str], subjects: list[str]) -> tuple[float, float]:
     points: list[float] = []
     sv_sva_points: list[float] = []
     for subject in subjects:
+        if subject in EXTRA_LANGUAGE_SUBJECTS:
+            continue
         current_grade = grade(row.get(subject))
         if current_grade is None:
             continue
@@ -57,7 +94,7 @@ def merit(row: dict[str, str], subjects: list[str]) -> tuple[float, float]:
 
     language_points = [
         GRADE_POINTS[current_grade]
-        for col in ("M1_betyg", "M2_betyg")
+        for col in ("M1_betyg", "M2_betyg", "ML_betyg")
         if (current_grade := grade(row.get(col))) in PASSING_GRADES
     ]
     merit_17 = merit_16 + max(language_points, default=0.0)
@@ -199,6 +236,7 @@ def grade_distribution(rows: list[dict[str, Any]], lasar: str, arskurs: int, sub
                     "kon": kon,
                     "elevgrupp": elevgrupp,
                     "amne": subject,
+                    "amnesnamn": subject_name(subject),
                     "antal_betyg": total,
                     "antal_A_E": sum(counts[grade_name] for grade_name in PASSING_GRADES),
                     "antal_F": counts["F"],

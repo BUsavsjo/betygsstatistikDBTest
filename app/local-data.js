@@ -40,6 +40,39 @@ function uniqueSorted(values){
 function selectedValues(id){
   return [...$(id).selectedOptions].map(o => o.value);
 }
+function subjectLabel(row){
+  return row.amnesnamn || row.amne || '-';
+}
+const subjectOrder = {
+  Bl: 10,
+  Sv: 20,
+  Sva: 21,
+  En: 30,
+  M1_betyg: 31,
+  M2_betyg: 32,
+  ML_betyg: 33,
+  Modmalbe: 34,
+  Ma: 40,
+  Hkk: 50,
+  Idh: 60,
+  Mu: 70,
+  Sl: 80,
+  Bi: 90,
+  Fy: 91,
+  Ke: 92,
+  No: 93,
+  Ge: 100,
+  Hi: 101,
+  Re: 102,
+  Sh: 103,
+  So: 104,
+  Tk: 110,
+  Tn: 111,
+  Ovr: 120
+};
+function subjectSortValue(row){
+  return subjectOrder[row.amne] ?? 999;
+}
 function schoolLabel(row){
   if(row.niva === 'alla_skolenheter' || row.niva === 'kommun') return 'Alla skolenheter';
   return row.skolenhetsnamn || row.skolenhetskod || 'Okänd skolenhet';
@@ -252,7 +285,13 @@ function subjectDistributionRows(local){
     .filter(r => state.filters.gender === 'Alla' ? rowGender(r) === 'Alla' : true)
     .filter(r => Number(r.antal_betyg) > 0)
     .map(r => ({...r, betygspoang: gradePointAverage(r)}))
-    .sort((a,b) => `${schoolLabel(a)}${a.arskurs}${rowGender(a)}${rowGroup(a)}${a.amne}`.localeCompare(`${schoolLabel(b)}${b.arskurs}${rowGender(b)}${rowGroup(b)}${b.amne}`, 'sv', {numeric:true}));
+    .sort((a,b) =>
+      `${schoolLabel(a)}${a.arskurs}${rowGender(a)}${rowGroup(a)}${String(subjectSortValue(a)).padStart(3, '0')}${subjectLabel(a)}`
+        .localeCompare(
+          `${schoolLabel(b)}${b.arskurs}${rowGender(b)}${rowGroup(b)}${String(subjectSortValue(b)).padStart(3, '0')}${subjectLabel(b)}`,
+          'sv',
+          {numeric:true},
+        ));
 }
 function renderLocalOutcomes(local, meritRows, {hideAggregateOutcome=false}={}){
   const viewConfig = getGradeViewConfig(selectedSingleGrade());
@@ -328,13 +367,13 @@ function renderLocalControl(local){
     schoolCell: schoolCellHtml,
     rowCells: row => ({
       beforeSchool: `<td>${showGradeCell(row.arskurs)}</td>`,
-      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(row.amne)}</td>${rightCell(row.antal_elever)}${rightCell(row.antal_giltiga_betyg)}${rightCell(row.antal_A_E)}${rightCell(row.antal_F)}${rightCell(row.antal_tomma)}${rightCell(row.antal_specialkoder)}${rightCell(row.antal_ogiltiga_koder)}${rightCell(row.specialkod_2)}${rightCell(row.specialkod_3)}${rightCell(row.specialkod_9)}${rightCell(row.specialkod_Y)}${rightCell(row.specialkod_Z)}`
+      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(subjectLabel(row))}</td>${rightCell(row.antal_elever)}${rightCell(row.antal_giltiga_betyg)}${rightCell(row.antal_A_E)}${rightCell(row.antal_F)}${rightCell(row.antal_tomma)}${rightCell(row.antal_specialkoder)}${rightCell(row.antal_ogiltiga_koder)}${rightCell(row.specialkod_2)}${rightCell(row.specialkod_3)}${rightCell(row.specialkod_9)}${rightCell(row.specialkod_Y)}${rightCell(row.specialkod_Z)}`
     })
   });
 
   const topRows = controlRows.filter(r => r.elevgrupp === 'Alla').slice(0, 18);
   makeChart('controlChart','bar',{
-    labels: topRows.map(r => `Åk ${r.arskurs} ${schoolLabel(r)} ${r.amne}`),
+    labels: topRows.map(r => `Åk ${r.arskurs} ${schoolLabel(r)} ${subjectLabel(r)}`),
     datasets:[
       {label:'Giltiga betyg', data:topRows.map(r => r.antal_giltiga_betyg), backgroundColor:'#2f6f9f'},
       {label:'Tomma', data:topRows.map(r => r.antal_tomma), backgroundColor:'#9aa6ad'},
@@ -441,12 +480,12 @@ function renderFilteredLocal(){
     schoolCell: schoolCellHtml,
     rowCells: row => ({
       beforeSchool: `<td>${showGradeCell(row.arskurs)}</td>`,
-      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(row.amne)}</td><td class="numeric">${fmt(row.betygspoang)}</td>${rightCell(row.antal_A ?? 0)}${rightCell(row.antal_B ?? 0)}${rightCell(row.antal_C ?? 0)}${rightCell(row.antal_D ?? 0)}${rightCell(row.antal_E ?? 0)}${rightCell(row.antal_F ?? 0)}<td>${pctBar(row.andel_A_E)}</td>${rightCell(row.antal_betyg)}`
+      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(subjectLabel(row))}</td><td class="numeric">${fmt(row.betygspoang)}</td>${rightCell(row.antal_A ?? 0)}${rightCell(row.antal_B ?? 0)}${rightCell(row.antal_C ?? 0)}${rightCell(row.antal_D ?? 0)}${rightCell(row.antal_E ?? 0)}${rightCell(row.antal_F ?? 0)}<td>${pctBar(row.andel_A_E)}</td>${rightCell(row.antal_betyg)}`
     })
   });
   const topSubjects = subjectRows.slice(0, 24);
   makeChart('subjectChart','bar',{
-    labels: topSubjects.map(r => `Åk ${r.arskurs} ${schoolLabel(r)} ${r.amne}`),
+    labels: topSubjects.map(r => `Åk ${r.arskurs} ${schoolLabel(r)} ${subjectLabel(r)}`),
     datasets:[
       {label:'Betygspoäng', data:topSubjects.map(r => r.betygspoang), backgroundColor:'#2f6f9f', yAxisID:'y'},
       {label:'Andel F %', data:topSubjects.map(r => r.andel_F), backgroundColor:'#b73535', yAxisID:'y1'}
@@ -460,12 +499,12 @@ function renderFilteredLocal(){
     schoolCell: schoolCellHtml,
     rowCells: row => ({
       beforeSchool: `<td>${showGradeCell(row.arskurs)}</td>`,
-      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(row.amne)}</td><td>${pctBar(row.andel_A)}</td><td>${pctBar(row.andel_B)}</td><td>${pctBar(row.andel_C)}</td><td>${pctBar(row.andel_D)}</td><td>${pctBar(row.andel_E)}</td><td>${pctBar(row.andel_F)}</td>${rightCell(row.antal_betyg)}`
+      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(subjectLabel(row))}</td><td>${pctBar(row.andel_A)}</td><td>${pctBar(row.andel_B)}</td><td>${pctBar(row.andel_C)}</td><td>${pctBar(row.andel_D)}</td><td>${pctBar(row.andel_E)}</td><td>${pctBar(row.andel_F)}</td>${rightCell(row.antal_betyg)}`
     })
   });
   const gradeChartRows = subjectRows.slice(0, 18);
   makeChart('gradeDistChart','bar',{
-    labels: gradeChartRows.map(r => `Åk ${r.arskurs} ${schoolLabel(r)} ${r.amne}`),
+    labels: gradeChartRows.map(r => `Åk ${r.arskurs} ${schoolLabel(r)} ${subjectLabel(r)}`),
     datasets:[
       {label:'A %', data:gradeChartRows.map(r => r.andel_A), backgroundColor:'#1f5f7a'},
       {label:'B %', data:gradeChartRows.map(r => r.andel_B), backgroundColor:'#2f6f9f'},

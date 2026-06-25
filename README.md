@@ -215,6 +215,10 @@ Rådata, rensade elevfiler och genererad output ligger i `.gitignore`. Publicera
 
 Lokal SCB-import kan visa bland annat meritvärde, betygsfördelning, andel A-E/F, gymnasiebehörighet för åk 9, uppnått alla ämnen och jämförelse mellan elever som läser svenska respektive svenska som andraspråk.
 
+För årskurs 6 ingår nu även `Modmalbe` samt `M1_betyg` och `M2_betyg` i ämnesvyerna. De visas i JSON och UI som `Modersmål`, `Moderna språk, elevens val` respektive `Moderna språk, skolans val`.
+
+För årskurs 9 ingår nu även `M1_betyg`, `M2_betyg` och `ML_betyg` i ämnesvyerna. De visas som `Moderna språk, elevens val`, `Moderna språk, skolans val` och `Moderna språk som språkval`. Kontroll mot `datafilsbeskrivning_betyg_ak9_2026.xlsx` och råfilerna visar att åk9-formatet inte innehåller `Modmalbe`.
+
 ## Tester
 
 Kör de inledande regressionstesterna för importlogiken med:
