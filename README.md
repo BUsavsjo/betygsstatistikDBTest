@@ -227,6 +227,49 @@ Kör de inledande regressionstesterna för importlogiken med:
 python -m unittest discover -s tests -v
 ```
 
+För automatiska gränssnittstester av filter, vyer och tabeller finns även Playwright:
+
+```bash
+npm run test:e2e
+```
+
+Testerna startar lokal server automatiskt via `npm run dev` och kör mot `http://127.0.0.1:3000`.
+I den här konfigurationen används installerad Microsoft Edge via Playwrights kanalstöd, så någon separat Chromium-nedladdning behövs inte.
+
+De verifierar främst att:
+
+- sidan laddar lokal data och visar filter
+- filterval slår igenom i tabellsammanfattningar och vyer
+- rena åk 3-urval växlar till NP-fokuserat läge
+
+## Användartest av filter, vyer och tabeller
+
+Det finns nu ett konkret testmanus för sidan i:
+
+```text
+docs/anvandartest-filter-vyer-tabeller.md
+```
+
+Använd det när du vill testa hur användare förstår:
+
+- flerfilter för årskurs, skolenhet, kön och elevgrupp
+- växling mellan flikar och vyer
+- tabellernas gruppering, urvalssammanfattning och läsbarhet
+
+Rekommenderat körsätt för användartest är att starta sidan via:
+
+```bash
+npm run dev
+```
+
+och sedan öppna:
+
+```text
+http://localhost:3000
+```
+
+Testet fungerar bäst när lokal eller publicerad aggregerad JSON finns tillgänglig, eftersom fler filter då fylls med verkliga val från datamängden.
+
 ## Felsökning
 
 1. Starta sidan via `npm run dev`.

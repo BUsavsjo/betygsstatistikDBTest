@@ -6,15 +6,23 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
+    "test:e2e": "playwright test",
     "import:scb": "python src/scb_betyg_import.py",
     "import:scb:publish": "python src/scb_betyg_import.py --publish",
     "build:pages": "node scripts/build-pages.js",
     "preview:pages": "npm run build:pages && npx serve docs"
   },
-  "keywords": ["skolverket", "betyg", "statistik", "savsjo", "grundskola"],
+  "keywords": [
+    "skolverket",
+    "betyg",
+    "statistik",
+    "savsjo",
+    "grundskola"
+  ],
   "author": "Sävsjö kommun – Barn och utbildningsförvaltningen",
   "license": "MIT",
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "serve": "^14.2.3"
   },
   "engines": {

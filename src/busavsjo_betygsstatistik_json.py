@@ -88,9 +88,12 @@ def _sv_sva_grupp(rad):
 def _berakna_merit(rad, betygskolumner):
     poang = []
     sv_sva_poang = []
+    har_godkand = False
     for kol in betygskolumner:
         betyg = _normalisera_betyg(rad.get(kol))
         if betyg is not None:
+            if betyg in GODKANDA_BETYG:
+                har_godkand = True
             if kol in {"Sv", "Sva"}:
                 sv_sva_poang.append(BETYGSPOANG[betyg])
             else:
@@ -98,6 +101,9 @@ def _berakna_merit(rad, betygskolumner):
 
     if sv_sva_poang:
         poang.append(max(sv_sva_poang))
+
+    if not har_godkand:
+        return None, None
 
     merit_16 = sum(sorted(poang, reverse=True)[:16])
 

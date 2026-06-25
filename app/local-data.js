@@ -74,7 +74,10 @@ function subjectSortValue(row){
   return subjectOrder[row.amne] ?? 999;
 }
 function schoolLabel(row){
-  if(row.niva === 'alla_skolenheter' || row.niva === 'kommun') return 'Alla skolenheter';
+  if(row.niva === 'alla_skolenheter' || row.niva === 'kommun'){
+    const grade = Number(row.arskurs);
+    return Number.isFinite(grade) ? `Alla skolenheter, åk ${grade}` : 'Alla skolenheter';
+  }
   return row.skolenhetsnamn || row.skolenhetskod || 'Okänd skolenhet';
 }
 function schoolKey(row){
@@ -251,6 +254,11 @@ function currentTableSummary({groupLabel='Elevgrupp'}={}){
   const schoolText = `Skolor: ${selectedSchoolSummary()}`;
   return `${gradeText} · ${genderText} · ${groupText} · ${schoolText}`;
 }
+function tableNoteForSelectedGrades(){
+  const grades = new Set((state.filters?.grades || []).map(String));
+  if(!grades.has('9')) return '';
+  return 'Not: Åk 9-underlaget innehåller inte en separat kolumn för Modersmål, så ämnet kan inte visas i betygsfördelningen för åk 9.';
+}
 function selectedGradeValues(){
   return (state.filters?.grades || []).map(v => Number(v)).filter(Number.isFinite);
 }
@@ -396,7 +404,7 @@ function renderFilteredLocal(){
   const selectedGrade = selectedSingleGrade();
   const selectedGrades = selectedGradeValues();
   const viewConfig = getGradeViewConfig(selectedGrade);
-  const showOverviewMerit = !(selectedGrade != null && Number(selectedGrade) === 6);
+  const showOverviewMerit = true;
   const showVocational = selectedGrade == null || Number(selectedGrade) === 9;
   const meritCardBox = $('meritCard').closest('.card');
   const vocCardBox = $('vocCard').closest('.card');
@@ -452,7 +460,7 @@ function renderFilteredLocal(){
   }
   }
 
-  const genderSource = localBaseFilter(local.overview || []).filter(r => rowGroup(r) === (state.filters.group === 'Alla' ? 'Alla' : state.filters.group));
+  const genderSource = localBaseFilter(local.overview || [], {includeAggregateRow:true}).filter(r => rowGroup(r) === (state.filters.group === 'Alla' ? 'Alla' : state.filters.group));
   const genderGroups = {};
   for(const row of genderSource){
     const key = `${row.arskurs}|${schoolKey(row)}|${row.elevgrupp || 'Alla'}`;
@@ -475,21 +483,22 @@ function renderFilteredLocal(){
     ]
   },{scales:{y:{beginAtZero:false}}});
 
-  const svSvaRows = localFilterRows(local.svSva || [], {includeAggregateRow:true}).filter(r => ['SV','SVA'].includes(r.elevgrupp));
+  const svSvaRows = localFilterRows(local.svSva || [], {includeAggregateRow:true}).filter(r => ['Alla','SV','SVA'].includes(r.elevgrupp));
   setTableSummary('svaTableSummary', currentTableSummary({groupLabel:'Sv/Sva'}));
   $('svaRows').innerHTML = renderSchoolGroupedBody(svSvaRows, {
-    colspan: 7,
-    emptyHtml: '<tr><td colspan="7" class="muted">Ingen SV/SVA-data hittades för urvalet.</td></tr>',
+    colspan: 8,
+    emptyHtml: '<tr><td colspan="8" class="muted">Ingen SV/SVA-data hittades för urvalet.</td></tr>',
     schoolCell: schoolCellHtml,
     rowCells: row => ({
       beforeSchool: `<td>${showGradeCell(row.arskurs)}</td>`,
-      afterSchool: `<td>${showGroupCell(row.elevgrupp)}</td>${rightCell(row.antal_elever ?? '-')}` + `<td class="numeric">${fmt(row.genomsnittligt_meritvarde_17)}</td><td>${pctBar(row.andel_godkand_sv_sva)}</td><td>${pctBar(row.andel_uppnatt_alla_amnen)}</td>`
+      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp)}</td>${rightCell(row.antal_elever ?? '-')}` + `<td class="numeric">${fmt(row.genomsnittligt_meritvarde_17)}</td><td>${pctBar(row.andel_godkand_sv_sva)}</td><td>${pctBar(row.andel_uppnatt_alla_amnen)}</td>`
     })
   });
 
   const subjectRows = subjectDistributionRows(local, {includeAggregateRow:true});
   const subjectChartRows = subjectDistributionRows(local);
-  setTableSummary('subjectTableSummary', currentTableSummary({groupLabel:'Sv/Sva'}));
+  const gradeDistributionNote = tableNoteForSelectedGrades();
+  setTableSummary('subjectTableSummary', [currentTableSummary({groupLabel:'Sv/Sva'}), gradeDistributionNote].filter(Boolean).join(' · '));
   $('subjectRows').innerHTML = renderSchoolGroupedBody(subjectRows.slice(0, 180), {
     colspan: 14,
     emptyHtml: '<tr><td colspan="14" class="muted">Ingen ämnesdata matchar urvalet.</td></tr>',
@@ -508,7 +517,7 @@ function renderFilteredLocal(){
     ]
   },{scales:{y:{beginAtZero:true,max:20},y1:{beginAtZero:true,max:100,position:'right',grid:{drawOnChartArea:false}}}});
 
-  setTableSummary('gradeDistTableSummary', currentTableSummary({groupLabel:'Sv/Sva'}));
+  setTableSummary('gradeDistTableSummary', [currentTableSummary({groupLabel:'Sv/Sva'}), gradeDistributionNote].filter(Boolean).join(' · '));
   $('gradeDistRows').innerHTML = renderSchoolGroupedBody(subjectRows.slice(0, 180), {
     colspan: 12,
     emptyHtml: '<tr><td colspan="12" class="muted">Ingen betygsfördelning matchar urvalet.</td></tr>',
@@ -691,7 +700,7 @@ function renderLocalData(local){
   renderMetricRows();
   populateLocalFilters(local);
   renderFilteredLocal();
-  $('npRows').innerHTML = '<tr><td colspan="4" class="muted">Öppna jämförelsetal används inte när lokal SCB-import är laddad.</td></tr>';
+  $('npRows').innerHTML = '<tr><td colspan="5" class="muted">Öppna jämförelsetal används inte när lokal SCB-import är laddad.</td></tr>';
   const hasSvSvaRows = (local.svSva || []).some(r => ['SV','SVA'].includes(r.elevgrupp));
   $('availabilityRows').innerHTML = [
     [local.isDemo ? 'Demodata' : local.sourceKind === 'processed' ? 'Bearbetad publiceringsdata' : 'Årets SCB-betyg', 'OK', `Läst från ${local.base}`],
@@ -748,7 +757,7 @@ function renderLocalData(local){
   renderMetricRows();
   populateLocalFilters(local);
   renderFilteredLocal();
-  $('npRows').innerHTML = '<tr><td colspan="4" class="muted">Öppna jämförelsetal används inte när lokal SCB-import är laddad.</td></tr>';
+  $('npRows').innerHTML = '<tr><td colspan="5" class="muted">Öppna jämförelsetal används inte när lokal SCB-import är laddad.</td></tr>';
   const hasSvSvaRows = (local.svSva || []).some(r => ['SV','SVA'].includes(r.elevgrupp));
   $('availabilityRows').innerHTML = [
     [local.isDemo ? 'Demodata' : local.sourceKind === 'processed' ? 'Bearbetad publiceringsdata' : 'Årets SCB-betyg', 'Tillgänglig', `Läst från ${local.base}`],
