@@ -411,6 +411,7 @@ function renderFilteredLocal(){
 
   const sortedMeritRows = meritRows
     .sort((a,b) => `${schoolLabel(a)}${a.arskurs}${rowGender(a)}${rowGroup(a)}`.localeCompare(`${schoolLabel(b)}${b.arskurs}${rowGender(b)}${rowGroup(b)}`, 'sv', {numeric:true}));
+  renderSvaKpis(local);
   setTableSummary('overviewTableSummary', currentTableSummary());
   $('localMeritRows').innerHTML = renderSchoolGroupedBody(sortedMeritRows, {
     colspan: 6 + (showOverviewMerit ? 2 : 0) + (showVocational ? 1 : 0),
@@ -518,6 +519,60 @@ function renderFilteredLocal(){
   renderLocalOutcomes(local, meritRows, {hideAggregateOutcome: selectedGrades.length > 1});
   renderLocalControl(local);
   renderLocalNp(local);
+}
+function renderSvaKpis(local){
+  const target = $('svaKpiCards');
+  if(!target) return;
+
+  const selectedGender = state.filters?.gender || 'Alla';
+  const rows = (local.svSva || []).filter(row =>
+    row.niva === 'alla_skolenheter' &&
+    row.elevgrupp === 'SVA' &&
+    [6, 9].includes(Number(row.arskurs)) &&
+    rowGender(row) === selectedGender
+  );
+
+  const byGrade = Object.fromEntries(rows.map(row => [Number(row.arskurs), row]));
+  const grades = [6, 9];
+
+  const genderBadge = selectedGender === 'Alla' ? 'Alla elever' : selectedGender;
+  const chip = (label, value) => `
+    <div class="kpi-chip">
+      <span class="kpi-chip-label">${esc(label)}</span>
+      <span class="kpi-chip-value">${esc(value)}</span>
+    </div>`;
+
+  target.innerHTML = grades.map(grade => {
+    const row = byGrade[grade];
+    if(!row){
+      return `<article class="kpi-card">
+        <h3>Åk ${grade} · andel elever med lägst betyg E i SVA</h3>
+        <div class="kpi-empty">Ingen kommundata i SVA matchar valt könsfilter för åk ${grade}.</div>
+      </article>`;
+    }
+
+    const countBadge = isSmallGroup(row.antal_elever) ? '<div class="badge-muted">Lågt elevantal</div>' : '';
+    const achieved = Number.isFinite(Number(row.antal_elever))
+      ? Math.round((Number(row.andel_godkand_sv_sva || 0) / 100) * Number(row.antal_elever))
+      : null;
+
+    return `<article class="kpi-card">
+      <h3>Åk ${grade} · andel elever med lägst betyg E i SVA</h3>
+      <div class="kpi-topline">
+        <div>
+          <div class="kpi-main">${fmt(row.andel_godkand_sv_sva, ' %')}</div>
+          <div class="kpi-main-sub">${esc(genderBadge)} · ${esc(achieved ?? '-')} av ${esc(row.antal_elever ?? '-')}</div>
+          ${countBadge}
+        </div>
+        <div class="badge" style="color:var(--txt);border-color:var(--brd);background:#fff">Kommun</div>
+      </div>
+      <div class="kpi-breakdown">
+        ${chip('Elevantal', String(row.antal_elever ?? '-'))}
+        ${chip('Uppnått alla ämnen', fmt(row.andel_uppnatt_alla_amnen, ' %'))}
+        ${chip('Yrkesbehörighet', grade === 9 ? fmt(row.andel_behoriga_yrkesprogram, ' %') : 'Ej relevant')}
+      </div>
+    </article>`;
+  }).join('');
 }
 function renderLocalNp(local){
   const f = state.filters;
