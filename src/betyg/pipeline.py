@@ -132,7 +132,7 @@ def build_year(
     for spec in SPECS.values():
         rows, diagnostics = read_grade_files(grade_raw, lasar, spec)
         for row in rows:
-            merit16, merit17 = merit(row, spec.subjects)
+            merit16, merit17 = merit(row, spec.subjects, require_passing=spec.arskurs == 9)
             row["arskurs"] = spec.arskurs
             row["lasar"] = lasar
             row["kon"] = gender_from_personnr(row.get("PersonNr"))
