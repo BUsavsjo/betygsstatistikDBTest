@@ -32,12 +32,13 @@ def np_subject_results(row: dict[str, str], arskurs: int) -> list[dict[str, Any]
         results = []
         for subject, cols in {
             "Ma": ["MA_A_PR", "MA_B_PR", "MA_C_PR", "MA_D_PR", "MA_E_PR", "MA_F_PR", "MA_G_PR", "MA_G1_PR", "MA_G2_PR"],
-            "Sv/Sva": ["SV_A_PR", "SV_B_PR", "SV_C_PR", "SV_D_PR", "SV_E_PR", "SV_F_PR", "SV_G_PR", "SV_H_PR"],
+            # Lokalt jämförelseunderlag för ak 3 svenska bygger på delprov B, C, D, G och H.
+            "Sv/Sva": ["SV_B_PR", "SV_C_PR", "SV_D_PR", "SV_G_PR", "SV_H_PR"],
         }.items():
             values = [np_passed(row.get(col)) for col in cols]
             valid = [value for value in values if value is not None]
-            if valid:
-                results.append({"amne": subject, "np_betyg": None, "godkand_np": all(valid), "antal_delprov": len(valid)})
+            # Ak 3 ska behålla eleven i nämnaren även när alla valda delprov saknar giltigt värde.
+            results.append({"amne": subject, "np_betyg": None, "godkand_np": all(valid) if valid else False, "antal_delprov": len(valid)})
         return results
 
     if arskurs == 6:

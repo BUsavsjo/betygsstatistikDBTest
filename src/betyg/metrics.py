@@ -7,8 +7,43 @@ from typing import Any
 from .constants import GRADE_POINTS, PASSING_GRADES, VALID_GRADES
 
 
+SUBJECT_DISPLAY_NAMES = {
+    "Bl": "Bild",
+    "En": "Engelska",
+    "Hkk": "Hem- och konsumentkunskap",
+    "Idh": "Idrott och hälsa",
+    "Ma": "Matematik",
+    "M1_betyg": "Moderna språk, elevens val",
+    "M2_betyg": "Moderna språk, skolans val",
+    "ML_betyg": "Moderna språk som språkval",
+    "Modmalbe": "Modersmål",
+    "Mu": "Musik",
+    "No": "Naturorienterande ämnen (blockbetyg)",
+    "Bi": "Biologi",
+    "Fy": "Fysik",
+    "Ke": "Kemi",
+    "So": "Samhällsorienterande ämnen (blockbetyg)",
+    "Ge": "Geografi",
+    "Hi": "Historia",
+    "Re": "Religionskunskap",
+    "Sh": "Samhällskunskap",
+    "Sl": "Slöjd",
+    "Sv": "Svenska",
+    "Sva": "Svenska som andraspråk",
+    "Tn": "Teckenspråk",
+    "Tk": "Teknik",
+    "Ovr": "Övrigt ämne",
+}
+
+EXTRA_LANGUAGE_SUBJECTS = {"M1_betyg", "M2_betyg", "ML_betyg"}
+
+
 def clean(value: Any) -> str:
     return "" if value is None else str(value).strip()
+
+
+def subject_name(subject: str) -> str:
+    return SUBJECT_DISPLAY_NAMES.get(subject, subject)
 
 
 def grade(value: Any) -> str | None:
@@ -40,24 +75,31 @@ def sv_sva_group(row: dict[str, str]) -> str:
     return "oklar"
 
 
-def merit(row: dict[str, str], subjects: list[str]) -> tuple[float, float]:
+def merit(row: dict[str, str], subjects: list[str], *, require_passing: bool = False) -> tuple[float | None, float | None]:
     points: list[float] = []
     sv_sva_points: list[float] = []
+    has_passing_grade = False
     for subject in subjects:
+        if subject in EXTRA_LANGUAGE_SUBJECTS:
+            continue
         current_grade = grade(row.get(subject))
         if current_grade is None:
             continue
+        if current_grade in PASSING_GRADES:
+            has_passing_grade = True
         if subject in {"Sv", "Sva"}:
             sv_sva_points.append(GRADE_POINTS[current_grade])
         else:
             points.append(GRADE_POINTS[current_grade])
     if sv_sva_points:
         points.append(max(sv_sva_points))
+    if require_passing and not has_passing_grade:
+        return None, None
     merit_16 = sum(sorted(points, reverse=True)[:16])
 
     language_points = [
         GRADE_POINTS[current_grade]
-        for col in ("M1_betyg", "M2_betyg")
+        for col in ("M1_betyg", "M2_betyg", "ML_betyg")
         if (current_grade := grade(row.get(col))) in PASSING_GRADES
     ]
     merit_17 = merit_16 + max(language_points, default=0.0)
@@ -92,8 +134,14 @@ def reached_all_subjects(row: dict[str, str], subjects: list[str]) -> bool:
     return all(is_passing(row.get(subject)) for subject in relevant) and (not has_sv_sva or is_passing(row.get("Sv")) or is_passing(row.get("Sva")))
 
 
-def average(values: list[float]) -> float | None:
-    return round(sum(values) / len(values), 2) if values else None
+def average(values: list[float | None]) -> float | None:
+    valid = [value for value in values if value is not None]
+    return round(sum(valid) / len(valid), 2) if valid else None
+
+
+def median_value(values: list[float | None]) -> float | None:
+    valid = [value for value in values if value is not None]
+    return round(median(valid), 2) if valid else None
 
 
 def percentage(part: int, total: int) -> float | None:
@@ -171,7 +219,7 @@ def overview(rows: list[dict[str, Any]], lasar: str, arskurs: int, lookup: dict[
                 "antal_elever": len(segment),
                 "genomsnittligt_meritvarde_16": average(merit16),
                 "genomsnittligt_meritvarde_17": average(merit17),
-                "median_meritvarde_17": round(median(merit17), 2) if merit17 else None,
+                "median_meritvarde_17": median_value(merit17),
                 "andel_uppnatt_alla_amnen": kolada_grade6_all_subjects_percentage(passed_all_subjects, len(segment)) if arskurs == 6 else percentage(passed_all_subjects, len(segment)),
                 "source": "local_scb",
             }
@@ -199,6 +247,7 @@ def grade_distribution(rows: list[dict[str, Any]], lasar: str, arskurs: int, sub
                     "kon": kon,
                     "elevgrupp": elevgrupp,
                     "amne": subject,
+                    "amnesnamn": subject_name(subject),
                     "antal_betyg": total,
                     "antal_A_E": sum(counts[grade_name] for grade_name in PASSING_GRADES),
                     "antal_F": counts["F"],
@@ -233,7 +282,7 @@ def sv_sva_summary(rows: list[dict[str, Any]], lasar: str, arskurs: int, lookup:
                 "andel_av_elever": percentage(len(group_rows), len(subset)),
                 "genomsnittligt_meritvarde_16": average([row["meritvarde_16"] for row in group_rows]),
                 "genomsnittligt_meritvarde_17": average([row["meritvarde_17"] for row in group_rows]),
-                "median_meritvarde_17": round(median([row["meritvarde_17"] for row in group_rows]), 2),
+                "median_meritvarde_17": median_value([row["meritvarde_17"] for row in group_rows]),
                 "andel_godkand_sv_sva": percentage(sum(1 for current_grade in valid_subject_grades if current_grade in PASSING_GRADES), len(valid_subject_grades)),
                 "andel_uppnatt_alla_amnen": kolada_grade6_all_subjects_percentage(sum(1 for row in group_rows if row["uppnatt_alla_amnen"]), len(group_rows)) if arskurs == 6 else percentage(sum(1 for row in group_rows if row["uppnatt_alla_amnen"]), len(group_rows)),
                 "source": "local_scb",

@@ -49,10 +49,6 @@
     <label for="yearSel"><strong>Läsår</strong></label>
     <select id="yearSel">
       <option value="2025/26" data-local="2025-2026" data-jmf="2026" data-underlag="2025">2025/26</option>
-      <option value="2024/25" data-local="2024-2025" data-jmf="2025" data-underlag="2024">2024/25</option>
-      <option value="2023/24" data-local="2023-2024" data-jmf="2024" data-underlag="2023">2023/24</option>
-      <option value="2022/23" data-local="2022-2023" data-jmf="2023" data-underlag="2022">2022/23</option>
-      <option value="2021/22" data-local="2021-2022" data-jmf="2022" data-underlag="2021">2021/22</option>
     </select>
     <button id="reloadBtn">Ladda om</button>
     <div class="toolbar-spacer"></div>
@@ -102,8 +98,13 @@
   </div>
 
   <section id="tab-overview" class="panel active">
+    <div class="box">
+      <h2>SVA KPI</h2>
+      <p class="small">Kommunmått för måluppfyllelse i svenska som andraspråk. Kortens värden följer valt könsfilter och visar alltid elevantal för aktuell grupp.</p>
+      <div id="svaKpiCards" class="kpi-grid"></div>
+    </div>
     <div class="box"><h2>Meritvärde och yrkesbehörighet</h2><div class="chart"><canvas id="overviewChart"></canvas></div></div>
-    <div class="box"><h2>Meritvärde per skolenhet och årskurs</h2><div id="overviewTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th>Merit 16</th><th>Merit 17</th><th id="overviewKnowledgeHeader">Uppnått alla ämnen</th><th id="overviewVocationalHeader">Yrkesbehörighet</th></tr></thead><tbody id="localMeritRows"></tbody></table></div></div>
+    <div class="box"><h2>Meritvärde per skolenhet och årskurs</h2><div id="overviewTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th id="overviewMerit16Header">Merit 16</th><th id="overviewMerit17Header">Merit 17</th><th id="overviewKnowledgeHeader">Uppnått alla ämnen</th><th id="overviewVocationalHeader">Yrkesbehörighet</th></tr></thead><tbody id="localMeritRows"></tbody></table></div></div>
     <div class="box"><h2>Tillgängliga jämförelser</h2><div class="tw"><table><thead><tr><th>Vy</th><th>Status</th><th>Kommentar</th></tr></thead><tbody id="metricRows"></tbody></table></div></div>
   </section>
 

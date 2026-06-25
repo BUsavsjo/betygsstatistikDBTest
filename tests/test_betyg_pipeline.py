@@ -65,6 +65,11 @@ class DatafileDescriptionContractTests(unittest.TestCase):
             with self.subTest(arskurs=arskurs):
                 self.assertEqual(SPECS[arskurs].columns, documented_columns(path))
 
+    def test_ak9_subjects_include_documented_modern_language_grade_columns(self) -> None:
+        self.assertIn("M1_betyg", AK9_SUBJECTS)
+        self.assertIn("M2_betyg", AK9_SUBJECTS)
+        self.assertIn("ML_betyg", AK9_SUBJECTS)
+
     def test_np_import_columns_match_2026_datafile_descriptions(self) -> None:
         cases = {
             3: PROJECT_ROOT / "data" / "dokumentation" / "np" / "datafilsbeskrivning_np3_2026.xlsx",
@@ -142,6 +147,12 @@ class MetricsTests(unittest.TestCase):
         merit16, merit17 = merit(row, AK9_SUBJECTS)
         self.assertEqual(merit16, 170.0)
         self.assertEqual(merit17, 187.5)
+
+    def test_merit_can_exclude_ak9_students_without_any_passing_grade(self) -> None:
+        row = {subject: "F" for subject in AK9_SUBJECTS}
+        merit16, merit17 = merit(row, AK9_SUBJECTS, require_passing=True)
+        self.assertIsNone(merit16)
+        self.assertIsNone(merit17)
 
     def test_eligibility_requires_core_subjects(self) -> None:
         row = {subject: "E" for subject in AK9_SUBJECTS}
@@ -223,6 +234,36 @@ class ControlRowsTests(unittest.TestCase):
         result = overview(rows, "2025-2026", 6, {"123": "Testskolan"})
         total = next(row for row in result if row["niva"] == "alla_skolenheter" and row["kon"] == "Alla" and row["elevgrupp"] == "Alla")
         self.assertEqual(total["andel_uppnatt_alla_amnen"], 95.0)
+
+    def test_overview_excludes_none_merit_values_from_averages(self) -> None:
+        rows = [
+            {
+                "Skolenhetskod": "123",
+                "kon": "Pojkar",
+                "sv_sva_grupp": "SV",
+                "meritvarde_16": 160,
+                "meritvarde_17": 170,
+                "uppnatt_alla_amnen": True,
+                "behorig_yrkesprogram": True,
+                "behorig_hogskoleforberedande_nagot_program": True,
+            },
+            {
+                "Skolenhetskod": "123",
+                "kon": "Flickor",
+                "sv_sva_grupp": "SV",
+                "meritvarde_16": None,
+                "meritvarde_17": None,
+                "uppnatt_alla_amnen": False,
+                "behorig_yrkesprogram": False,
+                "behorig_hogskoleforberedande_nagot_program": False,
+            },
+        ]
+
+        result = overview(rows, "2025-2026", 9, {"123": "Testskolan"})
+        total = next(row for row in result if row["niva"] == "alla_skolenheter" and row["kon"] == "Alla" and row["elevgrupp"] == "Alla")
+        self.assertEqual(total["genomsnittligt_meritvarde_16"], 160.0)
+        self.assertEqual(total["genomsnittligt_meritvarde_17"], 170.0)
+        self.assertEqual(total["median_meritvarde_17"], 170.0)
 
     def test_control_rows_counts_valid_and_special_codes(self) -> None:
         rows = [

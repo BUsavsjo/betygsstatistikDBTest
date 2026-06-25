@@ -7,7 +7,7 @@ from typing import Any
 from .constants import GradeSpec, NP_SPECIAL_CODES, NP_SPECS, NpSpec, SPECIAL_CODES, SPECS, VALID_GRADES
 from .datafile_control import create_control_cases, write_datafile_control_workbook
 from .io import publish_processed_json, read_grade_files, read_np_files, write_csv, write_json
-from .metrics import base_groups, clean, eligibility, gender_from_personnr, grade, grade_distribution, merit, overview, reached_all_subjects, school_name, segmented_groups, sv_sva_group, sv_sva_summary
+from .metrics import base_groups, clean, eligibility, gender_from_personnr, grade, grade_distribution, merit, overview, reached_all_subjects, school_name, segmented_groups, subject_name, sv_sva_group, sv_sva_summary
 from .np_data import aggregate_np
 from .skolenheter import skolenhet_lookup
 
@@ -80,6 +80,7 @@ def control_rows(rows: list[dict[str, Any]], lasar: str, arskurs: int, subjects:
                     "kon": kon,
                     "elevgrupp": group_name,
                     "amne": subject,
+                    "amnesnamn": subject_name(subject),
                     "antal_elever": len(group_rows),
                     "antal_giltiga_betyg": len(valid),
                     "antal_A_E": sum(1 for value in valid if value != "F"),
@@ -131,7 +132,7 @@ def build_year(
     for spec in SPECS.values():
         rows, diagnostics = read_grade_files(grade_raw, lasar, spec)
         for row in rows:
-            merit16, merit17 = merit(row, spec.subjects)
+            merit16, merit17 = merit(row, spec.subjects, require_passing=spec.arskurs == 9)
             row["arskurs"] = spec.arskurs
             row["lasar"] = lasar
             row["kon"] = gender_from_personnr(row.get("PersonNr"))

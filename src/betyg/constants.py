@@ -41,8 +41,8 @@ AK9_COLUMNS = [
     "Sv", "Sva", "Tn", "Tk", "Ovr",
 ]
 
-AK6_SUBJECTS = ["Bl", "En", "Hkk", "Idh", "Ma", "Mu", "No", "Bi", "Fy", "Ke", "So", "Ge", "Hi", "Re", "Sh", "Sl", "Sv", "Sva", "Tn", "Tk", "Ovr"]
-AK9_SUBJECTS = ["Bl", "En", "Hkk", "Idh", "Ma", "Mu", "Bi", "Fy", "Ke", "Ge", "Hi", "Re", "Sh", "Sl", "Sv", "Sva", "Tn", "Tk", "Ovr"]
+AK6_SUBJECTS = ["Bl", "En", "Hkk", "Idh", "Ma", "M1_betyg", "M2_betyg", "Modmalbe", "Mu", "No", "Bi", "Fy", "Ke", "So", "Ge", "Hi", "Re", "Sh", "Sl", "Sv", "Sva", "Tn", "Tk", "Ovr"]
+AK9_SUBJECTS = ["Bl", "En", "Hkk", "Idh", "Ma", "M1_betyg", "M2_betyg", "ML_betyg", "Mu", "Bi", "Fy", "Ke", "Ge", "Hi", "Re", "Sh", "Sl", "Sv", "Sva", "Tn", "Tk", "Ovr"]
 
 
 @dataclass(frozen=True)

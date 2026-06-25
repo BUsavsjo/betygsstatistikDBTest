@@ -40,6 +40,39 @@ function uniqueSorted(values){
 function selectedValues(id){
   return [...$(id).selectedOptions].map(o => o.value);
 }
+function subjectLabel(row){
+  return row.amnesnamn || row.amne || '-';
+}
+const subjectOrder = {
+  Bl: 10,
+  Sv: 20,
+  Sva: 21,
+  En: 30,
+  M1_betyg: 31,
+  M2_betyg: 32,
+  ML_betyg: 33,
+  Modmalbe: 34,
+  Ma: 40,
+  Hkk: 50,
+  Idh: 60,
+  Mu: 70,
+  Sl: 80,
+  Bi: 90,
+  Fy: 91,
+  Ke: 92,
+  No: 93,
+  Ge: 100,
+  Hi: 101,
+  Re: 102,
+  Sh: 103,
+  So: 104,
+  Tk: 110,
+  Tn: 111,
+  Ovr: 120
+};
+function subjectSortValue(row){
+  return subjectOrder[row.amne] ?? 999;
+}
 function schoolLabel(row){
   if(row.niva === 'alla_skolenheter' || row.niva === 'kommun') return 'Alla skolenheter';
   return row.skolenhetsnamn || row.skolenhetskod || 'Okänd skolenhet';
@@ -214,6 +247,9 @@ function currentTableSummary({groupLabel='Elevgrupp'}={}){
   const schoolText = `Skolor: ${selectedSchoolSummary()}`;
   return `${gradeText} · ${genderText} · ${groupText} · ${schoolText}`;
 }
+function selectedGradeValues(){
+  return (state.filters?.grades || []).map(v => Number(v)).filter(Number.isFinite);
+}
 function setTableSummary(id, summary){
   const el = $(id);
   if(el) el.innerHTML = `<strong>Urval:</strong> ${esc(summary)}`;
@@ -249,9 +285,15 @@ function subjectDistributionRows(local){
     .filter(r => state.filters.gender === 'Alla' ? rowGender(r) === 'Alla' : true)
     .filter(r => Number(r.antal_betyg) > 0)
     .map(r => ({...r, betygspoang: gradePointAverage(r)}))
-    .sort((a,b) => `${schoolLabel(a)}${a.arskurs}${rowGender(a)}${rowGroup(a)}${a.amne}`.localeCompare(`${schoolLabel(b)}${b.arskurs}${rowGender(b)}${rowGroup(b)}${b.amne}`, 'sv', {numeric:true}));
+    .sort((a,b) =>
+      `${schoolLabel(a)}${a.arskurs}${rowGender(a)}${rowGroup(a)}${String(subjectSortValue(a)).padStart(3, '0')}${subjectLabel(a)}`
+        .localeCompare(
+          `${schoolLabel(b)}${b.arskurs}${rowGender(b)}${rowGroup(b)}${String(subjectSortValue(b)).padStart(3, '0')}${subjectLabel(b)}`,
+          'sv',
+          {numeric:true},
+        ));
 }
-function renderLocalOutcomes(local, meritRows){
+function renderLocalOutcomes(local, meritRows, {hideAggregateOutcome=false}={}){
   const viewConfig = getGradeViewConfig(selectedSingleGrade());
   $('outcomesTitle').textContent = viewConfig.title || viewConfig.labels.uppnatt_alla_amnen;
   $('outcomesDescription').textContent = viewConfig.description || '';
@@ -263,10 +305,12 @@ function renderLocalOutcomes(local, meritRows){
     .sort((a,b) => `${schoolLabel(a)}${a.arskurs}${rowGender(a)}${rowGroup(a)}`.localeCompare(`${schoolLabel(b)}${b.arskurs}${rowGender(b)}${rowGroup(b)}`, 'sv', {numeric:true}));
   const totalOutcome = localFilterRows(local.overview || [], {allowAllLevel:true})
     .find(r => r.niva === 'alla_skolenheter' && rowGender(r) === 'Alla' && rowGroup(r) === 'Alla' && r.andel_uppnatt_alla_amnen != null);
-  $('knowledgeTotalCard').textContent = totalOutcome?.andel_uppnatt_alla_amnen == null ? '-' : fmt(totalOutcome.andel_uppnatt_alla_amnen, ' %');
-  $('knowledgeTotalSub').textContent = totalOutcome
-    ? `${totalOutcome.antal_elever} elever · alla skolenheter`
-    : 'Alla skolenheter';
+  $('knowledgeTotalCard').textContent = hideAggregateOutcome || totalOutcome?.andel_uppnatt_alla_amnen == null ? '-' : fmt(totalOutcome.andel_uppnatt_alla_amnen, ' %');
+  $('knowledgeTotalSub').textContent = hideAggregateOutcome
+    ? 'Döljs när flera årskurser är valda'
+    : totalOutcome
+      ? `${totalOutcome.antal_elever} elever · alla skolenheter`
+      : 'Alla skolenheter';
   setTableSummary('knowledgeTableSummary', currentTableSummary());
   $('knowledgeRows').innerHTML = renderSchoolGroupedBody(outcomeRows, {
     colspan: 6,
@@ -281,10 +325,14 @@ function renderLocalOutcomes(local, meritRows){
     .filter(r => (state.filters.gender === 'Alla' ? rowGender(r) === 'Alla' : rowGender(r) === state.filters.gender))
     .filter(r => (state.filters.group === 'Alla' ? rowGroup(r) === 'Alla' : rowGroup(r) === state.filters.group))
     .slice(0, 18);
-  makeChart('knowledgeChart','bar',{
-    labels: knowledgeChartRows.map(r => `Åk ${r.arskurs} ${schoolLabel(r)}`),
-    datasets:[{label:`${viewConfig.labels.uppnatt_alla_amnen} %`, data:knowledgeChartRows.map(r => r.andel_uppnatt_alla_amnen), backgroundColor:'#347f6a'}]
-  },{scales:{y:{beginAtZero:true,max:100}}});
+  $('knowledgeTotalCard').closest('.card').style.display = hideAggregateOutcome ? 'none' : '';
+  $('knowledgeChart').closest('.box').style.display = hideAggregateOutcome ? 'none' : '';
+  if(!hideAggregateOutcome){
+    makeChart('knowledgeChart','bar',{
+      labels: knowledgeChartRows.map(r => `Åk ${r.arskurs} ${schoolLabel(r)}`),
+      datasets:[{label:`${viewConfig.labels.uppnatt_alla_amnen} %`, data:knowledgeChartRows.map(r => r.andel_uppnatt_alla_amnen), backgroundColor:'#347f6a'}]
+    },{scales:{y:{beginAtZero:true,max:100}}});
+  }
 
   const vocationalRows = localFilterRows(local.overview || [], {forceGrade:9})
     .filter(r => r.andel_behoriga_yrkesprogram != null)
@@ -319,13 +367,13 @@ function renderLocalControl(local){
     schoolCell: schoolCellHtml,
     rowCells: row => ({
       beforeSchool: `<td>${showGradeCell(row.arskurs)}</td>`,
-      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(row.amne)}</td>${rightCell(row.antal_elever)}${rightCell(row.antal_giltiga_betyg)}${rightCell(row.antal_A_E)}${rightCell(row.antal_F)}${rightCell(row.antal_tomma)}${rightCell(row.antal_specialkoder)}${rightCell(row.antal_ogiltiga_koder)}${rightCell(row.specialkod_2)}${rightCell(row.specialkod_3)}${rightCell(row.specialkod_9)}${rightCell(row.specialkod_Y)}${rightCell(row.specialkod_Z)}`
+      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(subjectLabel(row))}</td>${rightCell(row.antal_elever)}${rightCell(row.antal_giltiga_betyg)}${rightCell(row.antal_A_E)}${rightCell(row.antal_F)}${rightCell(row.antal_tomma)}${rightCell(row.antal_specialkoder)}${rightCell(row.antal_ogiltiga_koder)}${rightCell(row.specialkod_2)}${rightCell(row.specialkod_3)}${rightCell(row.specialkod_9)}${rightCell(row.specialkod_Y)}${rightCell(row.specialkod_Z)}`
     })
   });
 
   const topRows = controlRows.filter(r => r.elevgrupp === 'Alla').slice(0, 18);
   makeChart('controlChart','bar',{
-    labels: topRows.map(r => `Åk ${r.arskurs} ${schoolLabel(r)} ${r.amne}`),
+    labels: topRows.map(r => `Åk ${r.arskurs} ${schoolLabel(r)} ${subjectLabel(r)}`),
     datasets:[
       {label:'Giltiga betyg', data:topRows.map(r => r.antal_giltiga_betyg), backgroundColor:'#2f6f9f'},
       {label:'Tomma', data:topRows.map(r => r.antal_tomma), backgroundColor:'#9aa6ad'},
@@ -341,33 +389,45 @@ function renderFilteredLocal(){
 
   const meritRows = localFilterRows(local.overview || []);
   const selectedGrade = selectedSingleGrade();
+  const selectedGrades = selectedGradeValues();
   const viewConfig = getGradeViewConfig(selectedGrade);
+  const showOverviewMerit = !(selectedGrade != null && Number(selectedGrade) === 6);
   const showVocational = selectedGrade == null || Number(selectedGrade) === 9;
+  const meritCardBox = $('meritCard').closest('.card');
+  const vocCardBox = $('vocCard').closest('.card');
+  const overviewChartBox = $('overviewChart').closest('.box');
   const cardBase = localFilterRows(local.overview || [], {allowAllLevel:true}).find(r => r.niva === 'alla_skolenheter' && Number(r.arskurs) === 9 && rowGender(r) === 'Alla' && rowGroup(r) === 'Alla')
     || localFilterRows(local.overview || [], {allowAllLevel:true}).find(r => r.niva === 'alla_skolenheter' && rowGender(r) === 'Alla' && rowGroup(r) === 'Alla')
     || meritRows[0] || {};
-  $('meritCard').textContent = fmt(cardBase.genomsnittligt_meritvarde_17 || cardBase.genomsnittligt_meritvarde_16);
+  $('meritCard').textContent = showOverviewMerit ? fmt(cardBase.genomsnittligt_meritvarde_17 || cardBase.genomsnittligt_meritvarde_16) : '-';
   $('vocCard').textContent = showVocational && cardBase.andel_behoriga_yrkesprogram != null ? fmt(cardBase.andel_behoriga_yrkesprogram, ' %') : '-';
-  $('vocCard').closest('.card').style.display = showVocational ? '' : 'none';
+  meritCardBox.style.display = showOverviewMerit ? '' : 'none';
+  vocCardBox.style.display = showVocational && showOverviewMerit ? '' : 'none';
+  overviewChartBox.style.display = showOverviewMerit ? '' : 'none';
   $('overviewKnowledgeHeader').innerHTML = infoLabel(viewConfig.labels.uppnatt_alla_amnen, viewConfig.tooltips.uppnatt_alla_amnen);
+  $('overviewMerit16Header').style.display = showOverviewMerit ? '' : 'none';
+  $('overviewMerit17Header').style.display = showOverviewMerit ? '' : 'none';
   $('overviewVocationalHeader').style.display = showVocational ? '' : 'none';
 
   const sortedMeritRows = meritRows
     .sort((a,b) => `${schoolLabel(a)}${a.arskurs}${rowGender(a)}${rowGroup(a)}`.localeCompare(`${schoolLabel(b)}${b.arskurs}${rowGender(b)}${rowGroup(b)}`, 'sv', {numeric:true}));
+  renderSvaKpis(local);
   setTableSummary('overviewTableSummary', currentTableSummary());
   $('localMeritRows').innerHTML = renderSchoolGroupedBody(sortedMeritRows, {
-    colspan: showVocational ? 9 : 8,
-    emptyHtml: `<tr><td colspan="${showVocational ? '9' : '8'}" class="muted">Inga rader matchar urvalet.</td></tr>`,
+    colspan: 6 + (showOverviewMerit ? 2 : 0) + (showVocational ? 1 : 0),
+    emptyHtml: `<tr><td colspan="${6 + (showOverviewMerit ? 2 : 0) + (showVocational ? 1 : 0)}" class="muted">Inga rader matchar urvalet.</td></tr>`,
     schoolCell: schoolCellHtml,
     rowCells: row => {
       const vocationalCell = showVocational ? `<td>${row.andel_behoriga_yrkesprogram == null ? '-' : pctBar(row.andel_behoriga_yrkesprogram, formatPercentWithCount(row.andel_behoriga_yrkesprogram, row.antal_elever))}</td>` : '';
+      const meritCells = showOverviewMerit ? `<td class="numeric">${fmt(row.genomsnittligt_meritvarde_16)}</td><td class="numeric">${fmt(row.genomsnittligt_meritvarde_17)}</td>` : '';
       return {
         beforeSchool: `<td>${showGradeCell(row.arskurs)}</td>`,
-        afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td class="numeric">${studentCountCell(row.antal_elever)}</td><td class="numeric">${fmt(row.genomsnittligt_meritvarde_16)}</td><td class="numeric">${fmt(row.genomsnittligt_meritvarde_17)}</td><td>${pctBar(row.andel_uppnatt_alla_amnen, formatPercentWithCount(row.andel_uppnatt_alla_amnen, row.antal_elever))}</td>${vocationalCell}`
+        afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td class="numeric">${studentCountCell(row.antal_elever)}</td>${meritCells}<td>${pctBar(row.andel_uppnatt_alla_amnen, formatPercentWithCount(row.andel_uppnatt_alla_amnen, row.antal_elever))}</td>${vocationalCell}`
       };
     }
   });
 
+  if(showOverviewMerit){
   const chartRows = meritRows.filter(r => rowGender(r) === 'Alla' && rowGroup(r) === 'Alla');
   makeChart('overviewChart','bar',{
     labels: chartRows.map(r => `Åk ${r.arskurs} ${schoolLabel(r)}`),
@@ -376,6 +436,7 @@ function renderFilteredLocal(){
       ...(viewConfig.hiddenColumns.includes('yrkesbehorighet') ? [] : [{label:'Yrkesbehörighet %', data:chartRows.map(r => r.andel_behoriga_yrkesprogram), backgroundColor:'#347f6a'}])
     ]
   },{scales:{y:{beginAtZero:false}}});
+  }
 
   const genderSource = localBaseFilter(local.overview || []).filter(r => rowGroup(r) === (state.filters.group === 'Alla' ? 'Alla' : state.filters.group));
   const genderGroups = {};
@@ -420,12 +481,12 @@ function renderFilteredLocal(){
     schoolCell: schoolCellHtml,
     rowCells: row => ({
       beforeSchool: `<td>${showGradeCell(row.arskurs)}</td>`,
-      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(row.amne)}</td><td class="numeric">${fmt(row.betygspoang)}</td>${rightCell(row.antal_A ?? 0)}${rightCell(row.antal_B ?? 0)}${rightCell(row.antal_C ?? 0)}${rightCell(row.antal_D ?? 0)}${rightCell(row.antal_E ?? 0)}${rightCell(row.antal_F ?? 0)}<td>${pctBar(row.andel_A_E)}</td>${rightCell(row.antal_betyg)}`
+      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(subjectLabel(row))}</td><td class="numeric">${fmt(row.betygspoang)}</td>${rightCell(row.antal_A ?? 0)}${rightCell(row.antal_B ?? 0)}${rightCell(row.antal_C ?? 0)}${rightCell(row.antal_D ?? 0)}${rightCell(row.antal_E ?? 0)}${rightCell(row.antal_F ?? 0)}<td>${pctBar(row.andel_A_E)}</td>${rightCell(row.antal_betyg)}`
     })
   });
   const topSubjects = subjectRows.slice(0, 24);
   makeChart('subjectChart','bar',{
-    labels: topSubjects.map(r => `Åk ${r.arskurs} ${schoolLabel(r)} ${r.amne}`),
+    labels: topSubjects.map(r => `Åk ${r.arskurs} ${schoolLabel(r)} ${subjectLabel(r)}`),
     datasets:[
       {label:'Betygspoäng', data:topSubjects.map(r => r.betygspoang), backgroundColor:'#2f6f9f', yAxisID:'y'},
       {label:'Andel F %', data:topSubjects.map(r => r.andel_F), backgroundColor:'#b73535', yAxisID:'y1'}
@@ -439,12 +500,12 @@ function renderFilteredLocal(){
     schoolCell: schoolCellHtml,
     rowCells: row => ({
       beforeSchool: `<td>${showGradeCell(row.arskurs)}</td>`,
-      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(row.amne)}</td><td>${pctBar(row.andel_A)}</td><td>${pctBar(row.andel_B)}</td><td>${pctBar(row.andel_C)}</td><td>${pctBar(row.andel_D)}</td><td>${pctBar(row.andel_E)}</td><td>${pctBar(row.andel_F)}</td>${rightCell(row.antal_betyg)}`
+      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(subjectLabel(row))}</td><td>${pctBar(row.andel_A)}</td><td>${pctBar(row.andel_B)}</td><td>${pctBar(row.andel_C)}</td><td>${pctBar(row.andel_D)}</td><td>${pctBar(row.andel_E)}</td><td>${pctBar(row.andel_F)}</td>${rightCell(row.antal_betyg)}`
     })
   });
   const gradeChartRows = subjectRows.slice(0, 18);
   makeChart('gradeDistChart','bar',{
-    labels: gradeChartRows.map(r => `Åk ${r.arskurs} ${schoolLabel(r)} ${r.amne}`),
+    labels: gradeChartRows.map(r => `Åk ${r.arskurs} ${schoolLabel(r)} ${subjectLabel(r)}`),
     datasets:[
       {label:'A %', data:gradeChartRows.map(r => r.andel_A), backgroundColor:'#1f5f7a'},
       {label:'B %', data:gradeChartRows.map(r => r.andel_B), backgroundColor:'#2f6f9f'},
@@ -455,9 +516,63 @@ function renderFilteredLocal(){
     ]
   },{scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true,max:100}}});
 
-  renderLocalOutcomes(local, meritRows);
+  renderLocalOutcomes(local, meritRows, {hideAggregateOutcome: selectedGrades.length > 1});
   renderLocalControl(local);
   renderLocalNp(local);
+}
+function renderSvaKpis(local){
+  const target = $('svaKpiCards');
+  if(!target) return;
+
+  const selectedGender = state.filters?.gender || 'Alla';
+  const rows = (local.svSva || []).filter(row =>
+    row.niva === 'alla_skolenheter' &&
+    row.elevgrupp === 'SVA' &&
+    [6, 9].includes(Number(row.arskurs)) &&
+    rowGender(row) === selectedGender
+  );
+
+  const byGrade = Object.fromEntries(rows.map(row => [Number(row.arskurs), row]));
+  const grades = [6, 9];
+
+  const genderBadge = selectedGender === 'Alla' ? 'Alla elever' : selectedGender;
+  const chip = (label, value) => `
+    <div class="kpi-chip">
+      <span class="kpi-chip-label">${esc(label)}</span>
+      <span class="kpi-chip-value">${esc(value)}</span>
+    </div>`;
+
+  target.innerHTML = grades.map(grade => {
+    const row = byGrade[grade];
+    if(!row){
+      return `<article class="kpi-card">
+        <h3>Åk ${grade} · andel elever med lägst betyg E i SVA</h3>
+        <div class="kpi-empty">Ingen kommundata i SVA matchar valt könsfilter för åk ${grade}.</div>
+      </article>`;
+    }
+
+    const countBadge = isSmallGroup(row.antal_elever) ? '<div class="badge-muted">Lågt elevantal</div>' : '';
+    const achieved = Number.isFinite(Number(row.antal_elever))
+      ? Math.round((Number(row.andel_godkand_sv_sva || 0) / 100) * Number(row.antal_elever))
+      : null;
+
+    return `<article class="kpi-card">
+      <h3>Åk ${grade} · andel elever med lägst betyg E i SVA</h3>
+      <div class="kpi-topline">
+        <div>
+          <div class="kpi-main">${fmt(row.andel_godkand_sv_sva, ' %')}</div>
+          <div class="kpi-main-sub">${esc(genderBadge)} · ${esc(achieved ?? '-')} av ${esc(row.antal_elever ?? '-')}</div>
+          ${countBadge}
+        </div>
+        <div class="badge" style="color:var(--txt);border-color:var(--brd);background:#fff">Kommun</div>
+      </div>
+      <div class="kpi-breakdown">
+        ${chip('Elevantal', String(row.antal_elever ?? '-'))}
+        ${chip('Uppnått alla ämnen', fmt(row.andel_uppnatt_alla_amnen, ' %'))}
+        ${chip('Yrkesbehörighet', grade === 9 ? fmt(row.andel_behoriga_yrkesprogram, ' %') : 'Ej relevant')}
+      </div>
+    </article>`;
+  }).join('');
 }
 function renderLocalNp(local){
   const f = state.filters;
