@@ -29,3 +29,21 @@
 - `main` är stabil/publicerad version.
 - `dev` är arbetsgren.
 - `feature/*` används för nya funktioner.
+
+## Publicering på GitHub Pages
+
+Efter varje ändring i importlogiken eller beräkningar ska dessa två steg köras i ordning:
+
+1. Generera nya JSON-filer:
+   ```
+   python src/scb_betyg_import.py --lasar <läsår>
+   ```
+   Utdata hamnar i `data/output/<läsår>/json/`.
+
+2. Bygg Pages-paketet:
+   ```
+   node scripts/build-pages.js
+   ```
+   Utdata hamnar i `docs/` och inkluderar JSON-filerna under `docs/data/output/<läsår>/json/`.
+
+Committa och pusha därefter både källkoden och ändringarna i `docs/`. GitHub Pages publicerar från `docs/` på `main`-grenen.
