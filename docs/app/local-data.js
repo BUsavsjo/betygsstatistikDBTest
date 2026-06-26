@@ -842,6 +842,14 @@ function renderLocalData(local){
     if(el){ el.innerHTML = html; el.style.display = ''; }
   }
   const importDate = extractImportDate(local.manifest);
+  const importDateEl = $('dataSourceImportDate');
+  if(importDateEl && local.manifest.import_date){
+    const d = local.manifest.import_date;
+    const months = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+    const [y,m,day] = d.split('-');
+    const fmt = `${Number(day)} ${months[Number(m)-1]} ${y}`;
+    importDateEl.innerHTML = `<strong>Import kördes:</strong> ${esc(fmt)} – data avser läsår <strong>${esc(local.manifest.lasar || '')}</strong>.`;
+  }
   const metaEl = $('localDataMeta');
   const dateEl = $('localImportDate');
   const legendEl = $('colorLegend');

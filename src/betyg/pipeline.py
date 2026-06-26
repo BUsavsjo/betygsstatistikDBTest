@@ -102,6 +102,7 @@ def build_year(
     lasar: str,
     *,
     publish: bool = False,
+    import_date: str | None = None,
     base_dir: Path | None = None,
     raw_base: Path | None = None,
     np_raw_base: Path | None = None,
@@ -125,7 +126,7 @@ def build_year(
     all_np_pass: list[dict[str, Any]] = []
     all_np_relation: list[dict[str, Any]] = []
     grade_batches: list[tuple[GradeSpec, list[dict[str, Any]], list[dict[str, Any]]]] = []
-    manifest = {"lasar": lasar, "source": "local_scb", "arskurser": [], "np_arskurser": [], "files": []}
+    manifest = {"lasar": lasar, "source": "local_scb", "import_date": import_date, "arskurser": [], "np_arskurser": [], "files": []}
     grade_rows_by_key: dict[tuple[int, str, str], dict[str, str]] = {}
     school_codes: set[str] = set()
 
