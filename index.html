@@ -23,6 +23,13 @@
     details.tech-details{margin-top:12px;border:1px solid var(--brd);border-radius:8px;background:#fbfcfd}
     details.tech-details summary{cursor:pointer;padding:12px 14px;font-weight:650;color:var(--p)}
     details.tech-details > div{padding:0 14px 14px}
+    .tab[data-tech]{display:none}.panel[data-tech]{display:none}body.show-tech .tab[data-tech]{display:block}body.show-tech .panel.active[data-tech]{display:block}
+    td.status-green{background:#d9f2e3;color:#14532d}td.status-yellow{background:#fff3cd;color:#664d03}td.status-red{background:#f8d7da;color:#842029}td.status-unknown{background:#e9ecef;color:#495057}
+    .local-meta{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}.local-meta-date{font-size:.8rem;color:var(--mut)}.color-legend{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.legend-label{font-size:.78rem;font-weight:650;color:var(--mut)}.legend-item{display:flex;align-items:center;gap:5px;font-size:.78rem;color:var(--txt)}.legend-dot{display:inline-block;width:13px;height:13px;border-radius:3px;flex-shrink:0}
+    .color-note{margin:0 0 8px;font-size:.74rem;display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center}
+    .cn-label{color:var(--mut);white-space:nowrap}
+    .cn-item{display:inline-flex;align-items:center;padding:2px 9px;border-radius:4px;font-weight:650;white-space:nowrap}
+    .cn-item.status-green{background:#d9f2e3;color:#14532d}.cn-item.status-yellow{background:#fff3cd;color:#664d03}.cn-item.status-red{background:#f8d7da;color:#842029}.cn-item.status-unknown{background:#e9ecef;color:#495057}
   </style>
 </head>
 <body>
@@ -80,11 +87,22 @@
     </div>
   </section>
 
+  <section id="localDataMeta" class="box" style="display:none">
+    <div class="local-meta">
+      <div id="localImportDate" class="local-meta-date"></div>
+      <div id="colorLegend" class="color-legend"></div>
+    </div>
+  </section>
+
   <section class="grid">
     <div class="card"><div class="label">Datakällor</div><div id="tableCount" class="value">-</div><div class="small">Källor som har lästs in</div></div>
     <div class="card"><div class="label">Fungerande vyer</div><div id="metricCount" class="value">-</div><div class="small">Vyer med tillgängligt underlag</div></div>
     <div class="card"><div class="label">Meritvärde totalt</div><div id="meritCard" class="value">-</div><div class="small">Sävsjö, valt läsår</div></div>
     <div class="card"><div class="label">Yrkesbehörighet</div><div id="vocCard" class="value">-</div><div class="small">Sävsjö, valt läsår</div></div>
+  </section>
+
+  <section id="npOnlyNotice" class="box notice" style="display:none">
+    <strong>Åk 3 vald:</strong> Slutbetyg ges inte i åk 3. Sidan visar enbart nationella prov (NP) för vald period – övriga flikar är inte tillämpliga för denna årskurs.
   </section>
 
   <div class="tabs">
@@ -95,8 +113,8 @@
     <div class="tab" data-tab="outcomes">Måluppfyllelse</div>
     <div class="tab" data-tab="np">Nationella prov</div>
     <div class="tab" data-tab="availability">Vilken data som finns</div>
-    <div class="tab" data-tab="control">Datakontroll</div>
-    <div class="tab" data-tab="diagnostics">Teknisk diagnostik</div>
+    <div class="tab" data-tab="control" data-tech>Datakontroll</div>
+    <div class="tab" data-tab="diagnostics" data-tech>Teknisk diagnostik</div>
   </div>
 
   <section id="tab-overview" class="panel active">
@@ -107,19 +125,19 @@
     </div>
     <div class="box"><h2>Meritvärde</h2><div class="chart"><canvas id="overviewChart"></canvas></div></div>
     <div class="box"><h2>Yrkesbehörighet</h2><div class="chart"><canvas id="vocOverviewChart"></canvas></div></div>
-    <div class="box"><h2>Meritvärde per skolenhet och årskurs</h2><div id="overviewTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th id="overviewMerit16Header">Merit 16</th><th id="overviewMerit17Header">Merit 17</th><th id="overviewKnowledgeHeader">Uppnått alla ämnen</th></tr></thead><tbody id="localMeritRows"></tbody></table></div></div>
+    <div class="box"><h2>Meritvärde per skolenhet och årskurs</h2><div id="overviewTableSummary" class="table-summary">Urval: -</div><div id="meritColorNote" class="color-note" style="display:none"></div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th id="overviewMerit16Header">Merit 16</th><th id="overviewMerit17Header">Merit 17</th><th id="overviewKnowledgeHeader">Uppnått alla ämnen</th></tr></thead><tbody id="localMeritRows"></tbody></table></div></div>
     <div class="box"><h2>Tillgängliga jämförelser</h2><div class="tw"><table><thead><tr><th>Vy</th><th>Status</th><th>Kommentar</th></tr></thead><tbody id="metricRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-gender" class="panel">
     <div class="box"><h2>Skillnader mellan flickor och pojkar</h2><p class="small">Den här tabellen visar flickor och pojkar bredvid varandra även när övriga vyer filtreras på ett kön.</p><div class="chart"><canvas id="genderChart"></canvas></div></div>
     <div class="box"><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Elevgrupp</th><th>Pojkar</th><th>Flickor</th><th>Totalt</th><th>Skillnad F-P</th></tr></thead><tbody id="genderRows"></tbody></table></div></div>
-    <div class="box"><h2>SV/SVA</h2><div id="svaTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th>Merit 17</th><th>Godkänd Sv/SVA</th><th>Uppnått alla ämnen</th></tr></thead><tbody id="svaRows"></tbody></table></div></div>
+    <div class="box"><h2>SV/SVA</h2><div id="svaTableSummary" class="table-summary">Urval: -</div><div id="svaColorNote" class="color-note" style="display:none"></div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th>Merit 17</th><th>Godkänd Sv/SVA</th><th>Uppnått alla ämnen</th></tr></thead><tbody id="svaRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-subjects" class="panel">
     <div class="box"><h2>Betygspoäng per ämne</h2><div class="chart"><canvas id="subjectChart"></canvas></div></div>
-    <div class="box"><div id="subjectTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Ämne</th><th>Betygspoäng</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>A-E</th><th>Antal</th></tr></thead><tbody id="subjectRows"></tbody></table></div></div>
+    <div class="box"><div id="subjectTableSummary" class="table-summary">Urval: -</div><div id="subjectColorNote" class="color-note" style="display:none"></div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Ämne</th><th>Betygspoäng</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>A-E</th><th>Antal</th></tr></thead><tbody id="subjectRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-grades" class="panel">
@@ -127,7 +145,7 @@
     <div class="box"><div id="gradeDistTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Ämne</th><th>A %</th><th>B %</th><th>C %</th><th>D %</th><th>E %</th><th>F %</th><th>Antal</th></tr></thead><tbody id="gradeDistRows"></tbody></table></div></div>
   </section>
 
-  <section id="tab-control" class="panel">
+  <section id="tab-control" class="panel" data-tech>
     <div class="box"><h2>Datakontroll för lokal import</h2><p class="small">Visar antal giltiga betyg, tomma värden, specialkoder och ogiltiga koder per ämne för lokal SCB-import.</p><div class="chart"><canvas id="controlChart"></canvas></div></div>
     <div class="box"><div id="controlTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Ämne</th><th>Elever</th><th>Giltiga</th><th>A-E</th><th>F</th><th>Tomma</th><th>Special</th><th>Ogiltiga</th><th>2</th><th>3</th><th>9</th><th>Y</th><th>Z</th></tr></thead><tbody id="controlRows"></tbody></table></div></div>
   </section>
@@ -142,7 +160,7 @@
       </div>
     </section>
     <div class="box"><h2 id="knowledgeBoxTitle">Uppnått alla ämnen</h2><div class="chart"><canvas id="knowledgeChart"></canvas></div></div>
-    <div class="box"><div id="knowledgeTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th id="knowledgeMetricHeader">Uppnått alla ämnen</th></tr></thead><tbody id="knowledgeRows"></tbody></table></div></div>
+    <div class="box"><div id="knowledgeTableSummary" class="table-summary">Urval: -</div><div id="knowledgeColorNote" class="color-note" style="display:none"></div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th id="knowledgeMetricHeader">Uppnått alla ämnen</th></tr></thead><tbody id="knowledgeRows"></tbody></table></div></div>
     <div class="box"><h2>Yrkesbehörighet åk 9</h2><div class="chart"><canvas id="vocationalChart"></canvas></div></div>
     <div class="box"><div id="vocationalTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th>Yrkesbehörighet</th></tr></thead><tbody id="vocationalRows"></tbody></table></div></div>
   </section>
@@ -178,14 +196,14 @@
     <div class="box">
       <h2>Andel godkända nationella prov</h2>
       <div class="chart"><canvas id="npPassChart"></canvas></div>
-      <div id="npPassTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Nivå</th><th>Årskurs</th><th>Kön</th><th>SV/SVA</th><th>Ämne</th><th>Antal NP</th><th>Andel godkända</th><th>Betygsmatch</th></tr></thead><tbody id="npLocalRows"></tbody></table></div>
+      <div id="npPassTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Nivå</th><th>Årskurs</th><th>Kön</th><th>SV/SVA</th><th>Ämne</th><th>Antal NP</th><th>Andel godkända</th></tr></thead><tbody id="npLocalRows"></tbody></table></div>
     </div>
 
     <div class="box">
       <h2>Hur terminsbetyg förhåller sig till NP</h2>
       <p class="small">Visas för årskurser och ämnen där både betyg och NP-provresultat finns i lokal import.</p>
       <div class="chart"><canvas id="npRelationChart"></canvas></div>
-      <div id="npRelationTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Nivå</th><th>Årskurs</th><th>Kön</th><th>SV/SVA</th><th>Ämne</th><th>Jämförda elever</th><th>Betyg &gt; NP</th><th>Betyg = NP</th><th>Betyg &lt; NP</th></tr></thead><tbody id="npRelationRows"></tbody></table></div>
+      <div id="npRelationTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Nivå</th><th>Årskurs</th><th>Kön</th><th>SV/SVA</th><th>Ämne</th><th>Elever</th><th>Betyget högre än NP</th><th>Betyget lika med NP</th><th>Betyget lägre än NP</th></tr></thead><tbody id="npRelationRows"></tbody></table></div>
     </div>
 
     <div class="box">
@@ -199,7 +217,7 @@
     <div class="box"><h2>Vilken data som finns tillgänglig</h2><div class="tw"><table><thead><tr><th>Vy</th><th>Status</th><th>Kommentar</th></tr></thead><tbody id="availabilityRows"></tbody></table></div></div>
   </section>
 
-  <section id="tab-diagnostics" class="panel">
+  <section id="tab-diagnostics" class="panel" data-tech>
     <div class="box"><h2>Teknisk diagnostik</h2><p class="small">Här finns detaljer för felsökning och verifiering av tekniska datakällor.</p><div id="diagLog" class="pre"></div></div>
     <details class="tech-details">
       <summary>Visa tekniskt underlag</summary>

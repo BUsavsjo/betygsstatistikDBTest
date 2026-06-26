@@ -96,3 +96,65 @@ function infoLabel(label, tooltip){
   if(!tooltip) return esc(label);
   return `${esc(label)} <span class="info-icon" title="${esc(tooltip)}" aria-label="${esc(tooltip)}">i</span>`;
 }
+function normalizeSubject(subject){
+  if(!subject) return "";
+  return String(subject).trim().toLowerCase().replace(/\s+/g," ");
+}
+function getAllSubjectsColor(value){
+  if(value===null||value===undefined||Number.isNaN(value)) return "unknown";
+  if(value>=75) return "green";
+  if(value>=65) return "yellow";
+  return "red";
+}
+function getPassRateColor(value,subject){
+  if(value===null||value===undefined||Number.isNaN(value)) return "unknown";
+  const s=normalizeSubject(subject);
+  const isCore=["svenska","svenska som andraspråk","matematik","engelska"].includes(s);
+  if(isCore){
+    if(value>=90) return "green";
+    if(value>=80) return "yellow";
+    return "red";
+  }
+  if(value>=95) return "green";
+  if(value>=85) return "yellow";
+  return "red";
+}
+function getGradePointColor(value,subject){
+  if(value===null||value===undefined||Number.isNaN(value)) return "unknown";
+  if(normalizeSubject(subject)==="svenska som andraspråk"){
+    if(value>=8) return "green";
+    if(value>=6) return "yellow";
+    return "red";
+  }
+  if(value>=13) return "green";
+  if(value>=10) return "yellow";
+  return "red";
+}
+function getMerit17Color(value){
+  if(value===null||value===undefined||Number.isNaN(value)) return "unknown";
+  if(value>=230) return "green";
+  if(value>=210) return "yellow";
+  return "red";
+}
+function getGroupSizeWarning(n){
+  if(n===null||n===undefined||Number.isNaN(n)) return{level:"unknown",text:"Antal elever saknas"};
+  if(n<5) return{level:"very-small",text:"Mycket liten grupp. Visa helst inte trafikljus eller tolka med mycket stor försiktighet."};
+  if(n<10) return{level:"small",text:"Liten grupp. Tolka resultatet med stor försiktighet."};
+  if(n<30) return{level:"medium-small",text:"Mindre grupp. Tolka resultatet med viss försiktighet."};
+  return{level:"normal",text:""};
+}
+function getColorClass(status){
+  switch(status){
+    case "green": return "status-green";
+    case "yellow": return "status-yellow";
+    case "red": return "status-red";
+    default: return "status-unknown";
+  }
+}
+function clampColor(status, n){
+  return getGroupSizeWarning(n).level === 'very-small' ? 'unknown' : status;
+}
+function colorCell(html, status, extraClass=''){
+  const cls = [extraClass, getColorClass(status)].filter(Boolean).join(' ');
+  return `<td class="${cls}">${html}</td>`;
+}

@@ -77,7 +77,19 @@ document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', (
   setTimeout(() => Object.values(charts).forEach(c => c.resize()), 50);
 }));
 $('reloadBtn').addEventListener('click', loadAll);
-$('diagBtn').addEventListener('click', () => document.querySelector('[data-tab="diagnostics"]').click());
+$('diagBtn').addEventListener('click', () => {
+  const showing = document.body.classList.toggle('show-tech');
+  $('diagBtn').textContent = showing ? 'Dölj teknisk vy' : 'Teknisk vy';
+  if(showing){
+    document.querySelector('[data-tab="diagnostics"]').click();
+  } else {
+    const techTabs = new Set(['control','diagnostics']);
+    const activeTab = document.querySelector('.tab.active');
+    if(activeTab && techTabs.has(activeTab.dataset.tab)){
+      document.querySelector('[data-tab="overview"]').click();
+    }
+  }
+});
 ['gradeFilter','schoolFilter','genderFilter','groupFilter'].forEach(id => {
   $(id).addEventListener('change', () => {
     updateFilterState(id === 'gradeFilter');
