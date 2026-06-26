@@ -834,7 +834,7 @@ function renderLocalData(local){
   const colorNotes = {
     meritColorNote: uppnatt,
     knowledgeColorNote: uppnatt,
-    svaColorNote: `${lbl('Godkänd Sv/SVA – terminsbetyg (kärnämne):')} ${mk('green','≥ 90 %')} ${mk('yellow','≥ 80 %')} ${mk('red','< 80 %')} ${gray} &emsp; ${uppnatt}`,
+    svaColorNote: `${lbl('Godkänd Sv/SVA – betyg (kärnämne, terminsbetyg åk 6 / slutbetyg åk 9):')} ${mk('green','≥ 90 %')} ${mk('yellow','≥ 80 %')} ${mk('red','< 80 %')} ${gray} &emsp; ${uppnatt}`,
     subjectColorNote: `${lbl('Kärnämnen (Sv, SVA, Ma, En):')} ${mk('green','≥ 90 %')} ${mk('yellow','≥ 80 %')} ${mk('red','< 80 %')} &emsp; ${lbl('Övriga ämnen:')} ${mk('green','≥ 95 %')} ${mk('yellow','≥ 85 %')} ${mk('red','< 85 %')} ${gray}`
   };
   for(const [id, html] of Object.entries(colorNotes)){
