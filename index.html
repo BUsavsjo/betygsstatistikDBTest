@@ -132,7 +132,7 @@
   <section id="tab-gender" class="panel">
     <div class="box"><h2>Skillnader mellan flickor och pojkar</h2><p class="small">Den här tabellen visar flickor och pojkar bredvid varandra även när övriga vyer filtreras på ett kön.</p><div class="chart"><canvas id="genderChart"></canvas></div></div>
     <div class="box"><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Elevgrupp</th><th>Pojkar</th><th>Flickor</th><th>Totalt</th><th>Skillnad F-P</th></tr></thead><tbody id="genderRows"></tbody></table></div></div>
-    <div class="box"><h2>SV/SVA</h2><div id="svaTableSummary" class="table-summary">Urval: -</div><div id="svaColorNote" class="color-note" style="display:none"></div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th>Merit 17</th><th>Godkänd Sv/SVA</th><th>Uppnått alla ämnen</th></tr></thead><tbody id="svaRows"></tbody></table></div></div>
+    <div class="box"><h2>SV/SVA</h2><div id="svaTableSummary" class="table-summary">Urval: -</div><div id="svaColorNote" class="color-note" style="display:none"></div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th>Merit 17</th><th>Godkänd Sv/SVA (betyg)</th><th>Uppnått alla ämnen</th></tr></thead><tbody id="svaRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-subjects" class="panel">
@@ -215,6 +215,41 @@
 
   <section id="tab-availability" class="panel">
     <div class="box"><h2>Vilken data som finns tillgänglig</h2><div class="tw"><table><thead><tr><th>Vy</th><th>Status</th><th>Kommentar</th></tr></thead><tbody id="availabilityRows"></tbody></table></div></div>
+
+    <div class="box">
+      <h2>Datakällor</h2>
+      <p class="small">All betygs- och provdata hämtas från <strong>SCB-rapporter ur elevregistret</strong> som skickas till kommunen av Statistiska centralbyrån (SCB). Betygsfiler innehåller terminsbetyg (åk 6) och slutbetyg (åk 9). NP-filer innehåller resultat från nationella prov för åk 3, 6 och 9. Filerna importeras manuellt och bearbetas lokalt – ingen elevdata lagras i tjänsten.</p>
+      <p class="small" id="dataSourceImportDate"></p>
+    </div>
+
+    <div class="box">
+      <h2>Beräkningsbeskrivningar</h2>
+      <p class="small">Beskriver hur måtten på sidan beräknas. Källa för officiella definitioner: Skolverket (Siris/Kolada).</p>
+
+      <h3 style="margin-top:1.2rem">Meritvärde 16</h3>
+      <p class="small">Summan av poängvärden för betyg i maximalt 16 ämnen. Betygsskala: A = 20, B = 17,5, C = 15, D = 12,5, E = 10, F = 0. Av Sv och Sva räknas det högsta betyget. Moderna språk (M1, M2, ML) ingår inte. Gäller både åk 6 (terminsbetyg) och åk 9 (slutbetyg). Genomsnittet beräknas på elever med minst ett godkänt betyg.</p>
+
+      <h3 style="margin-top:1.2rem">Meritvärde 17</h3>
+      <p class="small">Meritvärde 16 plus poängen för det högsta godkända betyget i moderna språk (M1, M2 eller ML). Om eleven saknar godkänt i moderna språk är meritvärde 17 = meritvärde 16.</p>
+
+      <h3 style="margin-top:1.2rem">Nationella prov åk 6 och åk 9 – andel godkända</h3>
+      <p class="small">Andel elever med godkänt provresultat (betyg A–E) per ämne. <strong>Nämnare:</strong> elever som har ett giltigt provresultat (betyg A–F) i ämnet, dvs. elever som deltagit i provet. Elever utan provresultat ingår inte i nämnaren. <strong>Täljare:</strong> elever med godkänt provresultat (A–E). Åk 6: Ma, Sv/Sva, En. Åk 9: Ma, Sv/Sva, En samt ett NO-ämne (Bi, Fy eller Ke) och ett SO-ämne (Ge, Hi, Re eller Sh). Lokal beräkning baserad på SCB-datafiler.</p>
+
+      <h3 style="margin-top:1.2rem">Uppnått alla ämnen – årskurs 6</h3>
+      <p class="small">Antal elever i årskurs 6 som uppnått kunskapskraven (betyg A–E) i samtliga ämnen som eleven läser, dividerat med antal elever i årskurs 6 totalt, multiplicerat med 100. Avser elever i kommunala skolor belägna i kommunen oavsett folkbokföring. Måttet är inte direkt jämförbart mellan kommuner eftersom eleverna läser olika ämnen och olika antal ämnen. <strong>Sekretessregel:</strong> om totalt antal elever är 40 eller fler och antalet som ej uppnått målen är 1–4, visas andelen som 95 %. Källa: Skolverket (Siris).</p>
+
+      <h3 style="margin-top:1.2rem">Uppnått alla ämnen – årskurs 9</h3>
+      <p class="small">Andel elever med godkänt betyg (A–E) i alla ämnen som ingått i elevens utbildning. Andelen beräknas på de elever som fått eller skulle ha fått betyg enligt det mål- och kunskapsrelaterade betygssystemet – elever som saknar godkänt betyg i alla ämnen ingår i nämnaren. Ingen sekretessregel tillämpas. Källa: Skolverket (Siris).</p>
+
+      <h3 style="margin-top:1.2rem">Godkänd Sv/SVA (betyg)</h3>
+      <p class="small">Andel elever som läser svenska som andraspråk (SVA) och har godkänt betyg (A–E) i ämnet Sv eller Sva. Åk 6: terminsbetyg. Åk 9: slutbetyg. Nämnaren är antalet elever i SVA-gruppen med giltigt betyg i ämnet.</p>
+
+      <h3 style="margin-top:1.2rem">Nationella prov åk 3 – Matematik</h3>
+      <p class="small">Andel elever som deltagit i alla delprov (A–G) i ämnesprovet och klarat samtliga. <strong>Nämnare:</strong> elever med giltigt resultat (0 eller 1) på alla sju delprov A–G. <strong>Täljare:</strong> av dessa, elever med 1 (godkänt) på alla sju delprov. Elever med tomt värde, 88 eller 99 på något delprov ingår inte i nämnaren. Lokal beräkning baserad på SCB-datafiler.</p>
+
+      <h3 style="margin-top:1.2rem">Nationella prov åk 3 – Svenska och svenska som andraspråk</h3>
+      <p class="small">Sv och SVA behandlas som ett gemensamt ämnesprov. Andel elever som deltagit i alla delprov (A–H) och klarat samtliga. <strong>Nämnare:</strong> elever med giltigt resultat (0 eller 1) på alla åtta delprov A–H. <strong>Täljare:</strong> av dessa, elever med 1 (godkänt) på alla åtta delprov. Elever med tomt värde, 88 eller 99 på något delprov ingår inte i nämnaren. Lokal beräkning baserad på SCB-datafiler.</p>
+    </div>
   </section>
 
   <section id="tab-diagnostics" class="panel" data-tech>

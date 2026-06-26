@@ -32,18 +32,23 @@
 
 ## Publicering på GitHub Pages
 
-Efter varje ändring i importlogiken eller beräkningar ska dessa två steg köras i ordning:
+Efter varje ändring i importlogiken eller beräkningar ska dessa tre steg köras i ordning:
 
-1. Generera nya JSON-filer:
+1. Generera nya JSON-filer och kopiera till `data/processed/`:
    ```
-   python src/scb_betyg_import.py --lasar <läsår>
+   python src/scb_betyg_import.py --lasar <läsår> --publish
    ```
-   Utdata hamnar i `data/output/<läsår>/json/`.
+   `--publish` krävs alltid. Utan den uppdateras bara `data/output/` men
+   inte `data/processed/`, och appen prioriterar `data/processed/` – både
+   på localhost:3000 och på GitHub Pages. Gamla värden visas annars.
 
 2. Bygg Pages-paketet:
    ```
    node scripts/build-pages.js
    ```
-   Utdata hamnar i `docs/` och inkluderar JSON-filerna under `docs/data/output/<läsår>/json/`.
+   Kopierar `data/processed/` och `data/output/*/json/` till `docs/`.
+   Eftersom appen läser `processed/` före `output/` måste steg 1 köras
+   med `--publish` innan detta steg.
 
-Committa och pusha därefter både källkoden och ändringarna i `docs/`. GitHub Pages publicerar från `docs/` på `main`-grenen.
+3. Committa och pusha `docs/` och `data/processed/` tillsammans med
+   källkoden. GitHub Pages publicerar från `docs/` på `main`-grenen.

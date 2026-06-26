@@ -834,7 +834,7 @@ function renderLocalData(local){
   const colorNotes = {
     meritColorNote: uppnatt,
     knowledgeColorNote: uppnatt,
-    svaColorNote: `${lbl('Godkänd Sv/SVA (kärnämne):')} ${mk('green','≥ 90 %')} ${mk('yellow','≥ 80 %')} ${mk('red','< 80 %')} ${gray} &emsp; ${uppnatt}`,
+    svaColorNote: `${lbl('Godkänd Sv/SVA – betyg (kärnämne, terminsbetyg åk 6 / slutbetyg åk 9):')} ${mk('green','≥ 90 %')} ${mk('yellow','≥ 80 %')} ${mk('red','< 80 %')} ${gray} &emsp; ${uppnatt}`,
     subjectColorNote: `${lbl('Kärnämnen (Sv, SVA, Ma, En):')} ${mk('green','≥ 90 %')} ${mk('yellow','≥ 80 %')} ${mk('red','< 80 %')} &emsp; ${lbl('Övriga ämnen:')} ${mk('green','≥ 95 %')} ${mk('yellow','≥ 85 %')} ${mk('red','< 85 %')} ${gray}`
   };
   for(const [id, html] of Object.entries(colorNotes)){
@@ -842,6 +842,14 @@ function renderLocalData(local){
     if(el){ el.innerHTML = html; el.style.display = ''; }
   }
   const importDate = extractImportDate(local.manifest);
+  const importDateEl = $('dataSourceImportDate');
+  if(importDateEl && local.manifest.import_date){
+    const d = local.manifest.import_date;
+    const months = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+    const [y,m,day] = d.split('-');
+    const fmt = `${Number(day)} ${months[Number(m)-1]} ${y}`;
+    importDateEl.innerHTML = `<strong>Import kördes:</strong> ${esc(fmt)} – data avser läsår <strong>${esc(local.manifest.lasar || '')}</strong>.`;
+  }
   const metaEl = $('localDataMeta');
   const dateEl = $('localImportDate');
   const legendEl = $('colorLegend');
