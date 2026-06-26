@@ -23,6 +23,7 @@
     details.tech-details{margin-top:12px;border:1px solid var(--brd);border-radius:8px;background:#fbfcfd}
     details.tech-details summary{cursor:pointer;padding:12px 14px;font-weight:650;color:var(--p)}
     details.tech-details > div{padding:0 14px 14px}
+    .tab[data-tech]{display:none}.panel[data-tech]{display:none}body.show-tech .tab[data-tech]{display:block}body.show-tech .panel.active[data-tech]{display:block}
   </style>
 </head>
 <body>
@@ -87,6 +88,10 @@
     <div class="card"><div class="label">Yrkesbehörighet</div><div id="vocCard" class="value">-</div><div class="small">Sävsjö, valt läsår</div></div>
   </section>
 
+  <section id="npOnlyNotice" class="box notice" style="display:none">
+    <strong>Åk 3 vald:</strong> Slutbetyg ges inte i åk 3. Sidan visar enbart nationella prov (NP) för vald period – övriga flikar är inte tillämpliga för denna årskurs.
+  </section>
+
   <div class="tabs">
     <div class="tab active" data-tab="overview">Översikt</div>
     <div class="tab" data-tab="gender">Jämförelser</div>
@@ -95,8 +100,8 @@
     <div class="tab" data-tab="outcomes">Måluppfyllelse</div>
     <div class="tab" data-tab="np">Nationella prov</div>
     <div class="tab" data-tab="availability">Vilken data som finns</div>
-    <div class="tab" data-tab="control">Datakontroll</div>
-    <div class="tab" data-tab="diagnostics">Teknisk diagnostik</div>
+    <div class="tab" data-tab="control" data-tech>Datakontroll</div>
+    <div class="tab" data-tab="diagnostics" data-tech>Teknisk diagnostik</div>
   </div>
 
   <section id="tab-overview" class="panel active">
@@ -127,7 +132,7 @@
     <div class="box"><div id="gradeDistTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Ämne</th><th>A %</th><th>B %</th><th>C %</th><th>D %</th><th>E %</th><th>F %</th><th>Antal</th></tr></thead><tbody id="gradeDistRows"></tbody></table></div></div>
   </section>
 
-  <section id="tab-control" class="panel">
+  <section id="tab-control" class="panel" data-tech>
     <div class="box"><h2>Datakontroll för lokal import</h2><p class="small">Visar antal giltiga betyg, tomma värden, specialkoder och ogiltiga koder per ämne för lokal SCB-import.</p><div class="chart"><canvas id="controlChart"></canvas></div></div>
     <div class="box"><div id="controlTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Ämne</th><th>Elever</th><th>Giltiga</th><th>A-E</th><th>F</th><th>Tomma</th><th>Special</th><th>Ogiltiga</th><th>2</th><th>3</th><th>9</th><th>Y</th><th>Z</th></tr></thead><tbody id="controlRows"></tbody></table></div></div>
   </section>
@@ -178,14 +183,14 @@
     <div class="box">
       <h2>Andel godkända nationella prov</h2>
       <div class="chart"><canvas id="npPassChart"></canvas></div>
-      <div id="npPassTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Nivå</th><th>Årskurs</th><th>Kön</th><th>SV/SVA</th><th>Ämne</th><th>Antal NP</th><th>Andel godkända</th><th>Betygsmatch</th></tr></thead><tbody id="npLocalRows"></tbody></table></div>
+      <div id="npPassTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Nivå</th><th>Årskurs</th><th>Kön</th><th>SV/SVA</th><th>Ämne</th><th>Antal NP</th><th>Andel godkända</th></tr></thead><tbody id="npLocalRows"></tbody></table></div>
     </div>
 
     <div class="box">
       <h2>Hur terminsbetyg förhåller sig till NP</h2>
       <p class="small">Visas för årskurser och ämnen där både betyg och NP-provresultat finns i lokal import.</p>
       <div class="chart"><canvas id="npRelationChart"></canvas></div>
-      <div id="npRelationTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Nivå</th><th>Årskurs</th><th>Kön</th><th>SV/SVA</th><th>Ämne</th><th>Jämförda elever</th><th>Betyg &gt; NP</th><th>Betyg = NP</th><th>Betyg &lt; NP</th></tr></thead><tbody id="npRelationRows"></tbody></table></div>
+      <div id="npRelationTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Nivå</th><th>Årskurs</th><th>Kön</th><th>SV/SVA</th><th>Ämne</th><th>Elever</th><th>Betyget högre än NP</th><th>Betyget lika med NP</th><th>Betyget lägre än NP</th></tr></thead><tbody id="npRelationRows"></tbody></table></div>
     </div>
 
     <div class="box">
@@ -199,7 +204,7 @@
     <div class="box"><h2>Vilken data som finns tillgänglig</h2><div class="tw"><table><thead><tr><th>Vy</th><th>Status</th><th>Kommentar</th></tr></thead><tbody id="availabilityRows"></tbody></table></div></div>
   </section>
 
-  <section id="tab-diagnostics" class="panel">
+  <section id="tab-diagnostics" class="panel" data-tech>
     <div class="box"><h2>Teknisk diagnostik</h2><p class="small">Här finns detaljer för felsökning och verifiering av tekniska datakällor.</p><div id="diagLog" class="pre"></div></div>
     <details class="tech-details">
       <summary>Visa tekniskt underlag</summary>

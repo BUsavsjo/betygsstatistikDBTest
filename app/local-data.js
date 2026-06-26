@@ -176,6 +176,8 @@ function populateLocalFilters(local){
 }
 function updateTabVisibility(){
   const npOnlyMode = selectedOnlyGrade3();
+  const notice = $('npOnlyNotice');
+  if(notice) notice.style.display = npOnlyMode ? '' : 'none';
   const hiddenTabs = new Set(npOnlyMode ? ['overview', 'gender', 'subjects', 'grades', 'control', 'outcomes'] : []);
   document.querySelectorAll('.tab').forEach(tab => {
     const hidden = hiddenTabs.has(tab.dataset.tab);
@@ -547,9 +549,60 @@ function renderFilteredLocal(){
 function renderSvaKpis(local){
   const target = $('svaKpiCards');
   if(!target) return;
-  target.innerHTML = '';
   const box = target.closest('.box');
-  if(box) box.style.display = 'none';
+  const selectedGrades = state.filters?.grades || [];
+
+  const svaRows = (local.svSva || []).filter(r =>
+    r.niva === 'alla_skolenheter' &&
+    r.elevgrupp === 'SVA' &&
+    (!selectedGrades.length || selectedGrades.includes(String(r.arskurs)))
+  );
+
+  if(!svaRows.length){
+    target.innerHTML = '';
+    if(box) box.style.display = 'none';
+    return;
+  }
+  if(box) box.style.display = '';
+
+  const byGrade = {};
+  for(const row of svaRows){
+    const g = Number(row.arskurs);
+    if(!Number.isFinite(g)) continue;
+    byGrade[g] ||= {};
+    byGrade[g][row.kon || 'Alla'] = row;
+  }
+
+  const chip = (label, row) => `
+    <div class="kpi-chip">
+      <span class="kpi-chip-label">${esc(label)}</span>
+      <span class="kpi-chip-value">${fmt(row?.andel_godkand_sv_sva, ' %')}</span>
+    </div>`;
+
+  target.innerHTML = Object.entries(byGrade)
+    .sort(([a],[b]) => Number(a) - Number(b))
+    .map(([grade, rows]) => {
+      const total = rows.Alla;
+      if(!total) return '';
+      return `
+        <article class="kpi-card" style="border-left-color:#1f5f7a">
+          <h3>SVA-elever i åk ${esc(grade)} – godkänd i Sv/Sva, kommunala skolor, andel (%)</h3>
+          <div class="kpi-topline">
+            <div>
+              <div class="kpi-main">${fmt(total.andel_godkand_sv_sva, ' %')}</div>
+              <div class="kpi-main-sub">${esc(total.antal_elever)} elever läser SVA · uppnått alla ämnen: ${fmt(total.andel_uppnatt_alla_amnen, ' %')}</div>
+            </div>
+            <div class="badge" style="color:var(--txt);border-color:var(--brd);background:#fff">Lokal data</div>
+          </div>
+          <div class="kpi-breakdown">
+            ${chip('Alla', rows.Alla)}
+            ${chip('Flickor', rows.Flickor)}
+            ${chip('Pojkar', rows.Pojkar)}
+          </div>
+        </article>`;
+    }).join('');
+
+  if(!target.innerHTML.trim() && box) box.style.display = 'none';
 }
 function renderLocalNp(local){
   const f = state.filters;
@@ -587,11 +640,11 @@ function renderLocalNp(local){
   renderAk3Kpis(local);
 
   $('npLocalRows').innerHTML = renderSchoolGroupedBody(passRows, {
-    colspan: 8,
-    emptyHtml: '<tr><td colspan="8" class="muted">Ingen lokal NP-data hittades.</td></tr>',
+    colspan: 7,
+    emptyHtml: '<tr><td colspan="7" class="muted">Ingen lokal NP-data hittades.</td></tr>',
     schoolCell: (row, span) => `<td rowspan="${span}" class="school-cell"><strong>${esc(row.skolenhetsnamn || row.skolenhetskod || row.niva)}</strong></td>`,
     rowCells: row => ({
-      afterSchool: `<td>${showGradeCell(row.arskurs)}</td><td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(row.amne)}</td>${rightCell(row.antal_np)}<td>${pctBar(row.andel_godkanda_np)}</td>${rightCell(row.antal_med_betygsmatch ?? '-')}`
+      afterSchool: `<td>${showGradeCell(row.arskurs)}</td><td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(row.amne)}</td>${rightCell(row.antal_np)}<td>${pctBar(row.andel_godkanda_np)}</td>`
     })
   });
   $('npRelationRows').innerHTML = renderSchoolGroupedBody(relationRows, {
@@ -724,8 +777,19 @@ function renderLocalData(local){
   state.metrics = [
     {key:'localScb', label:local.isDemo ? 'Demodata' : 'Lokal SCB-import', status:'ok', reason:`${local.manifest.arskurser?.map(a => `åk ${a.arskurs}: ${a.rows}`).join(', ') || 'data finns'}`}
   ];
-  $('tableCount').textContent = local.manifest.files?.length || 0;
-  $('metricCount').textContent = 'lokal';
+  const schoolCount = [...new Set((local.overview || []).filter(r => r.niva === 'skolenhet').map(r => r.skolenhetskod))].length;
+  const tableCard = $('tableCount')?.closest('.card');
+  if(tableCard){
+    tableCard.querySelector('.label').textContent = 'Skolenheter';
+    tableCard.querySelector('.small').textContent = 'Skolenheter med betygsdata';
+  }
+  $('tableCount').textContent = schoolCount || '-';
+  const metricCard = $('metricCount')?.closest('.card');
+  if(metricCard){
+    metricCard.querySelector('.label').textContent = 'Datakälla';
+    metricCard.querySelector('.small').textContent = `Lokal import ${local.manifest.lasar || ''}`;
+  }
+  $('metricCount').textContent = 'SCB';
   renderMetricRows();
   populateLocalFilters(local);
   renderFilteredLocal();
