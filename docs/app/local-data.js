@@ -827,6 +827,20 @@ function renderLocalData(local){
     ['Öppna jämförelsetal', 'Ej använd', 'Lokal SCB-import hittades och används som primär källa.']
   ].map(r => `<tr><td><strong>${esc(r[0])}</strong></td><td class="${r[1] === 'Tillgänglig' ? 'ok' : r[1] === 'Ej använd' ? 'muted' : 'warn'}">${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('');
   $('tableRows').innerHTML = (local.manifest.files || []).map(f => `<tr><td><strong>${esc(f.file)}</strong></td><td class="ok">Inläst</td><td>${esc(f.rows)} rader</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Manifestet innehåller inga filrader.</td></tr>';
+  const mk = (s, t) => `<span class="cn-item ${getColorClass(s)}">${esc(t)}</span>`;
+  const lbl = t => `<span class="cn-label">${esc(t)}</span>`;
+  const gray = mk('unknown', '< 5 elever');
+  const uppnatt = `${lbl('Uppnått alla ämnen:')} ${mk('green','≥ 75 %')} ${mk('yellow','≥ 65 %')} ${mk('red','< 65 %')} ${gray}`;
+  const colorNotes = {
+    meritColorNote: uppnatt,
+    knowledgeColorNote: uppnatt,
+    svaColorNote: `${lbl('Godkänd Sv/SVA (kärnämne):')} ${mk('green','≥ 90 %')} ${mk('yellow','≥ 80 %')} ${mk('red','< 80 %')} ${gray} &emsp; ${uppnatt}`,
+    subjectColorNote: `${lbl('Kärnämnen (Sv, SVA, Ma, En):')} ${mk('green','≥ 90 %')} ${mk('yellow','≥ 80 %')} ${mk('red','< 80 %')} &emsp; ${lbl('Övriga ämnen:')} ${mk('green','≥ 95 %')} ${mk('yellow','≥ 85 %')} ${mk('red','< 85 %')} ${gray}`
+  };
+  for(const [id, html] of Object.entries(colorNotes)){
+    const el = $(id);
+    if(el){ el.innerHTML = html; el.style.display = ''; }
+  }
   const importDate = extractImportDate(local.manifest);
   const metaEl = $('localDataMeta');
   const dateEl = $('localImportDate');
