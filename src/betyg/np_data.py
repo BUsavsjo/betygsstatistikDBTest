@@ -37,8 +37,9 @@ def np_subject_results(row: dict[str, str], arskurs: int) -> list[dict[str, Any]
         }.items():
             values = [np_passed(row.get(col)) for col in cols]
             valid = [value for value in values if value is not None]
-            # Ak 3 ska behålla eleven i nämnaren även när alla valda delprov saknar giltigt värde.
-            results.append({"amne": subject, "np_betyg": None, "godkand_np": all(valid) if valid else False, "antal_delprov": len(valid)})
+            # Bara elever som deltagit i ALLA delprov ingår i nämnaren.
+            godkand_np = all(valid) if len(valid) == len(cols) else None
+            results.append({"amne": subject, "np_betyg": None, "godkand_np": godkand_np, "antal_delprov": len(valid)})
         return results
 
     if arskurs == 6:
