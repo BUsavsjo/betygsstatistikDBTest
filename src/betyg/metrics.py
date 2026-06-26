@@ -267,9 +267,17 @@ def sv_sva_summary(rows: list[dict[str, Any]], lasar: str, arskurs: int, lookup:
     for level, school_code, subset in base_groups(rows):
         for kon, group_name, group_rows in segmented_groups(subset):
             if group_name == "Alla":
-                continue
-            subject = "Sva" if group_name == "SVA" else "Sv"
-            valid_subject_grades = [grade(row.get(subject)) for row in group_rows if grade(row.get(subject)) is not None]
+                def _best_sv(row: dict[str, Any]) -> str | None:
+                    sv, sva = grade(row.get("Sv")), grade(row.get("Sva"))
+                    if sv is None:
+                        return sva
+                    if sva is None:
+                        return sv
+                    return sv if GRADE_POINTS.get(sv, 0) >= GRADE_POINTS.get(sva, 0) else sva
+                valid_subject_grades = [g for row in group_rows if (g := _best_sv(row)) is not None]
+            else:
+                subject = "Sva" if group_name == "SVA" else "Sv"
+                valid_subject_grades = [grade(row.get(subject)) for row in group_rows if grade(row.get(subject)) is not None]
             item = {
                 "lasar": lasar,
                 "arskurs": arskurs,

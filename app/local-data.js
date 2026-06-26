@@ -74,7 +74,10 @@ function subjectSortValue(row){
   return subjectOrder[row.amne] ?? 999;
 }
 function schoolLabel(row){
-  if(row.niva === 'alla_skolenheter' || row.niva === 'kommun') return 'Alla skolenheter';
+  if(row.niva === 'alla_skolenheter' || row.niva === 'kommun'){
+    const grade = Number(row.arskurs);
+    return Number.isFinite(grade) ? `Alla skolenheter, åk ${grade}` : 'Alla skolenheter';
+  }
   return row.skolenhetsnamn || row.skolenhetskod || 'Okänd skolenhet';
 }
 function schoolKey(row){
@@ -251,6 +254,11 @@ function currentTableSummary({groupLabel='Elevgrupp'}={}){
   const schoolText = `Skolor: ${selectedSchoolSummary()}`;
   return `${gradeText} · ${genderText} · ${groupText} · ${schoolText}`;
 }
+function tableNoteForSelectedGrades(){
+  const grades = new Set((state.filters?.grades || []).map(String));
+  if(!grades.has('9')) return '';
+  return 'Not: Åk 9-underlaget innehåller inte en separat kolumn för Modersmål, så ämnet kan inte visas i betygsfördelningen för åk 9.';
+}
 function selectedGradeValues(){
   return (state.filters?.grades || []).map(v => Number(v)).filter(Number.isFinite);
 }
@@ -396,7 +404,7 @@ function renderFilteredLocal(){
   const selectedGrade = selectedSingleGrade();
   const selectedGrades = selectedGradeValues();
   const viewConfig = getGradeViewConfig(selectedGrade);
-  const showOverviewMerit = !(selectedGrade != null && Number(selectedGrade) === 6);
+  const showOverviewMerit = true;
   const showVocational = selectedGrade == null || Number(selectedGrade) === 9;
   const meritCardBox = $('meritCard').closest('.card');
   const vocCardBox = $('vocCard').closest('.card');
@@ -452,7 +460,7 @@ function renderFilteredLocal(){
   }
   }
 
-  const genderSource = localBaseFilter(local.overview || []).filter(r => rowGroup(r) === (state.filters.group === 'Alla' ? 'Alla' : state.filters.group));
+  const genderSource = localBaseFilter(local.overview || [], {includeAggregateRow:true}).filter(r => rowGroup(r) === (state.filters.group === 'Alla' ? 'Alla' : state.filters.group));
   const genderGroups = {};
   for(const row of genderSource){
     const key = `${row.arskurs}|${schoolKey(row)}|${row.elevgrupp || 'Alla'}`;
@@ -475,21 +483,22 @@ function renderFilteredLocal(){
     ]
   },{scales:{y:{beginAtZero:false}}});
 
-  const svSvaRows = localFilterRows(local.svSva || [], {includeAggregateRow:true}).filter(r => ['SV','SVA'].includes(r.elevgrupp));
+  const svSvaRows = localFilterRows(local.svSva || [], {includeAggregateRow:true}).filter(r => ['Alla','SV','SVA'].includes(r.elevgrupp));
   setTableSummary('svaTableSummary', currentTableSummary({groupLabel:'Sv/Sva'}));
   $('svaRows').innerHTML = renderSchoolGroupedBody(svSvaRows, {
-    colspan: 7,
-    emptyHtml: '<tr><td colspan="7" class="muted">Ingen SV/SVA-data hittades för urvalet.</td></tr>',
+    colspan: 8,
+    emptyHtml: '<tr><td colspan="8" class="muted">Ingen SV/SVA-data hittades för urvalet.</td></tr>',
     schoolCell: schoolCellHtml,
     rowCells: row => ({
       beforeSchool: `<td>${showGradeCell(row.arskurs)}</td>`,
-      afterSchool: `<td>${showGroupCell(row.elevgrupp)}</td>${rightCell(row.antal_elever ?? '-')}` + `<td class="numeric">${fmt(row.genomsnittligt_meritvarde_17)}</td><td>${pctBar(row.andel_godkand_sv_sva)}</td><td>${pctBar(row.andel_uppnatt_alla_amnen)}</td>`
+      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp)}</td>${rightCell(row.antal_elever ?? '-')}` + `<td class="numeric">${fmt(row.genomsnittligt_meritvarde_17)}</td><td>${pctBar(row.andel_godkand_sv_sva)}</td><td>${pctBar(row.andel_uppnatt_alla_amnen)}</td>`
     })
   });
 
   const subjectRows = subjectDistributionRows(local, {includeAggregateRow:true});
   const subjectChartRows = subjectDistributionRows(local);
-  setTableSummary('subjectTableSummary', currentTableSummary({groupLabel:'Sv/Sva'}));
+  const gradeDistributionNote = tableNoteForSelectedGrades();
+  setTableSummary('subjectTableSummary', [currentTableSummary({groupLabel:'Sv/Sva'}), gradeDistributionNote].filter(Boolean).join(' · '));
   $('subjectRows').innerHTML = renderSchoolGroupedBody(subjectRows.slice(0, 180), {
     colspan: 14,
     emptyHtml: '<tr><td colspan="14" class="muted">Ingen ämnesdata matchar urvalet.</td></tr>',
@@ -508,7 +517,7 @@ function renderFilteredLocal(){
     ]
   },{scales:{y:{beginAtZero:true,max:20},y1:{beginAtZero:true,max:100,position:'right',grid:{drawOnChartArea:false}}}});
 
-  setTableSummary('gradeDistTableSummary', currentTableSummary({groupLabel:'Sv/Sva'}));
+  setTableSummary('gradeDistTableSummary', [currentTableSummary({groupLabel:'Sv/Sva'}), gradeDistributionNote].filter(Boolean).join(' · '));
   $('gradeDistRows').innerHTML = renderSchoolGroupedBody(subjectRows.slice(0, 180), {
     colspan: 12,
     emptyHtml: '<tr><td colspan="12" class="muted">Ingen betygsfördelning matchar urvalet.</td></tr>',
@@ -679,33 +688,6 @@ function renderAk3Kpis(local){
       </article>`;
   }).join('');
 }
-function renderLocalData(local){
-  state.local = local;
-  $('demoNotice').style.display = local.isDemo ? 'block' : 'none';
-  state.tables = [];
-  state.metrics = [
-    {key:'localScb', label:local.isDemo ? 'Demodata' : 'Lokal SCB-import', status:'ok', reason:`${local.manifest.arskurser?.map(a => `åk ${a.arskurs}: ${a.rows}`).join(', ') || 'data finns'}`}
-  ];
-  $('tableCount').textContent = local.manifest.files?.length || 0;
-  $('metricCount').textContent = 'lokal';
-  renderMetricRows();
-  populateLocalFilters(local);
-  renderFilteredLocal();
-  $('npRows').innerHTML = '<tr><td colspan="4" class="muted">Öppna jämförelsetal används inte när lokal SCB-import är laddad.</td></tr>';
-  const hasSvSvaRows = (local.svSva || []).some(r => ['SV','SVA'].includes(r.elevgrupp));
-  $('availabilityRows').innerHTML = [
-    [local.isDemo ? 'Demodata' : local.sourceKind === 'processed' ? 'Bearbetad publiceringsdata' : 'Årets SCB-betyg', 'OK', `Läst från ${local.base}`],
-    ['SV/SVA-jämförelse', hasSvSvaRows ? 'OK' : 'Ej hittad', 'Beräknas från Sv/Sva-kolumnerna.'],
-    ['Kontroll antal betyg och specialkoder', (local.control || []).length ? 'OK' : 'Ej hittad', 'Bygger på lokal SCB-import och visar giltiga betyg, tomma värden och specialkoder per ämne.'],
-    ['NP andel godkända', (local.npPass || []).length ? 'OK' : 'Ej hittad', 'Beräknas från lokal NP-import per kommun och skolenhet.'],
-    ['Relation betyg och NP', (local.npRelation || []).length ? 'OK' : 'Ej hittad', 'Kräver både betygsfil och NP-fil med matchande elev/skolenhet.'],
-    ['PxWeb/Kolada fallback', 'Ej använd', 'Lokal SCB-import hittades och används som primär källa.']
-  ].map(r => `<tr><td><strong>${esc(r[0])}</strong></td><td class="${r[1] === 'OK' ? 'ok' : 'warn'}">${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('');
-  $('tableRows').innerHTML = (local.manifest.files || []).map(f => `<tr><td><strong>${esc(f.file)}</strong></td><td class="ok">läst</td><td>${esc(f.rows)} rader</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Manifestet innehåller inga filrader.</td></tr>';
-  log('Lokal SCB-import används', local.manifest);
-  setStatus(local.isDemo ? 'warn' : 'ok', local.isDemo ? 'Demodata laddad.' : 'Lokal SCB-import laddad.', `${local.isDemo ? 'Visar anonym testdata' : 'Visar anonymiserad statistik'} från ${local.base}.`);
-}
-
 function applyCurrentViewVisibilityRules(){
   const selectedGrade = selectedSingleGrade();
   const showVocational = selectedGrade == null || Number(selectedGrade) === 9;
@@ -735,7 +717,6 @@ renderFilteredLocal = function(){
   applyCurrentViewVisibilityRules();
 };
 
-// Override legacy text with user-facing labels and corrected Swedish characters.
 function renderLocalData(local){
   state.local = local;
   $('demoNotice').style.display = local.isDemo ? 'block' : 'none';
@@ -748,7 +729,7 @@ function renderLocalData(local){
   renderMetricRows();
   populateLocalFilters(local);
   renderFilteredLocal();
-  $('npRows').innerHTML = '<tr><td colspan="4" class="muted">Öppna jämförelsetal används inte när lokal SCB-import är laddad.</td></tr>';
+  $('npRows').innerHTML = '<tr><td colspan="5" class="muted">Öppna jämförelsetal används inte när lokal SCB-import är laddad.</td></tr>';
   const hasSvSvaRows = (local.svSva || []).some(r => ['SV','SVA'].includes(r.elevgrupp));
   $('availabilityRows').innerHTML = [
     [local.isDemo ? 'Demodata' : local.sourceKind === 'processed' ? 'Bearbetad publiceringsdata' : 'Årets SCB-betyg', 'Tillgänglig', `Läst från ${local.base}`],

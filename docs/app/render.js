@@ -93,26 +93,41 @@ function renderSubjects(){
 function renderNp(){
   const metric = state.metrics.find(m => m.key === 'npGap' && m.status === 'ok');
   if(!metric){
-    $('npRows').innerHTML = '<tr><td colspan="4" class="muted">Inga NP-/betygsnära mått kunde hämtas.</td></tr>';
+    $('npRows').innerHTML = '<tr><td colspan="5" class="muted">Inga NP-/betygsnära mått kunde hämtas.</td></tr>';
     return;
   }
   const cols = metric.data.columns || [];
   const measureVar = findMeasureVar(metric.table.meta);
   const measureIdx = cols.findIndex(c => c.code === measureVar?.code);
   const levelIdx = cols.findIndex(c => /level|kommun|huvudman|skolenhet/i.test(c.code + c.text));
+  const genderIdx = cols.findIndex(c => /kön|kon|sex/i.test(c.code + c.text));
+  const genderVar = findGenderVar(metric.table.meta);
+  const genders = valuesForGender(genderVar);
   const byMeasure = {};
   for(const row of metric.data.data || []){
     const measure = measureIdx >= 0 ? row.key[measureIdx] : '';
     const level = levelIdx >= 0 ? row.key[levelIdx] : '';
+    const gender = genderIdx >= 0 ? row.key[genderIdx] : genders.total || 'Alla';
     byMeasure[measure] ||= {};
-    byMeasure[measure][level] = row.values?.[0];
+    byMeasure[measure][gender] ||= {};
+    byMeasure[measure][gender][level] = row.values?.[0];
   }
-  $('npRows').innerHTML = Object.entries(byMeasure).map(([measure, vals]) => {
-    const local = vals[HUVUDMAN_KOD];
-    const national = vals['00'];
-    const gap = Number.parseFloat(String(local).replace(',','.')) - Number.parseFloat(String(national).replace(',','.'));
-    return `<tr><td><strong>${esc(valueText(measureVar, measure))}</strong></td><td>${pctBar(local)}</td><td>${pctBar(national)}</td><td>${Number.isFinite(gap) ? fmt(gap, ' p.e.') : '-'}</td></tr>`;
-  }).join('');
+  const genderRows = [
+    [genders.total || 'Alla', 'Alla'],
+    [genders.boys, 'Pojkar'],
+    [genders.girls, 'Flickor']
+  ].filter(([code]) => code);
+  $('npRows').innerHTML = Object.entries(byMeasure).flatMap(([measure, valuesByGender]) => {
+    return genderRows
+      .filter(([code]) => valuesByGender[code])
+      .map(([code, label]) => {
+        const vals = valuesByGender[code];
+        const local = vals[HUVUDMAN_KOD];
+        const national = vals['00'];
+        const gap = Number.parseFloat(String(local).replace(',','.')) - Number.parseFloat(String(national).replace(',','.'));
+        return `<tr><td><strong>${esc(valueText(measureVar, measure))}</strong></td><td>${esc(label)}</td><td>${pctBar(local)}</td><td>${pctBar(national)}</td><td>${Number.isFinite(gap) ? fmt(gap, ' p.e.') : '-'}</td></tr>`;
+      });
+  }).join('') || '<tr><td colspan="5" class="muted">Tabellen saknar könsdimension.</td></tr>';
 }
 function renderOverview(){
   const merit = state.metrics.find(m => m.key === 'merit' && m.status === 'ok');

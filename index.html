@@ -59,17 +59,19 @@
     <div class="filter">
       <label for="gradeFilter">Årskurs</label>
       <select id="gradeFilter" multiple></select>
+      <div class="small" style="margin-top:4px">Ctrl+klick för att välja flera</div>
     </div>
     <div class="filter">
       <label for="schoolFilter">Skolenheter</label>
       <select id="schoolFilter" multiple></select>
+      <div class="small" style="margin-top:4px">Ctrl+klick för att välja flera</div>
     </div>
     <div class="filter">
       <label for="genderFilter">Kön</label>
       <select id="genderFilter"><option value="Alla">Alla</option></select>
     </div>
     <div class="filter">
-      <label for="groupFilter">Elevgrupp</label>
+      <label for="groupFilter">Sv/Sva</label>
       <select id="groupFilter"><option value="Alla">Alla</option></select>
     </div>
     <div class="filter-actions">
@@ -112,7 +114,7 @@
   <section id="tab-gender" class="panel">
     <div class="box"><h2>Skillnader mellan flickor och pojkar</h2><p class="small">Den här tabellen visar flickor och pojkar bredvid varandra även när övriga vyer filtreras på ett kön.</p><div class="chart"><canvas id="genderChart"></canvas></div></div>
     <div class="box"><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Elevgrupp</th><th>Pojkar</th><th>Flickor</th><th>Totalt</th><th>Skillnad F-P</th></tr></thead><tbody id="genderRows"></tbody></table></div></div>
-    <div class="box"><h2>SV/SVA</h2><div id="svaTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Elevgrupp</th><th>Antal elever</th><th>Merit 17</th><th>Godkänd Sv/SVA</th><th>Uppnått alla ämnen</th></tr></thead><tbody id="svaRows"></tbody></table></div></div>
+    <div class="box"><h2>SV/SVA</h2><div id="svaTableSummary" class="table-summary">Urval: -</div><div class="tw"><table><thead><tr><th>Årskurs</th><th>Skolenhet</th><th>Kön</th><th>Elevgrupp</th><th>Antal elever</th><th>Merit 17</th><th>Godkänd Sv/SVA</th><th>Uppnått alla ämnen</th></tr></thead><tbody id="svaRows"></tbody></table></div></div>
   </section>
 
   <section id="tab-subjects" class="panel">
@@ -189,7 +191,7 @@
     <div class="box">
       <h2>Jämförelsetal för huvudman och riket</h2>
       <p class="small">Den här delen bygger inte på elevmatchning utan på öppna aggregerade jämförelsetal. Fullständiga provresultat finns inte tillgängliga för alla ämnen och årskurser.</p>
-      <div class="tw"><table><thead><tr><th>Mått</th><th>Sävsjö huvudman</th><th>Riket</th><th>Gap</th></tr></thead><tbody id="npRows"></tbody></table></div>
+      <div class="tw"><table><thead><tr><th>Mått</th><th>Kön</th><th>Sävsjö huvudman</th><th>Riket</th><th>Gap</th></tr></thead><tbody id="npRows"></tbody></table></div>
     </div>
   </section>
 
