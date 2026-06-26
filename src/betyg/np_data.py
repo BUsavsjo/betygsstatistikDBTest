@@ -31,7 +31,9 @@ def np_subject_results(row: dict[str, str], arskurs: int) -> list[dict[str, Any]
     if arskurs == 3:
         results = []
         for subject, cols in {
-            "Ma": ["MA_A_PR", "MA_B_PR", "MA_C_PR", "MA_D_PR", "MA_E_PR", "MA_F_PR", "MA_G_PR", "MA_G1_PR", "MA_G2_PR"],
+            # MA_G1_PR/MA_G2_PR finns bara i fullformat; kompaktformat paddas med tomma strängar.
+            # MA_G_PR är det sammansatta resultatet för delprov G och täcker båda formaten.
+            "Ma": ["MA_A_PR", "MA_B_PR", "MA_C_PR", "MA_D_PR", "MA_E_PR", "MA_F_PR", "MA_G_PR"],
             # Lokalt jämförelseunderlag för ak 3 svenska bygger på delprov B, C, D, G och H.
             "Sv/Sva": ["SV_B_PR", "SV_C_PR", "SV_D_PR", "SV_G_PR", "SV_H_PR"],
         }.items():
