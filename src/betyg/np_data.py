@@ -34,8 +34,8 @@ def np_subject_results(row: dict[str, str], arskurs: int) -> list[dict[str, Any]
             # MA_G1_PR/MA_G2_PR finns bara i fullformat; kompaktformat paddas med tomma strängar.
             # MA_G_PR är det sammansatta resultatet för delprov G och täcker båda formaten.
             "Ma": ["MA_A_PR", "MA_B_PR", "MA_C_PR", "MA_D_PR", "MA_E_PR", "MA_F_PR", "MA_G_PR"],
-            # Lokalt jämförelseunderlag för ak 3 svenska bygger på delprov B, C, D, G och H.
-            "Sv/Sva": ["SV_B_PR", "SV_C_PR", "SV_D_PR", "SV_G_PR", "SV_H_PR"],
+            # Alla åtta delprov A–H används. Nämnare: giltigt resultat (0 eller 1) på samtliga.
+            "Sv/Sva": ["SV_A_PR", "SV_B_PR", "SV_C_PR", "SV_D_PR", "SV_E_PR", "SV_F_PR", "SV_G_PR", "SV_H_PR"],
         }.items():
             values = [np_passed(row.get(col)) for col in cols]
             valid = [value for value in values if value is not None]
