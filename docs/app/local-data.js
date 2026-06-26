@@ -43,6 +43,28 @@ function selectedValues(id){
 function subjectLabel(row){
   return row.amnesnamn || row.amne || '-';
 }
+const AMNE_NAMN = {
+  Bi:'Biologi', Bl:'Bild', En:'Engelska', Fy:'Fysik', Ge:'Geografi',
+  Hi:'Historia', Hkk:'Hem- och konsumentkunskap', Idh:'Idrott och hälsa',
+  Ke:'Kemi', M1_betyg:'Moderna språk (elevens val)', M2_betyg:'Moderna språk (skolans val)',
+  Ma:'Matematik', ML_betyg:'Moderna språk (språkval)', Modmalbe:'Modersmål',
+  Mu:'Musik', No:'NO (blockbetyg)', Ovr:'Övrigt ämne', Re:'Religionskunskap',
+  Sh:'Samhällskunskap', Sl:'Slöjd', So:'SO (blockbetyg)', Sv:'Svenska',
+  Sva:'Svenska som andraspråk', Tk:'Teknik', Tn:'Teckenspråk',
+  'Sv/Sva':'Svenska / Svenska som andraspråk'
+};
+function resolveAmnesnamn(amne){
+  return AMNE_NAMN[amne] || amne || '-';
+}
+function extractImportDate(manifest){
+  const dates = (manifest.files || [])
+    .map(f => f.file?.match(/(\d{8})/)?.[1])
+    .filter(Boolean).sort();
+  if(!dates.length) return null;
+  const d = dates[dates.length - 1];
+  const months = ['jan','feb','mar','apr','maj','jun','jul','aug','sep','okt','nov','dec'];
+  return `${Number(d.slice(6,8))} ${months[Number(d.slice(4,6))-1]} ${d.slice(0,4)}`;
+}
 const subjectOrder = {
   Bl: 10,
   Sv: 20,
@@ -332,7 +354,7 @@ function renderLocalOutcomes(local, meritRows, {hideAggregateOutcome=false}={}){
     schoolCell: schoolCellHtml,
     rowCells: row => ({
       beforeSchool: `<td>${showGradeCell(row.arskurs)}</td>`,
-      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td class="numeric">${studentCountCell(row.antal_elever)}</td><td>${pctBar(row.andel_uppnatt_alla_amnen, formatPercentWithCount(row.andel_uppnatt_alla_amnen, row.antal_elever))}</td>`
+      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td class="numeric">${studentCountCell(row.antal_elever)}</td>${colorCell(pctBar(row.andel_uppnatt_alla_amnen, formatPercentWithCount(row.andel_uppnatt_alla_amnen, row.antal_elever)), clampColor(getAllSubjectsColor(Number(row.andel_uppnatt_alla_amnen)), row.antal_elever))}`
     })
   });
   const knowledgeChartRows = outcomeRows
@@ -434,10 +456,11 @@ function renderFilteredLocal(){
     emptyHtml: `<tr><td colspan="${6 + (showOverviewMerit ? 2 : 0)}" class="muted">Inga rader matchar urvalet.</td></tr>`,
     schoolCell: schoolCellHtml,
     rowCells: row => {
+      const allSubjStatus = clampColor(getAllSubjectsColor(Number(row.andel_uppnatt_alla_amnen)), row.antal_elever);
       const meritCells = showOverviewMerit ? `<td class="numeric">${fmt(row.genomsnittligt_meritvarde_16)}</td><td class="numeric">${fmt(row.genomsnittligt_meritvarde_17)}</td>` : '';
       return {
         beforeSchool: `<td>${showGradeCell(row.arskurs)}</td>`,
-        afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td class="numeric">${studentCountCell(row.antal_elever)}</td>${meritCells}<td>${pctBar(row.andel_uppnatt_alla_amnen, formatPercentWithCount(row.andel_uppnatt_alla_amnen, row.antal_elever))}</td>`
+        afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td class="numeric">${studentCountCell(row.antal_elever)}</td>${meritCells}${colorCell(pctBar(row.andel_uppnatt_alla_amnen, formatPercentWithCount(row.andel_uppnatt_alla_amnen, row.antal_elever)), allSubjStatus)}`
       };
     }
   });
@@ -493,7 +516,7 @@ function renderFilteredLocal(){
     schoolCell: schoolCellHtml,
     rowCells: row => ({
       beforeSchool: `<td>${showGradeCell(row.arskurs)}</td>`,
-      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp)}</td>${rightCell(row.antal_elever ?? '-')}` + `<td class="numeric">${fmt(row.genomsnittligt_meritvarde_17)}</td><td>${pctBar(row.andel_godkand_sv_sva)}</td><td>${pctBar(row.andel_uppnatt_alla_amnen)}</td>`
+      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp)}</td>${rightCell(row.antal_elever ?? '-')}` + `<td class="numeric">${fmt(row.genomsnittligt_meritvarde_17)}</td>` + colorCell(pctBar(row.andel_godkand_sv_sva), clampColor(getPassRateColor(Number(row.andel_godkand_sv_sva), row.elevgrupp === 'SVA' ? 'svenska som andraspråk' : 'svenska'), row.antal_elever)) + colorCell(pctBar(row.andel_uppnatt_alla_amnen), clampColor(getAllSubjectsColor(Number(row.andel_uppnatt_alla_amnen)), row.antal_elever))
     })
   });
 
@@ -507,7 +530,7 @@ function renderFilteredLocal(){
     schoolCell: schoolCellHtml,
     rowCells: row => ({
       beforeSchool: `<td>${showGradeCell(row.arskurs)}</td>`,
-      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(subjectLabel(row))}</td><td class="numeric">${fmt(row.betygspoang)}</td>${rightCell(row.antal_A ?? 0)}${rightCell(row.antal_B ?? 0)}${rightCell(row.antal_C ?? 0)}${rightCell(row.antal_D ?? 0)}${rightCell(row.antal_E ?? 0)}${rightCell(row.antal_F ?? 0)}<td>${pctBar(row.andel_A_E)}</td>${rightCell(row.antal_betyg)}`
+      afterSchool: `<td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(subjectLabel(row))}</td><td class="numeric">${fmt(row.betygspoang)}</td>${rightCell(row.antal_A ?? 0)}${rightCell(row.antal_B ?? 0)}${rightCell(row.antal_C ?? 0)}${rightCell(row.antal_D ?? 0)}${rightCell(row.antal_E ?? 0)}${rightCell(row.antal_F ?? 0)}` + colorCell(pctBar(row.andel_A_E), clampColor(getPassRateColor(Number(row.andel_A_E), subjectLabel(row)), row.antal_betyg)) + `${rightCell(row.antal_betyg)}`
     })
   });
   const topSubjects = subjectChartRows.slice(0, 24);
@@ -644,7 +667,7 @@ function renderLocalNp(local){
     emptyHtml: '<tr><td colspan="7" class="muted">Ingen lokal NP-data hittades.</td></tr>',
     schoolCell: (row, span) => `<td rowspan="${span}" class="school-cell"><strong>${esc(row.skolenhetsnamn || row.skolenhetskod || row.niva)}</strong></td>`,
     rowCells: row => ({
-      afterSchool: `<td>${showGradeCell(row.arskurs)}</td><td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(row.amne)}</td>${rightCell(row.antal_np)}<td>${pctBar(row.andel_godkanda_np)}</td>`
+      afterSchool: `<td>${showGradeCell(row.arskurs)}</td><td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(resolveAmnesnamn(row.amne))}</td>${rightCell(row.antal_np)}<td>${pctBar(row.andel_godkanda_np)}</td>`
     })
   });
   $('npRelationRows').innerHTML = renderSchoolGroupedBody(relationRows, {
@@ -652,13 +675,13 @@ function renderLocalNp(local){
     emptyHtml: '<tr><td colspan="9" class="muted">Ingen betyg-NP-relation kunde beräknas för aktuellt urval.</td></tr>',
     schoolCell: (row, span) => `<td rowspan="${span}" class="school-cell"><strong>${esc(row.skolenhetsnamn || row.skolenhetskod || row.niva)}</strong></td>`,
     rowCells: row => ({
-      afterSchool: `<td>${showGradeCell(row.arskurs)}</td><td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(row.amne)}</td>${rightCell(row.antal_jamforda)}<td>${pctBar(row.andel_betyg_hogre_an_np)}</td><td>${pctBar(row.andel_betyg_lika_np)}</td><td>${pctBar(row.andel_betyg_lagre_an_np)}</td>`
+      afterSchool: `<td>${showGradeCell(row.arskurs)}</td><td>${showGenderCell(row.kon || 'Alla')}</td><td>${showGroupCell(row.elevgrupp || 'Alla')}</td><td>${esc(resolveAmnesnamn(row.amne))}</td>${rightCell(row.antal_jamforda)}<td>${pctBar(row.andel_betyg_hogre_an_np)}</td><td>${pctBar(row.andel_betyg_lika_np)}</td><td>${pctBar(row.andel_betyg_lagre_an_np)}</td>`
     })
   });
 
   const topPass = passRows.filter(r => r.niva === 'kommun').slice(0, 12);
   makeChart('npPassChart','bar',{
-    labels: topPass.map(r => `Åk ${r.arskurs} ${r.amne}`),
+    labels: topPass.map(r => `Åk ${r.arskurs} ${resolveAmnesnamn(r.amne)}`),
     datasets:[{label:'Andel godkända NP %', data:topPass.map(r => r.andel_godkanda_np), backgroundColor:'#347f6a'}]
   },{indexAxis:'y',scales:{x:{beginAtZero:true,max:100}}});
 
@@ -804,6 +827,19 @@ function renderLocalData(local){
     ['Öppna jämförelsetal', 'Ej använd', 'Lokal SCB-import hittades och används som primär källa.']
   ].map(r => `<tr><td><strong>${esc(r[0])}</strong></td><td class="${r[1] === 'Tillgänglig' ? 'ok' : r[1] === 'Ej använd' ? 'muted' : 'warn'}">${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('');
   $('tableRows').innerHTML = (local.manifest.files || []).map(f => `<tr><td><strong>${esc(f.file)}</strong></td><td class="ok">Inläst</td><td>${esc(f.rows)} rader</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Manifestet innehåller inga filrader.</td></tr>';
+  const importDate = extractImportDate(local.manifest);
+  const metaEl = $('localDataMeta');
+  const dateEl = $('localImportDate');
+  const legendEl = $('colorLegend');
+  if(metaEl) metaEl.style.display = '';
+  if(dateEl) dateEl.innerHTML = importDate
+    ? `Senaste import: <strong>${esc(importDate)}</strong>`
+    : `Läsår: <strong>${esc(local.manifest.lasar || '')}</strong>`;
+  if(legendEl) legendEl.innerHTML = `<span class="legend-label">Färgskala i tabeller:</span>`
+    + `<span class="legend-item"><span class="legend-dot status-green"></span>Uppfyller målet</span>`
+    + `<span class="legend-item"><span class="legend-dot status-yellow"></span>Nära målet</span>`
+    + `<span class="legend-item"><span class="legend-dot status-red"></span>Under målet</span>`
+    + `<span class="legend-item"><span class="legend-dot status-unknown"></span>För litet underlag (&lt;5 elever)</span>`;
   log('Lokal SCB-import används', local.manifest);
   setStatus(local.isDemo ? 'warn' : 'ok', local.isDemo ? 'Demodata laddad.' : 'Lokal SCB-import laddad.', `${local.isDemo ? 'Visar anonym testdata' : 'Visar anonymiserad statistik'} från ${local.base}.`);
 }

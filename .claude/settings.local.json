@@ -1,7 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash(python3 -c ' *)"
+      "Bash(python3 -c ' *)",
+      "Bash(Get-ChildItem -Force)",
+      "Bash(Select-Object Name, PSIsContainer)",
+      "WebFetch(domain:localhost)",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:3000/app/core.js\" -UseBasicParsing; $r.Content | Select-String \"colorCell|clampColor|getColorClass\" | Select-Object -First 10 } catch { \"Server not reachable: $_\" })",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:3000/app/local-data.js\" -UseBasicParsing; $r.Content | Select-String \"colorCell\" } catch { \"fel: $_\" })",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:3000/\" -UseBasicParsing; $r.Content | Select-String \"status-green|status-yellow|status-red\" } catch { \"fel: $_\" })",
+      "PowerShell($content = Get-Content \"C:\\\\Users\\\\petwen\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-petwen-OneDrive---H-glandsf-rbundet-Projekt-betygsstatistikDBTest\\\\c92429fa-2236-4b12-80e4-89222295895d\\\\tool-results\\\\buc2r4a7v.txt\" -Raw; $matches = [regex]::Matches\\($content, '.{80}colorCell.{80}'\\); $matches | ForEach-Object { $_.Value })",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:3000/app/local-data.js\" -UseBasicParsing; $lines = $r.Content -split \"`n\"; $lines | Where-Object { $_ -match \"colorCell\" } } catch { \"fel: $_\" })"
     ]
   }
 }

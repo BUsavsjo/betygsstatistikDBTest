@@ -24,6 +24,8 @@
     details.tech-details summary{cursor:pointer;padding:12px 14px;font-weight:650;color:var(--p)}
     details.tech-details > div{padding:0 14px 14px}
     .tab[data-tech]{display:none}.panel[data-tech]{display:none}body.show-tech .tab[data-tech]{display:block}body.show-tech .panel.active[data-tech]{display:block}
+    td.status-green{background:#d9f2e3;color:#14532d}td.status-yellow{background:#fff3cd;color:#664d03}td.status-red{background:#f8d7da;color:#842029}td.status-unknown{background:#e9ecef;color:#495057}
+    .local-meta{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}.local-meta-date{font-size:.8rem;color:var(--mut)}.color-legend{display:flex;flex-wrap:wrap;gap:10px;align-items:center}.legend-label{font-size:.78rem;font-weight:650;color:var(--mut)}.legend-item{display:flex;align-items:center;gap:5px;font-size:.78rem;color:var(--txt)}.legend-dot{display:inline-block;width:13px;height:13px;border-radius:3px;flex-shrink:0}
   </style>
 </head>
 <body>
@@ -78,6 +80,13 @@
     <div class="filter-actions">
       <button id="selectAllSchoolsBtn" type="button" class="secondary">Alla skolor</button>
       <button id="clearFiltersBtn" type="button" class="secondary">Nollställ urval</button>
+    </div>
+  </section>
+
+  <section id="localDataMeta" class="box" style="display:none">
+    <div class="local-meta">
+      <div id="localImportDate" class="local-meta-date"></div>
+      <div id="colorLegend" class="color-legend"></div>
     </div>
   </section>
 
