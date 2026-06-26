@@ -688,33 +688,6 @@ function renderAk3Kpis(local){
       </article>`;
   }).join('');
 }
-function renderLocalData(local){
-  state.local = local;
-  $('demoNotice').style.display = local.isDemo ? 'block' : 'none';
-  state.tables = [];
-  state.metrics = [
-    {key:'localScb', label:local.isDemo ? 'Demodata' : 'Lokal SCB-import', status:'ok', reason:`${local.manifest.arskurser?.map(a => `åk ${a.arskurs}: ${a.rows}`).join(', ') || 'data finns'}`}
-  ];
-  $('tableCount').textContent = local.manifest.files?.length || 0;
-  $('metricCount').textContent = 'lokal';
-  renderMetricRows();
-  populateLocalFilters(local);
-  renderFilteredLocal();
-  $('npRows').innerHTML = '<tr><td colspan="5" class="muted">Öppna jämförelsetal används inte när lokal SCB-import är laddad.</td></tr>';
-  const hasSvSvaRows = (local.svSva || []).some(r => ['SV','SVA'].includes(r.elevgrupp));
-  $('availabilityRows').innerHTML = [
-    [local.isDemo ? 'Demodata' : local.sourceKind === 'processed' ? 'Bearbetad publiceringsdata' : 'Årets SCB-betyg', 'OK', `Läst från ${local.base}`],
-    ['SV/SVA-jämförelse', hasSvSvaRows ? 'OK' : 'Ej hittad', 'Beräknas från Sv/Sva-kolumnerna.'],
-    ['Kontroll antal betyg och specialkoder', (local.control || []).length ? 'OK' : 'Ej hittad', 'Bygger på lokal SCB-import och visar giltiga betyg, tomma värden och specialkoder per ämne.'],
-    ['NP andel godkända', (local.npPass || []).length ? 'OK' : 'Ej hittad', 'Beräknas från lokal NP-import per kommun och skolenhet.'],
-    ['Relation betyg och NP', (local.npRelation || []).length ? 'OK' : 'Ej hittad', 'Kräver både betygsfil och NP-fil med matchande elev/skolenhet.'],
-    ['PxWeb/Kolada fallback', 'Ej använd', 'Lokal SCB-import hittades och används som primär källa.']
-  ].map(r => `<tr><td><strong>${esc(r[0])}</strong></td><td class="${r[1] === 'OK' ? 'ok' : 'warn'}">${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('');
-  $('tableRows').innerHTML = (local.manifest.files || []).map(f => `<tr><td><strong>${esc(f.file)}</strong></td><td class="ok">läst</td><td>${esc(f.rows)} rader</td></tr>`).join('') || '<tr><td colspan="3" class="muted">Manifestet innehåller inga filrader.</td></tr>';
-  log('Lokal SCB-import används', local.manifest);
-  setStatus(local.isDemo ? 'warn' : 'ok', local.isDemo ? 'Demodata laddad.' : 'Lokal SCB-import laddad.', `${local.isDemo ? 'Visar anonym testdata' : 'Visar anonymiserad statistik'} från ${local.base}.`);
-}
-
 function applyCurrentViewVisibilityRules(){
   const selectedGrade = selectedSingleGrade();
   const showVocational = selectedGrade == null || Number(selectedGrade) === 9;
@@ -744,7 +717,6 @@ renderFilteredLocal = function(){
   applyCurrentViewVisibilityRules();
 };
 
-// Override legacy text with user-facing labels and corrected Swedish characters.
 function renderLocalData(local){
   state.local = local;
   $('demoNotice').style.display = local.isDemo ? 'block' : 'none';
