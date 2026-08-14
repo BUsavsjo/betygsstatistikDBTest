@@ -155,11 +155,18 @@ function renderProgressionCards(segment){
   const overview = segment.oversikt;
   $('progressionCards').innerHTML = [
     progressionCard('Matchade elever', match.antal_matchade, `${fmt(match.matchningsgrad, ' %')} av eleverna i åk 9`),
-    progressionCard('Genomsnittlig förändring', fmt(overview.genomsnittlig_forandring), 'betygssteg per jämförbart betyg'),
-    progressionCard('Höjda betyg', fmt(overview.andel_hojda_betyg, ' %'), `${fmt(overview.andel_oforandrade_betyg, ' %')} oförändrade`),
-    progressionCard('Sänkta betyg', fmt(overview.andel_sankta_betyg, ' %'), `Samband åk 6–9: ${fmt(overview.korrelation)}`),
-    progressionCard('Meritvärde åk 9', fmt(segment.merit_ak9?.genomsnitt_merit_17), 'Merit 17, sekundärt slutmått')
+    progressionCard('Genomsnittlig betygsförändring', fmt(overview.genomsnittlig_forandring, ' steg'), 'Samma elev och samma ämne'),
+    progressionCard('Jämförbara ämnesbetyg som höjts', fmt(overview.andel_hojda_betyg, ' %'), 'Andel av alla jämförbara ämnesbetyg'),
+    progressionCard('Jämförbara ämnesbetyg som är oförändrade', fmt(overview.andel_oforandrade_betyg, ' %'), 'Andel av alla jämförbara ämnesbetyg'),
+    progressionCard('Jämförbara ämnesbetyg som sänkts', fmt(overview.andel_sankta_betyg, ' %'), 'Andel av alla jämförbara ämnesbetyg')
   ].join('');
+}
+
+function renderProgressionSecondary(segment){
+  $('progressionSecondary').innerHTML = `
+    <h2>Kompletterande slutmått</h2>
+    <p><strong>Meritvärde i årskurs 9: ${fmt(segment.merit_ak9?.genomsnitt_merit_17)}</strong></p>
+    <p class="small">Meritvärdet visar slutresultatet i årskurs 9. Det jämförs inte med årskurs 6 eftersom ämnesuppsättningen och beräkningsunderlaget kan skilja sig.</p>`;
 }
 
 function renderProgressionCharts(subjects){
@@ -172,13 +179,22 @@ function renderProgressionCharts(subjects){
       {label:'Sänkt %', data:visible.map(row => row.andel_sankta), backgroundColor:'#b73535'}
     ]
   }, {scales:{x:{stacked:true},y:{stacked:true,beginAtZero:true,max:100}}});
+  const gradeLabels = ['F', 'E', 'D', 'C', 'B', 'A'];
   makeChart('progressionGradeChart', 'bar', {
     labels: visible.map(row => row.amnesnamn),
     datasets: [
       {label:'Åk 6', data:visible.map(row => row.genomsnitt_ak6), backgroundColor:'#8aa8b8'},
       {label:'Åk 9', data:visible.map(row => row.genomsnitt_ak9), backgroundColor:'#1f5f7a'}
     ]
-  }, {scales:{y:{beginAtZero:true,max:5}}});
+  }, {
+    scales:{
+      y:{
+        beginAtZero:true,
+        max:5,
+        ticks:{stepSize:1,callback:value => gradeLabels[value] || ''}
+      }
+    }
+  });
 }
 
 function renderProgressionTable(subjects){
@@ -220,4 +236,5 @@ function renderProgressionView(){
   renderProgressionCorrelation(segment);
   renderProgressionCharts(segment.amnen || []);
   renderProgressionTable(segment.amnen || []);
+  renderProgressionSecondary(segment);
 }

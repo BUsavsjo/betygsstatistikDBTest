@@ -30,6 +30,7 @@
     .cn-label{color:var(--mut);white-space:nowrap}
     .cn-item{display:inline-flex;align-items:center;padding:2px 9px;border-radius:4px;font-weight:650;white-space:nowrap}
     .cn-item.status-green{background:#d9f2e3;color:#14532d}.cn-item.status-yellow{background:#fff3cd;color:#664d03}.cn-item.status-red{background:#f8d7da;color:#842029}.cn-item.status-unknown{background:#e9ecef;color:#495057}
+    .progression-explanation p{max-width:78ch}.progression-table th{white-space:normal}.progression-table .numeric{white-space:nowrap}.progression-table th:nth-child(2),.progression-table th:nth-child(5),.progression-table th:nth-child(9){min-width:110px}
   </style>
 </head>
 <body>
@@ -150,8 +151,10 @@
       <div class="box"><h2>Genomsnittlig betygsnivå i åk 6 och åk 9</h2><div class="chart"><canvas id="progressionGradeChart"></canvas></div></div>
       <div class="box">
         <h2>Resultat per ämne</h2>
-        <div class="tw"><table><thead><tr><th>Ämne</th><th>Elever</th><th>Åk 6</th><th>Åk 9</th><th>Förändring</th><th>Höjt</th><th>Oförändrat</th><th>Sänkt</th><th>Samband</th></tr></thead><tbody id="progressionRows"></tbody></table></div>
+        <p id="progressionSubjectIntro" class="small">Varje rad jämför elever som har ett giltigt betyg i ämnet både i årskurs 6 och årskurs 9.</p>
+        <div class="tw"><table id="progressionSubjectTable" class="progression-table"><thead><tr><th>Ämne</th><th>Jämförbara elever</th><th>Åk 6</th><th>Åk 9</th><th>Förändring i steg</th><th>Höjt</th><th>Oförändrat</th><th>Sänkt</th><th>Samband mellan resultaten</th></tr></thead><tbody id="progressionRows"></tbody></table></div>
       </div>
+      <section id="progressionSecondary" class="box progression-explanation"></section>
     </div>
     <div id="progressionMethod" class="box"></div>
   </section>

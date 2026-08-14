@@ -85,6 +85,21 @@ test('visar anonymiserad progression och filtrerar skola och SVA', async ({ page
   await expect(correlation).toContainText('visar inte om betygen har höjts eller sänkts');
   await expect(correlation).toContainText('vilken effekt skolan haft');
 
+  await expect(page.locator('#progressionCards')).toContainText('Genomsnittlig betygsförändring');
+  await expect(page.locator('#progressionCards')).toContainText('Jämförbara ämnesbetyg som höjts');
+  await expect(page.locator('#progressionCards')).toContainText('Jämförbara ämnesbetyg som är oförändrade');
+  await expect(page.locator('#progressionCards')).toContainText('Jämförbara ämnesbetyg som sänkts');
+  await expect(page.locator('#progressionCards')).not.toContainText('Meritvärde åk 9');
+  await expect(page.locator('#progressionSecondary')).toContainText('Kompletterande slutmått');
+  await expect(page.locator('#progressionSecondary')).toContainText('Meritvärde i årskurs 9: 231');
+  await expect(page.locator('#progressionSecondary')).toContainText('jämförs inte med årskurs 6');
+  await expect(page.locator('#progressionSubjectIntro')).toContainText(
+    'giltigt betyg i ämnet både i årskurs 6 och årskurs 9',
+  );
+  await expect(page.locator('#progressionSubjectTable thead')).toContainText('Jämförbara elever');
+  await expect(page.locator('#progressionSubjectTable thead')).toContainText('Förändring i steg');
+  await expect(page.locator('#progressionSubjectTable thead')).toContainText('Samband mellan resultaten');
+
   await page.locator('#progressionSchoolFilter').selectOption('59983229');
   await page.locator('#progressionGroupFilter').selectOption('SVA');
 
