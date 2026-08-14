@@ -6,15 +6,16 @@ async function tryLoadLocalSource(base, sourceKind){
       fetchJson(`${base}/betygsstatistik_sv_sva.json`),
       fetchJson(`${base}/betygsstatistik_betygsfordelning_amne.json`)
     ]);
-    const [control, npPass, npRelation] = await Promise.all([
+    const [control, npPass, npRelation, progression] = await Promise.all([
       fetchJsonOptional(`${base}/betygsstatistik_kontroll_betyg.json`, []),
       fetchJsonOptional(`${base}/np_andel_godkanda.json`, []),
-      fetchJsonOptional(`${base}/np_betyg_relation.json`, [])
+      fetchJsonOptional(`${base}/np_betyg_relation.json`, []),
+      fetchJsonOptional(`${base}/betygsprogression_ak6_ak9.json`, null)
     ]);
     const hasGrades = manifest.arskurser?.some(a => Number(a.rows) > 0);
     const hasNp = manifest.np_arskurser?.some(a => Number(a.rows) > 0) || npPass.length || npRelation.length;
     if(!hasGrades && !hasNp) return null;
-    return {base, sourceKind, isDemo: sourceKind === 'demo' || norm(manifest.source).includes('dummy') || norm(manifest.source).includes('demo'), manifest, overview, svSva, distribution, control, npPass, npRelation};
+    return {base, sourceKind, isDemo: sourceKind === 'demo' || norm(manifest.source).includes('dummy') || norm(manifest.source).includes('demo'), manifest, overview, svSva, distribution, control, npPass, npRelation, progression};
   }catch{
     return null;
   }
@@ -816,6 +817,7 @@ function renderLocalData(local){
   renderMetricRows();
   populateLocalFilters(local);
   renderFilteredLocal();
+  initializeProgressionView(local.progression);
   $('npRows').innerHTML = '<tr><td colspan="5" class="muted">Öppna jämförelsetal används inte när lokal SCB-import är laddad.</td></tr>';
   const hasSvSvaRows = (local.svSva || []).some(r => ['SV','SVA'].includes(r.elevgrupp));
   $('availabilityRows').innerHTML = [

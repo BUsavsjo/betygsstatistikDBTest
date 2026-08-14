@@ -209,6 +209,42 @@ Med `--publish` kopieras endast whitelistade aggregerade JSON-filer vidare till:
 data/processed/2025-2026/json/
 ```
 
+## Progression mellan årskurs 6 och årskurs 9
+
+Fliken **Progression åk 6–9** jämför samma elevs betyg i samma ämne mellan årskurs 6 och slutbetyget i årskurs 9. För slutåret `2025-2026` ska källfilerna ligga här:
+
+```text
+data/raw/betyg/2022-2023/ak6/*.txt
+data/raw/betyg/2025-2026/ak9/*.txt
+```
+
+Årskurs 6-filerna ska alltså läggas under det historiska läsår då elevkullen gick i årskurs 6, inte i slutårets `ak6`-mapp. Importen kopplar elevraderna lokalt via personnummer. Personnummer och andra elevuppgifter skrivs aldrig till den publicerade JSON-filen.
+
+Kör import och publiceringskopiering i denna ordning:
+
+```bash
+python src/scb_betyg_import.py --lasar 2025-2026 --publish
+node scripts/build-pages.js
+```
+
+Progressionsfilen skapas som:
+
+```text
+data/output/2025-2026/json/betygsprogression_ak6_ak9.json
+data/processed/2025-2026/json/betygsprogression_ak6_ak9.json
+```
+
+Analysen omfattar Sävsjö kommun som helhet samt Hofgårdsskolan och Rörviks skola. Skoltillhörighet, kön och SV/SVA hämtas från elevens uppgifter i årskurs 9. Följande visas:
+
+- antal och andel matchade elever
+- genomsnittlig förändring i betygssteg
+- andel höjda, oförändrade och sänkta betyg
+- ämnesvisa nivåer i årskurs 6 och årskurs 9
+- Spearmans rangkorrelation mellan resultaten i årskurs 6 och årskurs 9
+- meritvärde i årskurs 9 som ett sekundärt slutmått
+
+Korrelationen beskriver hur starkt resultaten samvarierar, men visar inte varför de förändras eller vilken effekt en skola har haft. Meritvärdet jämförs inte som progression mellan årskurserna, eftersom ämnesuppsättningen och beräkningsunderlaget kan skilja sig. Grupper med färre än 10 matchade elever undertrycks i den publicerade statistiken.
+
 Webbappen försöker först läsa publiceringsklar JSON från `data/processed/<läsår>/json`, därefter aggregerad JSON från `data/output/<läsår>/json`. Om lokal/publicerad data saknas används demodata eller befintligt PxWeb-flöde som fallback beroende på körläge.
 
 Rådata, rensade elevfiler och genererad output ligger i `.gitignore`. Publicera inte personnummer, namn, rådata eller exporter med elevrader.

@@ -19,7 +19,7 @@
     .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}.card{background:#fff;border:1px solid var(--brd);border-top:3px solid var(--p);border-radius:8px;padding:14px 15px}.label{font-size:.72rem;text-transform:uppercase;color:var(--mut);font-weight:750}.value{font-size:1.8rem;font-weight:760;color:var(--p);margin-top:6px}.small{font-size:.8rem;color:var(--mut);line-height:1.45}.tabs{display:flex;flex-wrap:wrap;gap:0;overflow:visible;border-bottom:2px solid var(--brd);margin:16px 0}
     .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}.kpi-card{background:linear-gradient(180deg,#ffffff 0%,#f6fafc 100%);border:1px solid var(--brd);border-left:5px solid var(--p);border-radius:12px;padding:18px 18px 16px;box-shadow:0 2px 10px rgba(24,55,71,.05)}.kpi-card h3{margin:0 0 10px;font-size:1rem;line-height:1.35}.kpi-topline{display:flex;justify-content:space-between;gap:14px;align-items:flex-end;margin-bottom:12px}.kpi-main{font-size:2.5rem;font-weight:780;color:var(--p);line-height:1}.kpi-main-sub{font-size:.8rem;color:var(--mut);margin-top:4px}.kpi-breakdown{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.kpi-chip{background:#fff;border:1px solid var(--brd);border-radius:10px;padding:10px 10px 9px}.kpi-chip-label{display:block;font-size:.69rem;text-transform:uppercase;color:var(--mut);font-weight:800}.kpi-chip-value{display:block;font-size:1.15rem;font-weight:760;color:var(--txt);margin-top:4px}.kpi-empty{padding:16px;border:1px dashed var(--brd);border-radius:10px;background:#fbfcfd;color:var(--mut)}
     .tab{padding:10px 15px;cursor:pointer;color:var(--mut);font-weight:650;border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap}.tab.active{color:var(--p);border-bottom-color:var(--p)}.panel{display:none}.panel.active{display:block}
-    .chart{height:300px;position:relative}.tw{overflow:auto}table{width:100%;border-collapse:separate;border-spacing:0;font-size:.84rem}th,td{padding:9px 10px;border-bottom:1px solid var(--brd);text-align:left;vertical-align:top}th{position:sticky;top:0;z-index:2;background:#f7f9fb;color:var(--mut);font-size:.72rem;text-transform:uppercase}.table-summary{margin:-2px 0 10px;color:var(--mut);font-size:.8rem}.table-summary strong{color:var(--txt)}.school-group td{background:#fbfcfd}.school-group-start td{border-top:8px solid #fff}.school-cell{position:sticky;left:0;z-index:1;background:inherit;box-shadow:1px 0 0 var(--brd);min-width:180px}.school-group .school-cell{background:#f3f7fa}.school-cell strong{display:block}.numeric{text-align:right;font-variant-numeric:tabular-nums}.pct-cell{min-width:92px;display:grid;grid-template-columns:minmax(46px,1fr) auto;gap:8px;align-items:center}.pct-bar{height:7px;background:#edf2f5;border-radius:999px;overflow:hidden}.pct-fill{display:block;height:100%;background:linear-gradient(90deg,var(--p2),var(--p));border-radius:inherit}.pct-label{font-variant-numeric:tabular-nums;white-space:nowrap}.ok{color:var(--g);font-weight:700}.warn{color:var(--o);font-weight:700}.err{color:var(--r);font-weight:700}.muted{color:var(--mut)}code{background:#eef2f5;padding:2px 5px;border-radius:4px}.pre{white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace;background:#f6f8fa;border:1px solid var(--brd);border-radius:8px;padding:12px;max-height:330px;overflow:auto;font-size:.78rem}
+    [hidden]{display:none!important}.chart{height:300px;position:relative}.tw{overflow:auto}table{width:100%;border-collapse:separate;border-spacing:0;font-size:.84rem}th,td{padding:9px 10px;border-bottom:1px solid var(--brd);text-align:left;vertical-align:top}th{position:sticky;top:0;z-index:2;background:#f7f9fb;color:var(--mut);font-size:.72rem;text-transform:uppercase}.table-summary{margin:-2px 0 10px;color:var(--mut);font-size:.8rem}.table-summary strong{color:var(--txt)}.school-group td{background:#fbfcfd}.school-group-start td{border-top:8px solid #fff}.school-cell{position:sticky;left:0;z-index:1;background:inherit;box-shadow:1px 0 0 var(--brd);min-width:180px}.school-group .school-cell{background:#f3f7fa}.school-cell strong{display:block}.numeric{text-align:right;font-variant-numeric:tabular-nums}.pct-cell{min-width:92px;display:grid;grid-template-columns:minmax(46px,1fr) auto;gap:8px;align-items:center}.pct-bar{height:7px;background:#edf2f5;border-radius:999px;overflow:hidden}.pct-fill{display:block;height:100%;background:linear-gradient(90deg,var(--p2),var(--p));border-radius:inherit}.pct-label{font-variant-numeric:tabular-nums;white-space:nowrap}.ok{color:var(--g);font-weight:700}.warn{color:var(--o);font-weight:700}.err{color:var(--r);font-weight:700}.muted{color:var(--mut)}code{background:#eef2f5;padding:2px 5px;border-radius:4px}.pre{white-space:pre-wrap;font-family:ui-monospace,Consolas,monospace;background:#f6f8fa;border:1px solid var(--brd);border-radius:8px;padding:12px;max-height:330px;overflow:auto;font-size:.78rem}
     details.tech-details{margin-top:12px;border:1px solid var(--brd);border-radius:8px;background:#fbfcfd}
     details.tech-details summary{cursor:pointer;padding:12px 14px;font-weight:650;color:var(--p)}
     details.tech-details > div{padding:0 14px 14px}
@@ -111,11 +111,48 @@
     <div class="tab" data-tab="subjects">Resultat per ämne</div>
     <div class="tab" data-tab="grades">Fördelning av betyg</div>
     <div class="tab" data-tab="outcomes">Måluppfyllelse</div>
+    <div class="tab" data-tab="progression">Progression åk 6–9</div>
     <div class="tab" data-tab="np">Nationella prov</div>
     <div class="tab" data-tab="availability">Vilken data som finns</div>
     <div class="tab" data-tab="control" data-tech>Datakontroll</div>
     <div class="tab" data-tab="diagnostics" data-tech>Teknisk diagnostik</div>
   </div>
+
+  <section id="tab-progression" class="panel">
+    <div class="box">
+      <h2>Progression åk 6–9</h2>
+      <p class="small">Följer anonymiserat hur samma elevers betyg utvecklas mellan årskurs 6 och slutbetyget i årskurs 9.</p>
+      <div class="filters active progression-filters">
+        <div class="filter">
+          <label for="progressionCohortFilter">Elevkull</label>
+          <select id="progressionCohortFilter"></select>
+        </div>
+        <div class="filter">
+          <label for="progressionSchoolFilter">Skola</label>
+          <select id="progressionSchoolFilter"></select>
+        </div>
+        <div class="filter">
+          <label for="progressionGenderFilter">Kön</label>
+          <select id="progressionGenderFilter"></select>
+        </div>
+        <div class="filter">
+          <label for="progressionGroupFilter">Kursplan</label>
+          <select id="progressionGroupFilter"></select>
+        </div>
+      </div>
+      <p id="progressionStatus" class="small"></p>
+    </div>
+    <div id="progressionResults" hidden>
+      <section id="progressionCards" class="grid"></section>
+      <div class="box"><h2>Höjt, oförändrat och sänkt per ämne</h2><div class="chart"><canvas id="progressionChangeChart"></canvas></div></div>
+      <div class="box"><h2>Genomsnittlig betygsnivå i åk 6 och åk 9</h2><div class="chart"><canvas id="progressionGradeChart"></canvas></div></div>
+      <div class="box">
+        <h2>Resultat per ämne</h2>
+        <div class="tw"><table><thead><tr><th>Ämne</th><th>Elever</th><th>Åk 6</th><th>Åk 9</th><th>Förändring</th><th>Höjt</th><th>Oförändrat</th><th>Sänkt</th><th>Samband</th></tr></thead><tbody id="progressionRows"></tbody></table></div>
+      </div>
+    </div>
+    <div id="progressionMethod" class="box"></div>
+  </section>
 
   <section id="tab-overview" class="panel active">
     <div class="box">
@@ -265,6 +302,7 @@
 <script src="app/local-data.js"></script>
 <script src="app/pxweb.js"></script>
 <script src="app/render.js"></script>
+<script src="app/progression.js"></script>
 <script src="app/init.js"></script>
 </body>
 </html>
