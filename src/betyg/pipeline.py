@@ -9,6 +9,7 @@ from .datafile_control import create_control_cases, write_datafile_control_workb
 from .io import publish_processed_json, read_grade_files, read_np_files, write_csv, write_json
 from .metrics import base_groups, clean, eligibility, gender_from_personnr, grade, grade_distribution, merit, overview, reached_all_subjects, school_name, segmented_groups, subject_name, sv_sva_group, sv_sva_summary
 from .np_data import aggregate_np
+from .progression_pipeline import build_progression_files
 from .skolenheter import skolenhet_lookup
 
 
@@ -126,6 +127,7 @@ def build_year(
     all_np_pass: list[dict[str, Any]] = []
     all_np_relation: list[dict[str, Any]] = []
     grade_batches: list[tuple[GradeSpec, list[dict[str, Any]], list[dict[str, Any]]]] = []
+    ak9_rows_for_progression: list[dict[str, Any]] = []
     manifest = {"lasar": lasar, "source": "local_scb", "import_date": import_date, "arskurser": [], "np_arskurser": [], "files": []}
     grade_rows_by_key: dict[tuple[int, str, str], dict[str, str]] = {}
     school_codes: set[str] = set()
@@ -155,6 +157,20 @@ def build_year(
         ])
         write_json(diagnostics_dir / f"import_betyg_ak{spec.arskurs}.json", import_diagnostics(rows, diagnostics, spec, lasar))
         grade_batches.append((spec, rows, diagnostics))
+        if spec.arskurs == 9:
+            ak9_rows_for_progression = rows
+
+    progression = build_progression_files(
+        grade_raw,
+        output_dir,
+        lasar,
+        ak9_rows_for_progression,
+    )
+    manifest["progression"] = {
+        "status": progression["status"],
+        "ak6_lasar": progression["ak6_lasar"],
+        "ak9_lasar": progression["ak9_lasar"],
+    }
 
     np_rows_by_spec: dict[int, list[tuple[dict[str, str], dict[str, str] | None]]] = {}
     for spec in NP_SPECS.values():

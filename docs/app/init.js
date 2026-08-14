@@ -96,6 +96,10 @@ $('diagBtn').addEventListener('click', () => {
     renderFilteredLocal();
   });
 });
+['progressionCohortFilter','progressionSchoolFilter','progressionGenderFilter','progressionGroupFilter'].forEach(id => {
+  $(id).addEventListener('change', updateProgressionFilters);
+});
+$('progressionSubjectSort').addEventListener('change', updateProgressionSubjectSort);
 $('selectAllSchoolsBtn').addEventListener('click', () => {
   [...$('schoolFilter').options].forEach(o => o.selected = !o.disabled);
   updateFilterState();

@@ -16,6 +16,7 @@ PUBLIC_JSON_FILES = [
     "np_andel_godkanda.json",
     "np_betyg_relation.json",
     "skolenheter_lookup.json",
+    "betygsprogression_ak6_ak9.json",
 ]
 SAVSJO_SCHOOL_NAMES = {
     "13654995": "Hagneskolan",
