@@ -188,8 +188,8 @@ git commit -m "feat: matcha elevkullar for progression"
 - Consumes: `match_cohort(...)` från Task 1
 - Produces: `compare_subject(ak6_row: dict[str, Any], ak9_row: dict[str, Any], subject: str) -> tuple[int, int] | None`
 - Produces: `spearman(values_x: list[float], values_y: list[float]) -> float | None`
-- Produces: `build_progression_document(matched_rows: list[tuple[dict[str, Any], dict[str, Any]]], ak6_lasar: str, ak9_lasar: str, privacy_threshold: int = 10) -> dict[str, Any]`
-- Internal: `_aggregate_segment(level: str, school_code: str | None, school_name: str, gender: str, group: str, pairs: list[tuple[dict[str, Any], dict[str, Any]]], threshold: int) -> dict[str, Any]`
+- Produces: `build_progression_document(matched_rows: list[tuple[dict[str, Any], dict[str, Any]]], ak9_rows: list[dict[str, Any]], ak6_lasar: str, ak9_lasar: str, privacy_threshold: int = 10) -> dict[str, Any]`
+- Internal: `_aggregate_segment(level: str, school_code: str | None, school_name: str, gender: str, group: str, pairs: list[tuple[dict[str, Any], dict[str, Any]]], eligible_ak9: list[dict[str, Any]], threshold: int) -> dict[str, Any]`
 - Internal: `_apply_secondary_suppression(segments: list[dict[str, Any]]) -> None`
 - Internal: `_assert_public_document(value: Any) -> None`
 
@@ -262,7 +262,7 @@ class ProgressionAggregationTests(unittest.TestCase):
 
     def test_document_groups_by_ak9_school_gender_and_sva(self) -> None:
         matched = [progression_pair(index, gender_digit=index % 2, sva=index < 10) for index in range(20)]
-        document = build_progression_document(matched, "2022-2023", "2025-2026")
+        document = build_progression_document(matched, [pair[1] for pair in matched], "2022-2023", "2025-2026")
         total = next(row for row in document["segment"] if row["niva"] == "huvudman" and row["kon"] == "Alla" and row["elevgrupp"] == "Alla")
         sva = next(row for row in document["segment"] if row["niva"] == "huvudman" and row["kon"] == "Alla" and row["elevgrupp"] == "SVA")
         self.assertEqual(total["matchning"]["antal_matchade"], 20)
@@ -306,7 +306,7 @@ def spearman(values_x: list[float], values_y: list[float]) -> float | None:
     return round(numerator / denominator, 3) if denominator else None
 
 
-def build_progression_document(matched_rows, ak6_lasar, ak9_lasar, privacy_threshold=10):
+def build_progression_document(matched_rows, ak9_rows, ak6_lasar, ak9_lasar, privacy_threshold=10):
     schools = (("huvudman", None, "Sävsjö kommun"), ("skolenhet", "59983229", "Hofgårdsskolan"), ("skolenhet", "74170440", "Rörviks skola"))
     segments = []
     for level, school_code, school_name in schools:
@@ -314,7 +314,8 @@ def build_progression_document(matched_rows, ak6_lasar, ak9_lasar, privacy_thres
         for gender in ("Alla", "Flickor", "Pojkar"):
             for group in ("Alla", "SV", "SVA"):
                 pairs = [pair for pair in school_pairs if (gender == "Alla" or gender_from_personnr(pair[1].get("PersonNr")) == gender) and (group == "Alla" or sv_sva_group(pair[1]) == group)]
-                segments.append(_aggregate_segment(level, school_code, school_name, gender, group, pairs, privacy_threshold))
+                eligible_ak9 = [row for row in ak9_rows if (school_code is None or clean(row.get("Skolenhetskod")) == school_code) and (gender == "Alla" or gender_from_personnr(row.get("PersonNr")) == gender) and (group == "Alla" or sv_sva_group(row) == group)]
+                segments.append(_aggregate_segment(level, school_code, school_name, gender, group, pairs, eligible_ak9, privacy_threshold))
     _apply_secondary_suppression(segments)
     document = {"schema_version": 1, "status": "ok", "source": "local_scb_progression", "ak6_lasar": ak6_lasar, "ak9_lasar": ak9_lasar, "sekretessgrans": privacy_threshold, "segment": segments}
     _assert_public_document(document)
@@ -328,7 +329,8 @@ Implementera `_aggregate_segment` genom att skapa alla `compare_subject`-par, be
 ```python
 class ProgressionPrivacyTests(unittest.TestCase):
     def test_small_segment_contains_no_counts_or_metrics(self) -> None:
-        document = build_progression_document([progression_pair(index) for index in range(9)], "2022-2023", "2025-2026")
+        matched = [progression_pair(index) for index in range(9)]
+        document = build_progression_document(matched, [pair[1] for pair in matched], "2022-2023", "2025-2026")
         total = next(row for row in document["segment"] if row["niva"] == "huvudman" and row["kon"] == "Alla" and row["elevgrupp"] == "Alla")
         self.assertTrue(total["undertryckt"])
         self.assertIsNone(total["matchning"])
@@ -337,7 +339,7 @@ class ProgressionPrivacyTests(unittest.TestCase):
 
     def test_counterpart_is_suppressed_when_binary_split_would_reveal_small_group(self) -> None:
         matched = [progression_pair(index, gender_digit=0) for index in range(12)] + [progression_pair(index + 20, gender_digit=1) for index in range(8)]
-        document = build_progression_document(matched, "2022-2023", "2025-2026")
+        document = build_progression_document(matched, [pair[1] for pair in matched], "2022-2023", "2025-2026")
         gender_rows = [row for row in document["segment"] if row["niva"] == "huvudman" and row["elevgrupp"] == "Alla" and row["kon"] in {"Flickor", "Pojkar"}]
         self.assertEqual({row["undertryckt"] for row in gender_rows}, {True})
         self.assertTrue(all(row["matchning"] is None for row in gender_rows))
@@ -446,7 +448,7 @@ def build_progression_files(grade_raw: Path, output_dir: Path, ak9_lasar: str, a
         diagnostics = {"status": "saknar_underlag", "ak6_lasar": ak6_lasar, "ak9_lasar": ak9_lasar, "ak6_rader": len(ak6_rows), "ak9_rader": len(ak9_rows), "source_diagnostics": source_diagnostics}
     else:
         matched, match_diagnostics = match_cohort(ak6_rows, ak9_rows)
-        public = build_progression_document(matched, ak6_lasar, ak9_lasar)
+        public = build_progression_document(matched, ak9_rows, ak6_lasar, ak9_lasar)
         diagnostics = {"status": "ok", "ak6_lasar": ak6_lasar, "ak9_lasar": ak9_lasar, **match_diagnostics, "source_diagnostics": source_diagnostics}
     write_json(output_dir / "json" / "betygsprogression_ak6_ak9.json", public)
     write_json(output_dir / "diagnostik" / "progression_ak6_ak9.json", diagnostics)
