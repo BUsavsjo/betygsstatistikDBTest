@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -15,6 +17,8 @@ from betyg.progression import (
     source_school_year,
     spearman,
 )
+from betyg.progression_pipeline import build_progression_files
+from betyg.constants import SPECS
 
 
 def progression_pair(
@@ -209,6 +213,69 @@ class ProgressionPrivacyTests(unittest.TestCase):
         ]
         self.assertEqual({row["undertryckt"] for row in gender_rows}, {True})
         self.assertTrue(all(row["matchning"] is None for row in gender_rows))
+
+
+class ProgressionPipelineTests(unittest.TestCase):
+    def test_missing_historical_source_writes_safe_unavailable_document(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+
+            result = build_progression_files(
+                root / "raw",
+                root / "output",
+                "2025-2026",
+                [],
+            )
+
+            self.assertEqual(result["status"], "saknar_underlag")
+            public_path = root / "output" / "json" / "betygsprogression_ak6_ak9.json"
+            diagnostics_path = root / "output" / "diagnostik" / "progression_ak6_ak9.json"
+            self.assertTrue(public_path.exists())
+            self.assertTrue(diagnostics_path.exists())
+            self.assertNotIn("PersonNr", public_path.read_text(encoding="utf-8"))
+
+    def test_historical_rows_are_read_from_three_years_before_ak9(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            raw_dir = root / "raw" / "2022-2023" / "ak6"
+            raw_dir.mkdir(parents=True)
+            ak9_rows = []
+            source_lines = []
+            for index in range(10):
+                ak6_row, ak9_row = progression_pair(index)
+                values = {column: "" for column in SPECS[6].columns}
+                values.update(ak6_row)
+                values["Skolenhetskod"] = "60194444"
+                source_lines.append(";".join(values[column] for column in SPECS[6].columns))
+                ak9_rows.append(ak9_row)
+            (raw_dir / "historiska_betyg.txt").write_text(
+                "\n".join(source_lines),
+                encoding="utf-8",
+            )
+
+            result = build_progression_files(
+                root / "raw",
+                root / "output",
+                "2025-2026",
+                ak9_rows,
+            )
+
+            self.assertEqual(result["status"], "ok")
+            total = next(
+                row
+                for row in result["segment"]
+                if row["niva"] == "huvudman"
+                and row["kon"] == "Alla"
+                and row["elevgrupp"] == "Alla"
+            )
+            self.assertEqual(total["matchning"]["antal_matchade"], 10)
+            diagnostics = json.loads(
+                (root / "output" / "diagnostik" / "progression_ak6_ak9.json").read_text(
+                    encoding="utf-8"
+                )
+            )
+            self.assertEqual(diagnostics["matchade"], 10)
+            self.assertNotIn("PersonNr", json.dumps(diagnostics))
 
 
 if __name__ == "__main__":

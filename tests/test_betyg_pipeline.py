@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import sys
 import tempfile
 import unittest
@@ -16,7 +17,7 @@ from betyg.datafile_control import build_case_rows, ControlCase
 from betyg.io import publish_processed_json, read_np_files
 from betyg.metrics import eligibility, gender_from_personnr, kolada_grade6_all_subjects_percentage, merit, overview, sv_sva_group
 from betyg.np_data import aggregate_np
-from betyg.pipeline import control_rows, np_import_diagnostics
+from betyg.pipeline import build_year, control_rows, np_import_diagnostics
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -177,13 +178,38 @@ class PublishTests(unittest.TestCase):
             source_dir.mkdir(parents=True)
             (source_dir / "manifest.json").write_text("{}", encoding="utf-8")
             (source_dir / "betygsstatistik_oversikt.json").write_text("[]", encoding="utf-8")
+            (source_dir / "betygsprogression_ak6_ak9.json").write_text("{}", encoding="utf-8")
             (source_dir / "secret.json").write_text("{}", encoding="utf-8")
 
             target_dir = publish_processed_json(output_base, processed_base, "2025-2026")
 
             self.assertTrue((target_dir / "manifest.json").exists())
             self.assertTrue((target_dir / "betygsstatistik_oversikt.json").exists())
+            self.assertTrue((target_dir / "betygsprogression_ak6_ak9.json").exists())
             self.assertFalse((target_dir / "secret.json").exists())
+
+
+class ProgressionBuildIntegrationTests(unittest.TestCase):
+    def test_build_year_keeps_ordinary_output_when_historical_source_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            output_base = root / "output"
+
+            build_year(
+                "2025-2026",
+                base_dir=root,
+                raw_base=root / "raw" / "betyg",
+                np_raw_base=root / "raw" / "np",
+                output_base=output_base,
+                processed_base=root / "processed",
+            )
+
+            json_dir = output_base / "2025-2026" / "json"
+            self.assertTrue((json_dir / "manifest.json").exists())
+            progression = json.loads(
+                (json_dir / "betygsprogression_ak6_ak9.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(progression["status"], "saknar_underlag")
 
 
 class ControlRowsTests(unittest.TestCase):
