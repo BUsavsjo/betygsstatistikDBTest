@@ -296,7 +296,76 @@ git commit -m "feat: gor progressionen sjalvinstruerande"
 
 ---
 
-### Task 3: Pages-paket, visuell kontroll och slutverifiering
+### Task 3: Gemensam ämnessortering och kort ämnestolkning
+
+**Files:**
+- Modify: `tests/e2e/filter-vyer-tabeller.spec.js:56-90`
+- Modify: `index.html:145-155`
+- Modify: `app/progression.js:115-171`
+- Modify: `app/init.js`
+
+**Interfaces:**
+- Produces: `sortedProgressionSubjects(subjects: object[], sortMode: string) -> object[]`
+- Produces: `subjectInterpretation(subject: object) -> string`
+- Produces DOM id: `progressionSubjectSort`
+- Changes: båda ämnesdiagrammen och ämnestabellen använder samma sorterade kopia
+
+- [ ] **Step 1: Skriv fallande test för ämnestolkning och gemensam sortering**
+
+Utöka progressionstestet med verifieringar att Matematik förklaras som `0,6 steg högre`, att sambandet beskrivs som `måttligt` och att texten säger att måttet inte visar varför. Byt sedan sortering till `correlation` och verifiera att Engelska ligger först i tabellen och båda diagrammen. Byt till `increase` och verifiera att Matematik ligger först.
+
+- [ ] **Step 2: Kör måltestet och verifiera rätt rött fel**
+
+Run:
+
+```text
+npx playwright test tests/e2e/filter-vyer-tabeller.spec.js --grep "anonymiserad progression"
+```
+
+Expected: FAIL eftersom sorteringskontrollen och kolumnen `Kort tolkning` saknas.
+
+- [ ] **Step 3: Lägg till sorteringskontroll och tabellkolumn**
+
+Lägg ett selectfält med id `progressionSubjectSort` ovanför diagrammen och alternativen:
+
+- `default`: Ämnesordning
+- `increase`: Störst höjning
+- `decrease`: Störst sänkning
+- `correlation`: Starkast samband
+
+Lägg till kolumnen `Kort tolkning` sist i ämnestabellen.
+
+- [ ] **Step 4: Implementera rena sorterings- och tolkningsfunktioner**
+
+`sortedProgressionSubjects` ska alltid returnera en kopia. `increase` sorterar fallande på `genomsnittlig_forandring`, `decrease` stigande och `correlation` fallande på absolut korrelation med saknade värden sist. Standardläget behåller källordningen.
+
+`subjectInterpretation` ska först beskriva om ämnets betyg i genomsnitt ligger högre, lägre eller oförändrat och därefter tolka sambandet som relativ placering. Texten ska avslutas med att måttet inte visar varför nivån har förändrats.
+
+- [ ] **Step 5: Koppla samma sorterade lista till diagram och tabell**
+
+Lägg `subjectSort: 'default'` i progressionens tillstånd, bind ändringshändelsen i `app/init.js` och rendera om vyn. Skicka samma resultat från `sortedProgressionSubjects` till både `renderProgressionCharts` och `renderProgressionTable`.
+
+- [ ] **Step 6: Kör progressionstest och hela UI-sviten**
+
+Run:
+
+```text
+npx playwright test tests/e2e/filter-vyer-tabeller.spec.js --grep "anonymiserad progression"
+npm run test:e2e
+```
+
+Expected: måltestet och hela Playwrightsviten PASS.
+
+- [ ] **Step 7: Commit**
+
+```text
+git add app/progression.js app/init.js index.html tests/e2e/filter-vyer-tabeller.spec.js
+git commit -m "feat: lagg till amnesanalys i progression"
+```
+
+---
+
+### Task 4: Pages-paket, visuell kontroll och slutverifiering
 
 **Files:**
 - Modify generated: `docs/app/progression.js`
@@ -305,7 +374,7 @@ git commit -m "feat: gor progressionen sjalvinstruerande"
 - Verify copied data: `docs/data/processed/2025-2026/json/betygsprogression_ak6_ak9.json`
 
 **Interfaces:**
-- Consumes: färdig käll-UI från Task 1 och Task 2
+- Consumes: färdig käll-UI från Task 1, Task 2 och Task 3
 - Produces: statiskt GitHub Pages-paket med samma pedagogiska progressionsvy
 
 - [ ] **Step 1: Bygg Pages-paketet**
