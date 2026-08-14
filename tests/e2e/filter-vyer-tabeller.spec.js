@@ -69,6 +69,22 @@ test('visar anonymiserad progression och filtrerar skola och SVA', async ({ page
   await expect(page.locator('#progressionCards')).toContainText('Matchade elever');
   await expect(page.locator('#progressionRows tr')).toHaveCount(2);
 
+  const interpretation = page.locator('#progressionInterpretation');
+  await expect(interpretation).toContainText('36 av 40 elever');
+  await expect(interpretation).toContainText('jämförbara ämnesbetyg');
+  await expect(interpretation).toContainText('50 % höjts');
+  await expect(interpretation).toContainText('35 % varit oförändrade');
+  await expect(interpretation).toContainText('15 % sänkts');
+  await expect(interpretation).toContainText('ungefär 2 av 10 jämförbara ämnesbetyg');
+  await expect(interpretation).toContainText('0,4 betygssteg högre');
+  await expect(interpretation).not.toContainText('2 av 10 elever');
+
+  const correlation = page.locator('#progressionCorrelation');
+  await expect(correlation).toContainText('måttligt positivt samband');
+  await expect(correlation).toContainText('relativt höga betyg');
+  await expect(correlation).toContainText('visar inte om betygen har höjts eller sänkts');
+  await expect(correlation).toContainText('vilken effekt skolan haft');
+
   await page.locator('#progressionSchoolFilter').selectOption('59983229');
   await page.locator('#progressionGroupFilter').selectOption('SVA');
 

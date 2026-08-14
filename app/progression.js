@@ -100,6 +100,56 @@ function progressionCard(label, value, detail){
   return `<article class="card"><div class="label">${esc(label)}</div><div class="value">${esc(value)}</div><div class="small">${esc(detail)}</div></article>`;
 }
 
+function changeInterpretation(value){
+  const amount = fmt(Math.abs(value));
+  if(value < 0){
+    return `Det innebär att samma elevers betyg i samma ämnen i genomsnitt ligger ${amount} betygssteg lägre i årskurs 9.`;
+  }
+  if(value > 0){
+    return `Det innebär att samma elevers betyg i samma ämnen i genomsnitt ligger ${amount} betygssteg högre i årskurs 9.`;
+  }
+  return 'De jämförbara ämnesbetygen är i genomsnitt oförändrade.';
+}
+
+function correlationInterpretation(value){
+  if(value === null || value === undefined){
+    return {
+      heading: 'Sambandet kan inte beräknas för det valda underlaget.',
+      body: 'Det behövs tillräckligt många varierande resultat för att beräkna ett samband.'
+    };
+  }
+  const absolute = Math.abs(value);
+  const strength = absolute < 0.2 ? 'inget tydligt' : absolute < 0.4 ? 'svagt' : absolute < 0.7 ? 'måttligt' : 'starkt';
+  const direction = absolute < 0.2 ? '' : value >= 0 ? ' positivt' : ' negativt';
+  const pattern = absolute < 0.2
+    ? 'Resultaten i årskurs 6 ger liten vägledning om elevernas relativa resultat i årskurs 9.'
+    : value >= 0
+      ? 'Elever som hade relativt höga betyg i årskurs 6 tenderar även att ha relativt höga betyg i årskurs 9.'
+      : 'Elevernas relativa placering tenderar att vara omvänd mellan årskurs 6 och årskurs 9.';
+  return {
+    heading: `${fmt(value)} – ${strength}${direction} samband`,
+    body: `${pattern} Sambandet visar inte om betygen har höjts eller sänkts, varför resultaten förändrats eller vilken effekt skolan haft.`
+  };
+}
+
+function renderProgressionInterpretation(segment){
+  const match = segment.matchning;
+  const overview = segment.oversikt;
+  const loweredOfTen = Math.round(overview.andel_sankta_betyg / 10);
+  $('progressionInterpretation').innerHTML = `
+    <h2>Så kan resultatet tolkas</h2>
+    <p>${esc(match.antal_matchade)} av ${esc(match.antal_ak9)} elever i årskurs 9 kunde följas tillbaka till årskurs 6. Bland deras jämförbara ämnesbetyg har ${fmt(overview.andel_hojda_betyg, ' %')} höjts, ${fmt(overview.andel_oforandrade_betyg, ' %')} varit oförändrade och ${fmt(overview.andel_sankta_betyg, ' %')} sänkts. Det motsvarar ungefär ${esc(loweredOfTen)} av 10 jämförbara ämnesbetyg som har sänkts.</p>
+    <p>Den genomsnittliga betygsförändringen är <strong>${fmt(overview.genomsnittlig_forandring, ' steg')}</strong>. ${esc(changeInterpretation(overview.genomsnittlig_forandring))} Ett steg motsvarar exempelvis E till D eller C till B. Måttet beskriver alla jämförbara ämnesbetyg tillsammans, inte varje enskild elev.</p>`;
+}
+
+function renderProgressionCorrelation(segment){
+  const interpretation = correlationInterpretation(segment.oversikt.korrelation);
+  $('progressionCorrelation').innerHTML = `
+    <h2>Samband mellan resultaten</h2>
+    <p><strong>${esc(interpretation.heading)}</strong></p>
+    <p>${esc(interpretation.body)}</p>`;
+}
+
 function renderProgressionCards(segment){
   const match = segment.matchning;
   const overview = segment.oversikt;
@@ -165,7 +215,9 @@ function renderProgressionView(){
     : segment.skolenhetsnamn;
   $('progressionStatus').textContent = `${schoolLabel} · ${progressionState.gender} · ${progressionState.group} · åk 6 ${data.ak6_lasar} till åk 9 ${data.ak9_lasar}`;
   $('progressionResults').hidden = false;
+  renderProgressionInterpretation(segment);
   renderProgressionCards(segment);
+  renderProgressionCorrelation(segment);
   renderProgressionCharts(segment.amnen || []);
   renderProgressionTable(segment.amnen || []);
 }
