@@ -1,7 +1,7 @@
 {
   "lasar": "2025-2026",
   "source": "local_scb",
-  "import_date": "2026-06-19",
+  "import_date": "2026-08-14",
   "arskurser": [
     {
       "arskurs": 6,
@@ -156,5 +156,10 @@
       "file": "BetygAk9rörvik.txt",
       "rows": 32
     }
-  ]
+  ],
+  "progression": {
+    "status": "ok",
+    "ak6_lasar": "2022-2023",
+    "ak9_lasar": "2025-2026"
+  }
 }
