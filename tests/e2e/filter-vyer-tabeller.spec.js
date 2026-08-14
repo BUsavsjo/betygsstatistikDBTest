@@ -115,6 +115,13 @@ test('visar anonymiserad progression och filtrerar skola och SVA', async ({ page
   const roundedZeroOverview = await page.evaluate(() => changeInterpretation(0.04));
   expect(roundedZeroOverview).toContain('i genomsnitt oförändrade');
   expect(roundedZeroOverview).not.toContain('0 betygssteg högre');
+  const roundedNegativeInterpretation = await page.evaluate(() => subjectInterpretation({
+    genomsnittlig_forandring: -0.05,
+    korrelation: 0.5,
+  }));
+  expect(roundedNegativeInterpretation).toContain('0,1 steg lägre');
+  const roundedNegativeOverview = await page.evaluate(() => changeInterpretation(-0.05));
+  expect(roundedNegativeOverview).toContain('0,1 betygssteg lägre');
 
   await page.locator('#progressionSubjectSort').selectOption('correlation');
   await expect(page.locator('#progressionRows tr').first()).toContainText('Engelska');

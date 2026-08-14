@@ -109,15 +109,15 @@ function progressionCard(label, value, detail){
 }
 
 function changeInterpretation(value){
-  const displayedValue = Math.round(Number(value || 0) * 10) / 10;
-  const amount = fmt(Math.abs(displayedValue));
-  if(displayedValue < 0){
+  const numericValue = Number(value || 0);
+  const amount = fmt(Math.abs(numericValue));
+  if(amount === '0'){
+    return 'De jämförbara ämnesbetygen är i genomsnitt oförändrade.';
+  }
+  if(numericValue < 0){
     return `Det innebär att samma elevers betyg i samma ämnen i genomsnitt ligger ${amount} betygssteg lägre i årskurs 9.`;
   }
-  if(displayedValue > 0){
-    return `Det innebär att samma elevers betyg i samma ämnen i genomsnitt ligger ${amount} betygssteg högre i årskurs 9.`;
-  }
-  return 'De jämförbara ämnesbetygen är i genomsnitt oförändrade.';
+  return `Det innebär att samma elevers betyg i samma ämnen i genomsnitt ligger ${amount} betygssteg högre i årskurs 9.`;
 }
 
 function correlationInterpretation(value){
@@ -225,13 +225,13 @@ function sortedProgressionSubjects(subjects, sortMode){
 }
 
 function subjectInterpretation(subject){
-  const change = Math.round(Number(subject.genomsnittlig_forandring || 0) * 10) / 10;
+  const change = Number(subject.genomsnittlig_forandring || 0);
   const amount = fmt(Math.abs(change));
-  const level = change > 0
+  const level = amount === '0'
+    ? 'Betygen är i genomsnitt oförändrade mellan årskurserna.'
+    : change > 0
     ? `Betygen ligger i genomsnitt ${amount} steg högre i årskurs 9.`
-    : change < 0
-      ? `Betygen ligger i genomsnitt ${amount} steg lägre i årskurs 9.`
-      : 'Betygen är i genomsnitt oförändrade mellan årskurserna.';
+    : `Betygen ligger i genomsnitt ${amount} steg lägre i årskurs 9.`;
   const correlation = subject.korrelation;
   let pattern;
   if(correlation === null || correlation === undefined){
