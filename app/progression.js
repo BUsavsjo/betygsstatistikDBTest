@@ -109,11 +109,12 @@ function progressionCard(label, value, detail){
 }
 
 function changeInterpretation(value){
-  const amount = fmt(Math.abs(value));
-  if(value < 0){
+  const displayedValue = Math.round(Number(value || 0) * 10) / 10;
+  const amount = fmt(Math.abs(displayedValue));
+  if(displayedValue < 0){
     return `Det innebär att samma elevers betyg i samma ämnen i genomsnitt ligger ${amount} betygssteg lägre i årskurs 9.`;
   }
-  if(value > 0){
+  if(displayedValue > 0){
     return `Det innebär att samma elevers betyg i samma ämnen i genomsnitt ligger ${amount} betygssteg högre i årskurs 9.`;
   }
   return 'De jämförbara ämnesbetygen är i genomsnitt oförändrade.';
@@ -224,7 +225,7 @@ function sortedProgressionSubjects(subjects, sortMode){
 }
 
 function subjectInterpretation(subject){
-  const change = Number(subject.genomsnittlig_forandring || 0);
+  const change = Math.round(Number(subject.genomsnittlig_forandring || 0) * 10) / 10;
   const amount = fmt(Math.abs(change));
   const level = change > 0
     ? `Betygen ligger i genomsnitt ${amount} steg högre i årskurs 9.`
