@@ -41,6 +41,8 @@ För kommunresultatet kan texten exempelvis vara:
 > 114 av 121 elever i årskurs 9 kunde följas tillbaka till årskurs 6. Bland deras jämförbara ämnesbetyg har 26,3 % höjts, 36 % varit oförändrade och 37,8 % sänkts. Det motsvarar ungefär 4 av 10 jämförbara ämnesbetyg som har sänkts.
 >
 > Den genomsnittliga betygsförändringen är −0,2 steg. Det innebär att samma elevers betyg i samma ämnen i genomsnitt ligger 0,2 betygssteg lägre i årskurs 9. Ett steg motsvarar exempelvis E till D eller C till B. Måttet beskriver alla jämförbara ämnesbetyg tillsammans, inte varje enskild elev.
+>
+> Analysen följer en och samma elevgrupp från årskurs 6 till årskurs 9 under tre år. Resultatet behöver tolkas försiktigt. Rapporten visar inte en trend över flera elevkullar, fler årskurser eller en längre tidsperiod.
 
 Texten använder segmentets exakta procenttal. Formuleringen **ungefär X av 10** beräknas genom att avrunda andelen sänkta ämnesbetyg till närmaste tiondel av gruppen. Den formuleringen ska alltid följas av orden **jämförbara ämnesbetyg**.
 
@@ -149,6 +151,7 @@ Playwrighttestet för progression ska verifiera att:
 - den dynamiska tolkningsrutan visar matchade elever och andelarna höjt, oförändrat och sänkt
 - formuleringen **jämförbara ämnesbetyg** används och att andelen inte beskrivs som andel elever
 - genomsnittlig förändring förklaras som högre, lägre eller oförändrad beroende på tecken
+- tolkningsrutan anger att analysen följer samma elevgrupp under tre år och inte visar en trend över flera elevkullar eller en längre tidsperiod
 - fixturevärdet `0,62` beskrivs som ett måttligt positivt samband och förklaringen anger att sambandet inte visar orsak eller skoleffekt
 - de fem nya nyckeltalsrubrikerna visas
 - meritvärdet visas separat som kompletterande slutmått
