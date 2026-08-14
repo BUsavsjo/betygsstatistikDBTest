@@ -84,11 +84,44 @@ Riktningen anges som positiv eller negativ när `abs(r) ≥ 0,2`. Om korrelation
 
 Diagrammet över genomsnittlig betygsnivå ska visa betygsskalan `F, E, D, C, B, A` i stället för de tekniska talen `0–5` på y-axeln.
 
+Ovanför ämnesdiagrammen och tabellen visas ett gemensamt val **Sortera ämnen** med alternativen:
+
+- Ämnesordning
+- Störst höjning
+- Störst sänkning
+- Starkast samband
+
+Valet ska sortera båda diagrammen och ämnestabellen på samma sätt. **Störst höjning** sorterar fallande på genomsnittlig förändring, **Störst sänkning** stigande och **Starkast samband** fallande på korrelationens absoluta värde med saknade samband sist. Grundalternativet återställer den befintliga ämnesordningen. Sorteringen använder endast de redan publicerade ämnesaggregaten och skapar inga nya elevgrupper.
+
 Ämnestabellen behåller befintliga värden men får tydligare rubriker och en kort synlig introduktion:
 
 > Varje rad jämför elever som har ett giltigt betyg i ämnet både i årskurs 6 och årskurs 9.
 
-Kolumnen **Elever** byter namn till **Jämförbara elever**. **Förändring** byter namn till **Förändring i steg**. **Samband** byter namn till **Samband mellan resultaten**. Tabellen ska behålla procenttecknet på samma rad som värdet vid normal skrivbordsbredd.
+Kolumnen **Elever** byter namn till **Jämförbara elever**. **Förändring** byter namn till **Förändring i steg**. **Samband** byter namn till **Samband mellan resultaten**. En ny kolumn **Kort tolkning** sammanför förändring och samband i vardagsspråk. Tabellen ska behålla procenttecknet på samma rad som värdet vid normal skrivbordsbredd.
+
+## Kort ämnestolkning
+
+Varje publicerbar ämnesrad får en dynamisk text som beskriver två separata observationer:
+
+1. om den genomsnittliga betygsnivån ligger högre, lägre eller är oförändrad
+2. vad korrelationen säger om elevernas relativa placering
+
+Exempel för matematik med förändring `−0,44` och korrelation `0,79`:
+
+> Betygen ligger i genomsnitt 0,4 steg lägre i årskurs 9. Det starka positiva sambandet innebär att elevernas relativa placering är förhållandevis stabil. Det visar inte varför nivån har förändrats.
+
+Texten använder det exakta tecknet på förändringen och samma korrelationsgränser som den övergripande sambandsförklaringen. Positiv förändring beskrivs som högre, negativ som lägre och exakt noll som oförändrad. Ingen godtycklig gräns ska användas för att kalla små förändringar oförändrade.
+
+För positiva samband används följande andra mening:
+
+- inget tydligt samband: **Det finns inget tydligt mönster i elevernas relativa placering.**
+- svagt positivt: **Elevernas relativa placering varierar mer mellan årskurserna.**
+- måttligt positivt: **Det finns ett tydligt men inte starkt mönster i elevernas relativa placering.**
+- starkt positivt: **Elevernas relativa placering är förhållandevis stabil.**
+
+Negativa samband använder den befintliga förklaringen att elevernas relativa placering tenderar att vara omvänd. Varje ämnestolkning avslutas med **Det visar inte varför nivån har förändrats.**
+
+Ämnen ska inte delas in i elevgrupperna höjda, oförändrade eller sänkta. Andelarna i tabellen avser fortfarande jämförbara elev–ämnespar. Den korta tolkningen får inte beskriva dem som andelar elever.
 
 ## Meritvärde och metod
 
@@ -120,6 +153,9 @@ Playwrighttestet för progression ska verifiera att:
 - de fem nya nyckeltalsrubrikerna visas
 - meritvärdet visas separat som kompletterande slutmått
 - tabellens nya rubriker visas
+- ämnestabellen visar en kort tolkning som håller förändring och samband isär
+- sorteringsvalet **Starkast samband** placerar fixtureämnet Engelska före Matematik i både diagram och tabell
+- sorteringsvalet **Störst höjning** placerar fixtureämnet Matematik före Engelska i både diagram och tabell
 - saknat och undertryckt underlag fortfarande döljer resultatet
 
 Efter ändringen körs hela Python- och Playwrightsviten samt Pages-bygget. Eftersom beräkning och importlogik inte ändras behöver rådata inte importeras på nytt; den befintliga anonymiserade progressionsfilen återanvänds.
