@@ -1,4 +1,5 @@
 const { test, expect } = require('@playwright/test');
+const path = require('path');
 
 async function waitForAppReady(page) {
   await page.goto('/');
@@ -50,4 +51,54 @@ test('visar NP-läge när bara årskurs 3 är vald', async ({ page }) => {
   await page.locator('[data-tab="np"]').click();
   await expect(page.locator('#tab-np')).toHaveClass(/active/);
   await expect(page.locator('#npFilterSummary')).toContainText('Årskurs: 3');
+});
+
+test('visar anonymiserad progression och filtrerar skola och SVA', async ({ page }) => {
+  test.setTimeout(20_000);
+  await page.route('**/betygsprogression_ak6_ak9.json', route =>
+    route.fulfill({
+      path: path.join(__dirname, '..', 'fixtures', 'betygsprogression_ak6_ak9.json'),
+      contentType: 'application/json',
+    }),
+  );
+  await waitForAppReady(page);
+
+  await page.locator('[data-tab="progression"]').click();
+
+  await expect(page.locator('#tab-progression')).toHaveClass(/active/);
+  await expect(page.locator('#progressionCards')).toContainText('Matchade elever');
+  await expect(page.locator('#progressionRows tr')).toHaveCount(2);
+
+  await page.locator('#progressionSchoolFilter').selectOption('59983229');
+  await page.locator('#progressionGroupFilter').selectOption('SVA');
+
+  await expect(page.locator('#progressionStatus')).toContainText(
+    'Resultatet visas inte eftersom gruppen är för liten.',
+  );
+  await expect(page.locator('#progressionRows')).toBeEmpty();
+});
+
+test('saknat progressionsunderlag påverkar inte ordinarie översikt', async ({ page }) => {
+  test.setTimeout(20_000);
+  await page.route('**/betygsprogression_ak6_ak9.json', route =>
+    route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify({
+        schema_version: 1,
+        status: 'saknar_underlag',
+        source: 'test_fixture',
+        ak6_lasar: '2022-2023',
+        ak9_lasar: '2025-2026',
+        sekretessgrans: 10,
+        segment: [],
+      }),
+    }),
+  );
+  await waitForAppReady(page);
+
+  await expect(page.locator('#localMeritRows tr')).not.toHaveCount(0);
+  await page.locator('[data-tab="progression"]').click();
+  await expect(page.locator('#progressionStatus')).toContainText('Historiska betyg för åk 6 saknas');
+  await expect(page.locator('#progressionResults')).toHaveCount(1);
+  await expect(page.locator('#progressionResults')).toBeHidden();
 });

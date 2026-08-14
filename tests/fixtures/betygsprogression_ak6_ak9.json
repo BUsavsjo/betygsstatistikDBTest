@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "status": "ok",
+  "source": "test_fixture",
+  "ak6_lasar": "2022-2023",
+  "ak9_lasar": "2025-2026",
+  "sekretessgrans": 10,
+  "segment": [
+    {
+      "niva": "huvudman",
+      "skolenhetskod": null,
+      "skolenhetsnamn": "Sävsjö kommun",
+      "kon": "Alla",
+      "elevgrupp": "Alla",
+      "undertryckt": false,
+      "matchning": {
+        "antal_ak9": 40,
+        "antal_matchade": 36,
+        "matchningsgrad": 90.0
+      },
+      "oversikt": {
+        "antal_betygspar": 102,
+        "genomsnitt_ak6": 2.2,
+        "genomsnitt_ak9": 2.6,
+        "genomsnittlig_forandring": 0.4,
+        "andel_hojda_betyg": 50.0,
+        "andel_oforandrade_betyg": 35.0,
+        "andel_sankta_betyg": 15.0,
+        "andel_f_till_godkant": 8.0,
+        "andel_godkant_till_f": 2.0,
+        "korrelation": 0.62
+      },
+      "merit_ak9": {
+        "genomsnitt_merit_16": 218.5,
+        "genomsnitt_merit_17": 231.0,
+        "korrelation_ak6_index_merit_16": 0.59
+      },
+      "amnen": [
+        {
+          "amne": "Ma",
+          "amnesnamn": "Matematik",
+          "undertryckt": false,
+          "antal_elever": 35,
+          "genomsnitt_ak6": 2.1,
+          "genomsnitt_ak9": 2.7,
+          "genomsnittlig_forandring": 0.6,
+          "andel_hojda": 55.0,
+          "andel_oforandrade": 30.0,
+          "andel_sankta": 15.0,
+          "andel_f_till_godkant": 9.0,
+          "andel_godkant_till_f": 2.0,
+          "korrelation": 0.64
+        },
+        {
+          "amne": "En",
+          "amnesnamn": "Engelska",
+          "undertryckt": false,
+          "antal_elever": 34,
+          "genomsnitt_ak6": 2.5,
+          "genomsnitt_ak9": 2.8,
+          "genomsnittlig_forandring": 0.3,
+          "andel_hojda": 45.0,
+          "andel_oforandrade": 40.0,
+          "andel_sankta": 15.0,
+          "andel_f_till_godkant": 5.0,
+          "andel_godkant_till_f": 1.0,
+          "korrelation": 0.71
+        }
+      ]
+    },
+    {
+      "niva": "skolenhet",
+      "skolenhetskod": "59983229",
+      "skolenhetsnamn": "Hofgårdsskolan",
+      "kon": "Alla",
+      "elevgrupp": "SVA",
+      "undertryckt": true,
+      "matchning": null,
+      "oversikt": null,
+      "merit_ak9": null,
+      "amnen": null
+    },
+    {
+      "niva": "skolenhet",
+      "skolenhetskod": "74170440",
+      "skolenhetsnamn": "Rörviks skola",
+      "kon": "Alla",
+      "elevgrupp": "Alla",
+      "undertryckt": true,
+      "matchning": null,
+      "oversikt": null,
+      "merit_ak9": null,
+      "amnen": null
+    }
+  ]
+}
