@@ -147,12 +147,25 @@
       <section id="progressionInterpretation" class="box progression-explanation" aria-live="polite"></section>
       <section id="progressionCards" class="grid"></section>
       <section id="progressionCorrelation" class="box progression-explanation"></section>
-      <div class="box"><h2>Höjt, oförändrat och sänkt per ämne</h2><div class="chart"><canvas id="progressionChangeChart"></canvas></div></div>
+      <div class="box">
+        <h2>Höjt, oförändrat och sänkt per ämne</h2>
+        <div class="filter" style="max-width:260px;margin-bottom:12px">
+          <label for="progressionSubjectSort">Sortera ämnen</label>
+          <select id="progressionSubjectSort">
+            <option value="default">Ämnesordning</option>
+            <option value="increase">Störst höjning</option>
+            <option value="decrease">Störst sänkning</option>
+            <option value="correlation">Starkast samband</option>
+          </select>
+        </div>
+        <p class="small">Vald ordning används i båda diagrammen och i tabellen.</p>
+        <div class="chart"><canvas id="progressionChangeChart"></canvas></div>
+      </div>
       <div class="box"><h2>Genomsnittlig betygsnivå i åk 6 och åk 9</h2><div class="chart"><canvas id="progressionGradeChart"></canvas></div></div>
       <div class="box">
         <h2>Resultat per ämne</h2>
         <p id="progressionSubjectIntro" class="small">Varje rad jämför elever som har ett giltigt betyg i ämnet både i årskurs 6 och årskurs 9.</p>
-        <div class="tw"><table id="progressionSubjectTable" class="progression-table"><thead><tr><th>Ämne</th><th>Jämförbara elever</th><th>Åk 6</th><th>Åk 9</th><th>Förändring i steg</th><th>Höjt</th><th>Oförändrat</th><th>Sänkt</th><th>Samband mellan resultaten</th></tr></thead><tbody id="progressionRows"></tbody></table></div>
+        <div class="tw"><table id="progressionSubjectTable" class="progression-table"><thead><tr><th>Ämne</th><th>Jämförbara elever</th><th>Åk 6</th><th>Åk 9</th><th>Förändring i steg</th><th>Höjt</th><th>Oförändrat</th><th>Sänkt</th><th>Samband mellan resultaten</th><th>Kort tolkning</th></tr></thead><tbody id="progressionRows"></tbody></table></div>
       </div>
       <section id="progressionSecondary" class="box progression-explanation"></section>
     </div>

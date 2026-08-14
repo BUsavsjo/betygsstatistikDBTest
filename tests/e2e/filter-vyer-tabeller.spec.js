@@ -99,6 +99,22 @@ test('visar anonymiserad progression och filtrerar skola och SVA', async ({ page
   await expect(page.locator('#progressionSubjectTable thead')).toContainText('Jämförbara elever');
   await expect(page.locator('#progressionSubjectTable thead')).toContainText('Förändring i steg');
   await expect(page.locator('#progressionSubjectTable thead')).toContainText('Samband mellan resultaten');
+  await expect(page.locator('#progressionSubjectTable thead')).toContainText('Kort tolkning');
+
+  const mathematicsRow = page.locator('#progressionRows tr', { hasText: 'Matematik' });
+  await expect(mathematicsRow).toContainText('0,6 steg högre');
+  await expect(mathematicsRow).toContainText('måttligt');
+  await expect(mathematicsRow).toContainText('visar inte varför');
+
+  await page.locator('#progressionSubjectSort').selectOption('correlation');
+  await expect(page.locator('#progressionRows tr').first()).toContainText('Engelska');
+  await expect.poll(() => page.evaluate(() => Chart.getChart('progressionChangeChart').data.labels[0])).toBe('Engelska');
+  await expect.poll(() => page.evaluate(() => Chart.getChart('progressionGradeChart').data.labels[0])).toBe('Engelska');
+
+  await page.locator('#progressionSubjectSort').selectOption('increase');
+  await expect(page.locator('#progressionRows tr').first()).toContainText('Matematik');
+  await expect.poll(() => page.evaluate(() => Chart.getChart('progressionChangeChart').data.labels[0])).toBe('Matematik');
+  await expect.poll(() => page.evaluate(() => Chart.getChart('progressionGradeChart').data.labels[0])).toBe('Matematik');
 
   await page.locator('#progressionSchoolFilter').selectOption('59983229');
   await page.locator('#progressionGroupFilter').selectOption('SVA');

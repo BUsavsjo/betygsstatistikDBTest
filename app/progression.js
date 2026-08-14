@@ -2,7 +2,8 @@ const progressionState = {
   data: null,
   school: 'huvudman',
   gender: 'Alla',
-  group: 'Alla'
+  group: 'Alla',
+  subjectSort: 'default'
 };
 
 function progressionOption(value, label){
@@ -41,6 +42,8 @@ function populateProgressionFilters(){
   progressionState.school = 'huvudman';
   progressionState.gender = 'Alla';
   progressionState.group = 'Alla';
+  progressionState.subjectSort = 'default';
+  $('progressionSubjectSort').value = 'default';
 }
 
 function initializeProgressionView(progression){
@@ -58,6 +61,11 @@ function updateProgressionFilters(){
   progressionState.school = $('progressionSchoolFilter').value || 'huvudman';
   progressionState.gender = $('progressionGenderFilter').value || 'Alla';
   progressionState.group = $('progressionGroupFilter').value || 'Alla';
+  renderProgressionView();
+}
+
+function updateProgressionSubjectSort(){
+  progressionState.subjectSort = $('progressionSubjectSort').value || 'default';
   renderProgressionView();
 }
 
@@ -197,6 +205,53 @@ function renderProgressionCharts(subjects){
   });
 }
 
+function sortedProgressionSubjects(subjects, sortMode){
+  const sorted = [...subjects];
+  const change = row => Number(row.genomsnittlig_forandring ?? 0);
+  if(sortMode === 'increase'){
+    return sorted.sort((a,b) => change(b) - change(a));
+  }
+  if(sortMode === 'decrease'){
+    return sorted.sort((a,b) => change(a) - change(b));
+  }
+  if(sortMode === 'correlation'){
+    const strength = row => row.korrelation === null || row.korrelation === undefined
+      ? -1
+      : Math.abs(Number(row.korrelation));
+    return sorted.sort((a,b) => strength(b) - strength(a));
+  }
+  return sorted;
+}
+
+function subjectInterpretation(subject){
+  const change = Number(subject.genomsnittlig_forandring || 0);
+  const amount = fmt(Math.abs(change));
+  const level = change > 0
+    ? `Betygen ligger i genomsnitt ${amount} steg högre i årskurs 9.`
+    : change < 0
+      ? `Betygen ligger i genomsnitt ${amount} steg lägre i årskurs 9.`
+      : 'Betygen är i genomsnitt oförändrade mellan årskurserna.';
+  const correlation = subject.korrelation;
+  let pattern;
+  if(correlation === null || correlation === undefined){
+    pattern = 'Sambandet i elevernas relativa placering kan inte beräknas.';
+  } else {
+    const absolute = Math.abs(Number(correlation));
+    if(absolute < 0.2){
+      pattern = 'Det finns inget tydligt mönster i elevernas relativa placering.';
+    } else if(Number(correlation) < 0){
+      pattern = 'Det finns ett negativt samband: elevernas relativa placering tenderar att vara omvänd mellan årskurserna.';
+    } else if(absolute < 0.4){
+      pattern = 'Det finns ett svagt positivt samband och elevernas relativa placering varierar mer mellan årskurserna.';
+    } else if(absolute < 0.7){
+      pattern = 'Det finns ett måttligt positivt samband i elevernas relativa placering.';
+    } else {
+      pattern = 'Det finns ett starkt positivt samband och elevernas relativa placering är förhållandevis stabil.';
+    }
+  }
+  return `${level} ${pattern} Det visar inte varför nivån har förändrats.`;
+}
+
 function renderProgressionTable(subjects){
   $('progressionRows').innerHTML = subjects
     .filter(row => !row.undertryckt)
@@ -210,6 +265,7 @@ function renderProgressionTable(subjects){
       <td class="numeric">${fmt(row.andel_oforandrade, ' %')}</td>
       <td class="numeric">${fmt(row.andel_sankta, ' %')}</td>
       <td class="numeric">${fmt(row.korrelation)}</td>
+      <td>${esc(subjectInterpretation(row))}</td>
     </tr>`)
     .join('');
 }
@@ -231,10 +287,11 @@ function renderProgressionView(){
     : segment.skolenhetsnamn;
   $('progressionStatus').textContent = `${schoolLabel} · ${progressionState.gender} · ${progressionState.group} · åk 6 ${data.ak6_lasar} till åk 9 ${data.ak9_lasar}`;
   $('progressionResults').hidden = false;
+  const subjects = sortedProgressionSubjects(segment.amnen || [], progressionState.subjectSort);
   renderProgressionInterpretation(segment);
   renderProgressionCards(segment);
   renderProgressionCorrelation(segment);
-  renderProgressionCharts(segment.amnen || []);
-  renderProgressionTable(segment.amnen || []);
+  renderProgressionCharts(subjects);
+  renderProgressionTable(subjects);
   renderProgressionSecondary(segment);
 }
