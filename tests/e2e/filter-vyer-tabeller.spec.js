@@ -36,6 +36,16 @@ test('uppdaterar tabellsammanfattning när filter ändras', async ({ page }) => 
   await expect(page.locator('#subjectRows tr')).not.toHaveCount(0);
 });
 
+test('tolkar språkfälten enligt datafilsbeskrivningen för 2026', async ({ page }) => {
+  await waitForAppReady(page);
+
+  await expect.poll(() => page.evaluate(() => resolveAmnesnamn('M1_betyg'))).toBe('Moderna språk (skolans val)');
+  await expect.poll(() => page.evaluate(() => resolveAmnesnamn('M2_betyg'))).toBe('Moderna språk (språkval)');
+  await expect.poll(() => page.evaluate(() => resolveAmnesnamn('ML_betyg'))).toBe('Modersmål');
+  await page.evaluate(() => { state.filters.grades = ['9']; });
+  await expect.poll(() => page.evaluate(() => tableNoteForSelectedGrades())).toBe('');
+});
+
 test('visar NP-läge när bara årskurs 3 är vald', async ({ page }) => {
   await waitForAppReady(page);
 
