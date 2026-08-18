@@ -22,10 +22,12 @@ async function tryLoadLocalSource(base, sourceKind){
 }
 async function tryLoadLocalYear(localYear){
   if(!localYear) return null;
+  if(!STATIC_PAGES_BUILD && !IS_GITHUB_PAGES){
+    const output = await tryLoadLocalSource(`data/output/${localYear}/json`, 'output');
+    if(output) return output;
+  }
   const processed = await tryLoadLocalSource(`data/processed/${localYear}/json`, 'processed');
   if(processed) return processed;
-  const output = await tryLoadLocalSource(`data/output/${localYear}/json`, 'output');
-  if(output) return output;
   return tryLoadLocalSource(`data/demo/${localYear}/json`, 'demo');
 }
 async function fetchJsonOptional(url, fallback){
@@ -47,8 +49,8 @@ function subjectLabel(row){
 const AMNE_NAMN = {
   Bi:'Biologi', Bl:'Bild', En:'Engelska', Fy:'Fysik', Ge:'Geografi',
   Hi:'Historia', Hkk:'Hem- och konsumentkunskap', Idh:'Idrott och hälsa',
-  Ke:'Kemi', M1_betyg:'Moderna språk (elevens val)', M2_betyg:'Moderna språk (skolans val)',
-  Ma:'Matematik', ML_betyg:'Moderna språk (språkval)', Modmalbe:'Modersmål',
+  Ke:'Kemi', M1_betyg:'Moderna språk (skolans val)', M2_betyg:'Moderna språk (språkval)',
+  Ma:'Matematik', ML_betyg:'Modersmål', Modmalbe:'Modersmål',
   Mu:'Musik', No:'NO (blockbetyg)', Ovr:'Övrigt ämne', Re:'Religionskunskap',
   Sh:'Samhällskunskap', Sl:'Slöjd', So:'SO (blockbetyg)', Sv:'Svenska',
   Sva:'Svenska som andraspråk', Tk:'Teknik', Tn:'Teckenspråk',
@@ -280,9 +282,7 @@ function currentTableSummary({groupLabel='Elevgrupp'}={}){
   return `${gradeText} · ${genderText} · ${groupText} · ${schoolText}`;
 }
 function tableNoteForSelectedGrades(){
-  const grades = new Set((state.filters?.grades || []).map(String));
-  if(!grades.has('9')) return '';
-  return 'Not: Åk 9-underlaget innehåller inte en separat kolumn för Modersmål, så ämnet kan inte visas i betygsfördelningen för åk 9.';
+  return '';
 }
 function selectedGradeValues(){
   return (state.filters?.grades || []).map(v => Number(v)).filter(Number.isFinite);

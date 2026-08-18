@@ -3,11 +3,23 @@ from __future__ import annotations
 import csv
 import json
 import shutil
+import tempfile
 from pathlib import Path
 from typing import Any
 
 from .constants import GradeSpec, NpSpec, PUBLIC_JSON_FILES
 from .metrics import clean
+
+
+PUBLIC_MINIMUM_COUNT = 10
+PUBLIC_COUNT_FIELDS = {
+    "betygsstatistik_oversikt.json": "antal_elever",
+    "betygsstatistik_sv_sva.json": "antal_elever",
+    "betygsstatistik_betygsfordelning_amne.json": "antal_betyg",
+    "betygsstatistik_kontroll_betyg.json": "antal_giltiga_betyg",
+    "np_andel_godkanda.json": "antal_np",
+    "np_betyg_relation.json": "antal_jamforda",
+}
 
 
 def read_text_rows(path: Path) -> list[list[str]]:
@@ -109,14 +121,46 @@ def write_csv(path: Path, rows: list[dict[str, Any]], fieldnames: list[str]) -> 
 
 def publish_processed_json(output_base: Path, processed_base: Path, lasar: str) -> Path:
     source_dir = output_base / lasar / "json"
-    target_dir = processed_base / lasar / "json"
     if not source_dir.exists():
         raise FileNotFoundError(f"Saknar JSON-output: {source_dir}")
 
-    target_dir.mkdir(parents=True, exist_ok=True)
-    for filename in PUBLIC_JSON_FILES:
-        source = source_dir / filename
-        if source.exists():
-            shutil.copy2(source, target_dir / filename)
+    target_dir = processed_base / lasar / "json"
+    with tempfile.TemporaryDirectory(prefix="betyg-publicering-") as tmp_dir:
+        staging_dir = Path(tmp_dir)
+        for filename in PUBLIC_JSON_FILES:
+            source = source_dir / filename
+            if source.exists():
+                count_field = PUBLIC_COUNT_FIELDS.get(filename)
+                if count_field is None:
+                    shutil.copy2(source, staging_dir / filename)
+                    continue
+
+                with source.open("r", encoding="utf-8") as handle:
+                    rows = json.load(handle)
+                if not isinstance(rows, list):
+                    raise ValueError(f"Förväntade en lista i {source}")
+
+                # Intern output behålls komplett för analys. Bara grupper med minst
+                # tio observationer skrivs till den publika processed-mappen.
+                public_rows = []
+                for row in rows:
+                    try:
+                        count = int(row.get(count_field, 0))
+                    except (AttributeError, TypeError, ValueError):
+                        count = 0
+                    if count >= PUBLIC_MINIMUM_COUNT:
+                        public_rows.append(row)
+                write_json(staging_dir / filename, public_rows)
+
+        # OneDrive kan vägra att ta bort själva json-mappen. Rensa därför dess
+        # innehåll och kopiera sedan in den färdigbyggda whitelisten.
+        target_dir.mkdir(parents=True, exist_ok=True)
+        for stale_path in target_dir.iterdir():
+            if stale_path.is_dir():
+                shutil.rmtree(stale_path)
+            else:
+                stale_path.unlink()
+        for public_file in staging_dir.iterdir():
+            shutil.copy2(public_file, target_dir / public_file.name)
 
     return target_dir

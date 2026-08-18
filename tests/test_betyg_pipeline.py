@@ -15,7 +15,7 @@ from config_paths import DEFAULT_LASAR, resolve_paths
 from betyg.constants import NP_SPECS, SPECS, AK9_SUBJECTS
 from betyg.datafile_control import build_case_rows, ControlCase
 from betyg.io import publish_processed_json, read_np_files
-from betyg.metrics import eligibility, gender_from_personnr, kolada_grade6_all_subjects_percentage, merit, overview, sv_sva_group
+from betyg.metrics import eligibility, gender_from_personnr, kolada_grade6_all_subjects_percentage, merit, overview, subject_name, sv_sva_group
 from betyg.np_data import aggregate_np
 from betyg.pipeline import build_year, control_rows, np_import_diagnostics
 
@@ -131,6 +131,11 @@ class DatafileDescriptionContractTests(unittest.TestCase):
 
 
 class MetricsTests(unittest.TestCase):
+    def test_language_subject_names_match_2026_datafile_descriptions(self) -> None:
+        self.assertEqual(subject_name("M1_betyg"), "Moderna språk, skolans val")
+        self.assertEqual(subject_name("M2_betyg"), "Moderna språk, språkval")
+        self.assertEqual(subject_name("ML_betyg"), "Modersmål")
+
     def test_gender_from_personnr_uses_second_last_digit(self) -> None:
         self.assertEqual(gender_from_personnr("20100101-1234"), "Pojkar")
         self.assertEqual(gender_from_personnr("20100101-1244"), "Flickor")
@@ -142,12 +147,39 @@ class MetricsTests(unittest.TestCase):
         self.assertEqual(sv_sva_group({"Sv": "A", "Sva": "B"}), "SV_och_SVA")
         self.assertEqual(sv_sva_group({"Sv": "", "Sva": ""}), "oklar")
 
-    def test_merit_uses_best_sv_sva_and_best_modern_language(self) -> None:
-        row = {subject: "E" for subject in AK9_SUBJECTS if subject not in {"Sv", "Sva"}}
-        row.update({"Sv": "C", "Sva": "A", "M1_betyg": "B", "M2_betyg": "D"})
-        merit16, merit17 = merit(row, AK9_SUBJECTS)
-        self.assertEqual(merit16, 170.0)
-        self.assertEqual(merit17, 187.5)
+    def test_merit_uses_only_modern_language_as_language_choice_as_seventeenth_grade(self) -> None:
+        row = {
+            "Ma": "E",
+            "M1_betyg": "A",
+            "M2_betyg": "B",
+            "ML_betyg": "C",
+        }
+
+        merit16, merit17 = merit(row, ["Ma", "M1_betyg", "M2_betyg", "ML_betyg"])
+
+        self.assertEqual(merit16, 45.0)
+        self.assertEqual(merit17, 62.5)
+
+    def test_merit_applies_best_sixteen_cutoff_before_adding_language_choice(self) -> None:
+        ordinary_subjects = [f"Amne_{index}" for index in range(15)]
+        subjects = ordinary_subjects + ["M1_betyg", "ML_betyg", "M2_betyg"]
+        row = {subject: "E" for subject in ordinary_subjects}
+        row.update({"M1_betyg": "A", "ML_betyg": "B", "M2_betyg": "C"})
+
+        merit16, merit17 = merit(row, subjects)
+
+        self.assertEqual(merit16, 177.5)
+        self.assertEqual(merit17, 192.5)
+
+    def test_merit_keeps_student_whose_only_passing_grade_is_language_choice(self) -> None:
+        merit16, merit17 = merit(
+            {"Ma": "F", "M2_betyg": "B"},
+            ["Ma", "M2_betyg"],
+            require_passing=True,
+        )
+
+        self.assertEqual(merit16, 0.0)
+        self.assertEqual(merit17, 17.5)
 
     def test_merit_can_exclude_ak9_students_without_any_passing_grade(self) -> None:
         row = {subject: "F" for subject in AK9_SUBJECTS}
@@ -180,6 +212,12 @@ class PublishTests(unittest.TestCase):
             (source_dir / "betygsstatistik_oversikt.json").write_text("[]", encoding="utf-8")
             (source_dir / "betygsprogression_ak6_ak9.json").write_text("{}", encoding="utf-8")
             (source_dir / "secret.json").write_text("{}", encoding="utf-8")
+            stale_target = processed_base / "2025-2026" / "json"
+            stale_target.mkdir(parents=True)
+            (stale_target / "secret.json").write_text("{}", encoding="utf-8")
+            (stale_target / "np_andel_godkanda.json").write_text(
+                '[{"antal_np":1}]', encoding="utf-8"
+            )
 
             target_dir = publish_processed_json(output_base, processed_base, "2025-2026")
 
@@ -187,6 +225,59 @@ class PublishTests(unittest.TestCase):
             self.assertTrue((target_dir / "betygsstatistik_oversikt.json").exists())
             self.assertTrue((target_dir / "betygsprogression_ak6_ak9.json").exists())
             self.assertFalse((target_dir / "secret.json").exists())
+            self.assertFalse((target_dir / "np_andel_godkanda.json").exists())
+
+    def test_publish_processed_json_excludes_groups_with_fewer_than_ten_results(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            output_base = root / "output"
+            processed_base = root / "processed"
+            source_dir = output_base / "2025-2026" / "json"
+            source_dir.mkdir(parents=True)
+            rows = [
+                {"amne": "ML_betyg", "antal_betyg": 9},
+                {"amne": "ML_betyg", "antal_betyg": 10},
+            ]
+            source_file = source_dir / "betygsstatistik_betygsfordelning_amne.json"
+            source_file.write_text(json.dumps(rows), encoding="utf-8")
+
+            target_dir = publish_processed_json(output_base, processed_base, "2025-2026")
+
+            published = json.loads(
+                (target_dir / source_file.name).read_text(encoding="utf-8")
+            )
+            self.assertEqual(published, [{"amne": "ML_betyg", "antal_betyg": 10}])
+            self.assertEqual(json.loads(source_file.read_text(encoding="utf-8")), rows)
+
+    def test_publish_processed_json_applies_threshold_to_each_statistical_file(self) -> None:
+        count_fields = {
+            "betygsstatistik_oversikt.json": "antal_elever",
+            "betygsstatistik_sv_sva.json": "antal_elever",
+            "betygsstatistik_kontroll_betyg.json": "antal_giltiga_betyg",
+            "np_andel_godkanda.json": "antal_np",
+            "np_betyg_relation.json": "antal_jamforda",
+        }
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            root = Path(tmp_dir)
+            output_base = root / "output"
+            processed_base = root / "processed"
+            source_dir = output_base / "2025-2026" / "json"
+            source_dir.mkdir(parents=True)
+            for filename, count_field in count_fields.items():
+                (source_dir / filename).write_text(
+                    json.dumps([
+                        {"id": "under_gransen", count_field: 9},
+                        {"id": "pa_gransen", count_field: 10},
+                    ]),
+                    encoding="utf-8",
+                )
+
+            target_dir = publish_processed_json(output_base, processed_base, "2025-2026")
+
+            for filename in count_fields:
+                with self.subTest(filename=filename):
+                    published = json.loads((target_dir / filename).read_text(encoding="utf-8"))
+                    self.assertEqual([row["id"] for row in published], ["pa_gransen"])
 
 
 class ProgressionBuildIntegrationTests(unittest.TestCase):

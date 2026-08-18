@@ -76,11 +76,10 @@ http://localhost:3000
 
 ## Publicera på GitHub Pages
 
-GitHub Pages kan bara servera statiska filer. Den publicerade versionen försöker därför läsa aggregerad JSON i följande ordning:
+GitHub Pages kan bara servera statiska filer. Den publicerade versionen försöker därför läsa publiceringsklar JSON i följande ordning:
 
 1. `data/processed/<läsår>/json`
-2. `data/output/<läsår>/json`
-3. `data/demo/<läsår>/json`
+2. `data/demo/<läsår>/json`
 
 Den försöker inte använda den lokala PxWeb-proxyn i `server.js`.
 
@@ -90,7 +89,7 @@ Lägg granskad bearbetad data som får publiceras här:
 data/processed/2025-2026/json/
 ```
 
-Om `data/processed/<läsår>/json` saknas kan `npm run build:pages` även paketera aggregerad JSON direkt från `data/output/<läsår>/json`. Då kopieras bara JSON-filerna under respektive `json/`-mapp, inte diagnostik, CSV eller andra arbetsfiler.
+`data/output/<läsår>/json` är internt analysunderlag och kopieras aldrig till Pages. När importen körs med `--publish` filtreras grupper med färre än 10 observationer bort innan de godkända filerna skrivs till `data/processed/`.
 
 Bygg publiceringsmappen:
 
@@ -103,7 +102,6 @@ Det skapar `docs/` med:
 ```text
 docs/index.html
 docs/data/processed/
-docs/data/output/
 docs/data/demo/
 docs/.nojekyll
 ```
@@ -121,7 +119,7 @@ Branch: main
 Folder: /docs
 ```
 
-Publicera aldrig `data/raw`, elevdata, exporter, `.env` eller dokumentation med personuppgifter. `npm run build:pages` kopierar bara `index.html`, `app/`, `data/processed`, `data/output/*/json` och `data/demo`.
+Publicera aldrig `data/raw`, `data/output`, elevdata, exporter, `.env` eller dokumentation med personuppgifter. `npm run build:pages` kopierar bara `index.html`, `app/`, den spärrade `data/processed`-datan och `data/demo`.
 
 ## Lokal SCB-import för årets betygsdata
 
@@ -245,15 +243,15 @@ Analysen omfattar Sävsjö kommun som helhet samt Hofgårdsskolan och Rörviks s
 
 Korrelationen beskriver hur starkt resultaten samvarierar, men visar inte varför de förändras eller vilken effekt en skola har haft. Meritvärdet jämförs inte som progression mellan årskurserna, eftersom ämnesuppsättningen och beräkningsunderlaget kan skilja sig. Grupper med färre än 10 matchade elever undertrycks i den publicerade statistiken.
 
-Webbappen försöker först läsa publiceringsklar JSON från `data/processed/<läsår>/json`, därefter aggregerad JSON från `data/output/<läsår>/json`. Om lokal/publicerad data saknas används demodata eller befintligt PxWeb-flöde som fallback beroende på körläge.
+Webbappen läser lokalt först komplett analysdata från `data/output/<läsår>/json` och använder publiceringsklar JSON från `data/processed/<läsår>/json` som reserv. Pages-paketet innehåller inte `data/output` och kan därför bara visa spärrad publiceringsdata. Om data saknas används demodata eller befintligt PxWeb-flöde som fallback beroende på körläge.
 
 Rådata, rensade elevfiler och genererad output ligger i `.gitignore`. Publicera inte personnummer, namn, rådata eller exporter med elevrader.
 
 Lokal SCB-import kan visa bland annat meritvärde, betygsfördelning, andel A-E/F, gymnasiebehörighet för åk 9, uppnått alla ämnen och jämförelse mellan elever som läser svenska respektive svenska som andraspråk.
 
-För årskurs 6 ingår nu även `Modmalbe` samt `M1_betyg` och `M2_betyg` i ämnesvyerna. De visas i JSON och UI som `Modersmål`, `Moderna språk, elevens val` respektive `Moderna språk, skolans val`.
+För årskurs 6 ingår även `Modmalbe`, `M1_betyg` och `M2_betyg` i ämnesvyerna. De visas i JSON och UI som `Modersmål`, `Moderna språk, skolans val` respektive `Moderna språk, språkval`.
 
-För årskurs 9 ingår nu även `M1_betyg`, `M2_betyg` och `ML_betyg` i ämnesvyerna. De visas som `Moderna språk, elevens val`, `Moderna språk, skolans val` och `Moderna språk som språkval`. Kontroll mot `datafilsbeskrivning_betyg_ak9_2026.xlsx` och råfilerna visar att åk9-formatet inte innehåller `Modmalbe`.
+För årskurs 9 ingår `M1_betyg`, `M2_betyg` och `ML_betyg` i ämnesvyerna. Enligt `datafilsbeskrivning_betyg_ak9_2026.xlsx` betyder de `Moderna språk, skolans val`, `Moderna språk, språkval` och `Modersmål`. Bara `M2_betyg` får räknas som ett sjuttonde betyg. `M1_betyg` och `ML_betyg` får i stället konkurrera bland de sexton bästa betygen.
 
 ## Tester
 

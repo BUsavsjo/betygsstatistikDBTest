@@ -13,9 +13,9 @@ SUBJECT_DISPLAY_NAMES = {
     "Hkk": "Hem- och konsumentkunskap",
     "Idh": "Idrott och hälsa",
     "Ma": "Matematik",
-    "M1_betyg": "Moderna språk, elevens val",
-    "M2_betyg": "Moderna språk, skolans val",
-    "ML_betyg": "Moderna språk som språkval",
+    "M1_betyg": "Moderna språk, skolans val",
+    "M2_betyg": "Moderna språk, språkval",
+    "ML_betyg": "Modersmål",
     "Modmalbe": "Modersmål",
     "Mu": "Musik",
     "No": "Naturorienterande ämnen (blockbetyg)",
@@ -35,7 +35,9 @@ SUBJECT_DISPLAY_NAMES = {
     "Ovr": "Övrigt ämne",
 }
 
-EXTRA_LANGUAGE_SUBJECTS = {"M1_betyg", "M2_betyg", "ML_betyg"}
+# Bara moderna språk inom språkval får räknas som ett sjuttonde betyg.
+# Skolans val och modersmål konkurrerar i stället bland de sexton bästa.
+SEVENTEENTH_GRADE_SUBJECTS = {"M2_betyg"}
 
 
 def clean(value: Any) -> str:
@@ -80,13 +82,13 @@ def merit(row: dict[str, str], subjects: list[str], *, require_passing: bool = F
     sv_sva_points: list[float] = []
     has_passing_grade = False
     for subject in subjects:
-        if subject in EXTRA_LANGUAGE_SUBJECTS:
-            continue
         current_grade = grade(row.get(subject))
         if current_grade is None:
             continue
         if current_grade in PASSING_GRADES:
             has_passing_grade = True
+        if subject in SEVENTEENTH_GRADE_SUBJECTS:
+            continue
         if subject in {"Sv", "Sva"}:
             sv_sva_points.append(GRADE_POINTS[current_grade])
         else:
@@ -99,7 +101,7 @@ def merit(row: dict[str, str], subjects: list[str], *, require_passing: bool = F
 
     language_points = [
         GRADE_POINTS[current_grade]
-        for col in ("M1_betyg", "M2_betyg", "ML_betyg")
+        for col in SEVENTEENTH_GRADE_SUBJECTS
         if (current_grade := grade(row.get(col))) in PASSING_GRADES
     ]
     merit_17 = merit_16 + max(language_points, default=0.0)

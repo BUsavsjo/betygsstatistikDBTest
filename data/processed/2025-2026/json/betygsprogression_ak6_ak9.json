@@ -31,9 +31,9 @@
         "korrelation": 0.796
       },
       "merit_ak9": {
-        "genomsnitt_merit_16": 210.86,
-        "genomsnitt_merit_17": 222.01,
-        "korrelation_ak6_index_merit_16": 0.784
+        "genomsnitt_merit_16": 211.64,
+        "genomsnitt_merit_17": 222.46,
+        "korrelation_ak6_index_merit_16": 0.776
       },
       "amnen": [
         {
@@ -605,9 +605,9 @@
         "korrelation": 0.543
       },
       "merit_ak9": {
-        "genomsnitt_merit_16": 183.21,
-        "genomsnitt_merit_17": 193.57,
-        "korrelation_ak6_index_merit_16": 0.473
+        "genomsnitt_merit_16": 186.34,
+        "genomsnitt_merit_17": 195.36,
+        "korrelation_ak6_index_merit_16": 0.463
       },
       "amnen": [
         {
@@ -892,9 +892,9 @@
         "korrelation": 0.748
       },
       "merit_ak9": {
-        "genomsnitt_merit_16": 220.6,
-        "genomsnitt_merit_17": 233.15,
-        "korrelation_ak6_index_merit_16": 0.745
+        "genomsnitt_merit_16": 221.6,
+        "genomsnitt_merit_17": 233.75,
+        "korrelation_ak6_index_merit_16": 0.74
       },
       "amnen": [
         {
@@ -1203,9 +1203,9 @@
         "korrelation": 0.785
       },
       "merit_ak9": {
-        "genomsnitt_merit_16": 203.13,
-        "genomsnitt_merit_17": 213.17,
-        "korrelation_ak6_index_merit_16": 0.777
+        "genomsnitt_merit_16": 203.73,
+        "genomsnitt_merit_17": 213.49,
+        "korrelation_ak6_index_merit_16": 0.772
       },
       "amnen": [
         {
@@ -1514,9 +1514,9 @@
         "korrelation": 0.757
       },
       "merit_ak9": {
-        "genomsnitt_merit_16": 210.88,
-        "genomsnitt_merit_17": 222.76,
-        "korrelation_ak6_index_merit_16": 0.753
+        "genomsnitt_merit_16": 211.88,
+        "genomsnitt_merit_17": 223.35,
+        "korrelation_ak6_index_merit_16": 0.738
       },
       "amnen": [
         {
@@ -2088,9 +2088,9 @@
         "korrelation": 0.402
       },
       "merit_ak9": {
-        "genomsnitt_merit_16": 193.57,
-        "genomsnitt_merit_17": 206.79,
-        "korrelation_ak6_index_merit_16": 0.417
+        "genomsnitt_merit_16": 197.62,
+        "genomsnitt_merit_17": 209.17,
+        "korrelation_ak6_index_merit_16": 0.407
       },
       "amnen": [
         {
@@ -2375,9 +2375,9 @@
         "korrelation": 0.769
       },
       "merit_ak9": {
-        "genomsnitt_merit_16": 218.36,
-        "genomsnitt_merit_17": 231.38,
-        "korrelation_ak6_index_merit_16": 0.765
+        "genomsnitt_merit_16": 219.61,
+        "genomsnitt_merit_17": 232.17,
+        "korrelation_ak6_index_merit_16": 0.756
       },
       "amnen": [
         {
@@ -2686,9 +2686,9 @@
         "korrelation": 0.745
       },
       "merit_ak9": {
-        "genomsnitt_merit_16": 204.84,
-        "genomsnitt_merit_17": 215.8,
-        "korrelation_ak6_index_merit_16": 0.746
+        "genomsnitt_merit_16": 205.64,
+        "genomsnitt_merit_17": 216.22,
+        "korrelation_ak6_index_merit_16": 0.734
       },
       "amnen": [
         {
@@ -2997,9 +2997,9 @@
         "korrelation": 0.84
       },
       "merit_ak9": {
-        "genomsnitt_merit_16": 210.8,
+        "genomsnitt_merit_16": 210.89,
         "genomsnitt_merit_17": 219.73,
-        "korrelation_ak6_index_merit_16": 0.808
+        "korrelation_ak6_index_merit_16": 0.81
       },
       "amnen": [
         {
@@ -3308,7 +3308,7 @@
         "korrelation": 0.867
       },
       "merit_ak9": {
-        "genomsnitt_merit_16": 227.71,
+        "genomsnitt_merit_16": 227.92,
         "genomsnitt_merit_17": 238.75,
         "korrelation_ak6_index_merit_16": 0.867
       },
