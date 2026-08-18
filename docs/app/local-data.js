@@ -22,10 +22,12 @@ async function tryLoadLocalSource(base, sourceKind){
 }
 async function tryLoadLocalYear(localYear){
   if(!localYear) return null;
+  if(!STATIC_PAGES_BUILD && !IS_GITHUB_PAGES){
+    const output = await tryLoadLocalSource(`data/output/${localYear}/json`, 'output');
+    if(output) return output;
+  }
   const processed = await tryLoadLocalSource(`data/processed/${localYear}/json`, 'processed');
   if(processed) return processed;
-  const output = await tryLoadLocalSource(`data/output/${localYear}/json`, 'output');
-  if(output) return output;
   return tryLoadLocalSource(`data/demo/${localYear}/json`, 'demo');
 }
 async function fetchJsonOptional(url, fallback){

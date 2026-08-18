@@ -243,7 +243,7 @@ Analysen omfattar Sävsjö kommun som helhet samt Hofgårdsskolan och Rörviks s
 
 Korrelationen beskriver hur starkt resultaten samvarierar, men visar inte varför de förändras eller vilken effekt en skola har haft. Meritvärdet jämförs inte som progression mellan årskurserna, eftersom ämnesuppsättningen och beräkningsunderlaget kan skilja sig. Grupper med färre än 10 matchade elever undertrycks i den publicerade statistiken.
 
-Webbappen försöker lokalt först läsa publiceringsklar JSON från `data/processed/<läsår>/json` och därefter komplett analysdata från `data/output/<läsår>/json`. Pages-paketet innehåller inte `data/output`. Om publicerad data saknas används demodata eller befintligt PxWeb-flöde som fallback beroende på körläge.
+Webbappen läser lokalt först komplett analysdata från `data/output/<läsår>/json` och använder publiceringsklar JSON från `data/processed/<läsår>/json` som reserv. Pages-paketet innehåller inte `data/output` och kan därför bara visa spärrad publiceringsdata. Om data saknas används demodata eller befintligt PxWeb-flöde som fallback beroende på körläge.
 
 Rådata, rensade elevfiler och genererad output ligger i `.gitignore`. Publicera inte personnummer, namn, rådata eller exporter med elevrader.
 

@@ -36,6 +36,35 @@ test('uppdaterar tabellsammanfattning när filter ändras', async ({ page }) => 
   await expect(page.locator('#subjectRows tr')).not.toHaveCount(0);
 });
 
+test('lokal analys prioriterar komplett output framför publiceringsdata', async ({ page }) => {
+  const overview = [{
+    lasar: '2025-2026', arskurs: 9, niva: 'alla_skolenheter',
+    skolenhetskod: null, skolenhetsnamn: 'Alla skolenheter', kon: 'Alla', elevgrupp: 'Alla',
+    antal_elever: 10, genomsnittligt_meritvarde_16: 200, genomsnittligt_meritvarde_17: 210,
+    median_meritvarde_17: 210, andel_uppnatt_alla_amnen: 80,
+    andel_behorig_yrkesprogram: 90, andel_behorig_hogskoleforberedande_nagot_program: 80,
+  }];
+  const responses = {
+    'manifest.json': {source: 'internal_test', lasar: '2025-2026', arskurser: [{arskurs: 9, rows: 10}], np_arskurser: [], files: []},
+    'betygsstatistik_oversikt.json': overview,
+    'betygsstatistik_sv_sva.json': [],
+    'betygsstatistik_betygsfordelning_amne.json': [],
+    'betygsstatistik_kontroll_betyg.json': [],
+    'np_andel_godkanda.json': [],
+    'np_betyg_relation.json': [],
+    'betygsprogression_ak6_ak9.json': null,
+  };
+  await page.route('**/data/output/2025-2026/json/*', route => {
+    const filename = new URL(route.request().url()).pathname.split('/').pop();
+    route.fulfill({contentType: 'application/json', body: JSON.stringify(responses[filename])});
+  });
+
+  await page.goto('/');
+  await expect(page.locator('#statusText')).not.toHaveText(/Startar/i);
+
+  await expect.poll(() => page.evaluate(() => state.local?.sourceKind)).toBe('output');
+});
+
 test('tolkar språkfälten enligt datafilsbeskrivningen för 2026', async ({ page }) => {
   await waitForAppReady(page);
 
